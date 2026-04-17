@@ -49,7 +49,12 @@ export default function SettingsPage() {
   };
 
   const handleCopyApiKey = () => {
-    navigator.clipboard.writeText("process.env.VITE_STRIPE_API_KEY");
+    const apiKey = import.meta.env.VITE_STRIPE_API_KEY || "";
+    if (!apiKey) {
+      toast.error("API key not configured");
+      return;
+    }
+    navigator.clipboard.writeText(apiKey);
     toast.success("API key copied to clipboard!");
   };
 
@@ -412,7 +417,7 @@ export default function SettingsPage() {
                   <div className="flex items-center gap-2">
                     <input
                       type={showApiKey ? "text" : "password"}
-                      value="process.env.VITE_STRIPE_API_KEY"
+                      value={import.meta.env.VITE_STRIPE_API_KEY || "Not configured"}
                       readOnly
                       className="flex-1 px-4 py-3 bg-slate-50 border-2 border-slate-200 rounded-lg font-mono text-sm"
                     />
