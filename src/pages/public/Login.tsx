@@ -105,7 +105,8 @@ export default function Login() {
           email: demoCredentials.email,
           password: demoCredentials.password,
         },
-        role
+        role,
+        true // Force mock data
       );
 
       const userData = { ...response.user };
