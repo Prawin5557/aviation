@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useNavigate, Link } from "react-router-dom";
-import { Shield, Lock, Mail, ArrowRight, Loader2, Plane, Sparkles } from "lucide-react";
+import { Shield, Lock, Mail, ArrowRight, Loader2, Plane, Sparkles, Zap } from "lucide-react";
 import { useAuthStore } from "@/src/store/authStore";
 import { apiService } from "@/src/services/api";
 import { Button } from "@/src/components/ui/Button";
@@ -39,6 +39,19 @@ export default function AdminLogin() {
     } catch (err: any) {
       setError(err.message || "Login failed");
       toast.error(err.message || "Invalid admin credentials");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDemoAdminLogin = async () => {
+    setLoading(true);
+    try {
+      const response = await apiService.adminLogin('admin@demo.com', 'demo123456');
+      login(response.data);
+      navigate("/admin");
+    } catch (err: any) {
+      toast.error(err.message || "Demo admin login failed");
     } finally {
       setLoading(false);
     }
@@ -144,6 +157,18 @@ export default function AdminLogin() {
                   <ArrowRight className="h-5 w-5" />
                 </>
               )}
+            </button>
+
+            {/* Demo Admin Button */}
+            <button
+              type="button"
+              onClick={handleDemoAdminLogin}
+              disabled={isLoading}
+              className="w-full bg-amber-50 hover:bg-amber-100 disabled:bg-gray-200 text-amber-700 py-3 rounded-2xl font-bold text-base border-2 border-amber-300 shadow-md transition-all active:scale-[0.98] flex items-center justify-center gap-2 uppercase tracking-wider"
+              title="Demo Admin Login"
+            >
+              <Zap className="h-5 w-5" />
+              <span>Admin Demo</span>
             </button>
           </form>
 

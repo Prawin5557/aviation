@@ -4,7 +4,7 @@ import { useAuthStore } from "../../store/authStore";
 import { authService } from "../../services/authService";
 import { Button } from "../../components/ui/Button";
 import { Input } from "../../components/ui/Input";
-import { Plane, Lock, Mail, Loader2, AlertCircle, ArrowRight } from "lucide-react";
+import { Plane, Lock, Mail, Loader2, AlertCircle, ArrowRight, Zap } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -90,6 +90,43 @@ export default function Login() {
     setError(null);
   };
 
+  const demoLogins = {
+    student: { email: 'student@demo.com', password: 'demo123456' },
+    employer: { email: 'employer@demo.com', password: 'demo123456' }
+  };
+
+  const handleDemoLogin = async (role: 'student' | 'employer') => {
+    setLoading(true);
+    setError(null);
+    try {
+      const demoCredentials = demoLogins[role];
+      const response = await authService.login(
+        {
+          email: demoCredentials.email,
+          password: demoCredentials.password,
+        },
+        role
+      );
+
+      const userData = { ...response.user };
+      login(userData);
+
+      if (userData.role === 'admin') {
+        navigate('/admin');
+      } else if (userData.role === 'employer') {
+        navigate('/employer');
+      } else {
+        navigate(from);
+      }
+    } catch (err: any) {
+      console.error("Demo login error:", err);
+      const message = err.response?.data?.message || "Demo login failed. Please try again.";
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (showForgetPassword) {
     return (
       <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
@@ -123,12 +160,35 @@ export default function Login() {
           </div>
         )}
 
-        <div className="mb-6">
+        <div className="space-y-3 mb-6">
           <GoogleLogin
             onSuccess={handleGoogleSuccess}
             onError={handleGoogleError}
             text="Continue with Google"
           />
+          
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => handleDemoLogin('student')}
+              disabled={isLoading}
+              className="flex items-center justify-center gap-2 px-4 py-3 bg-amber-50 hover:bg-amber-100 disabled:bg-gray-200 border border-amber-300 rounded-xl font-semibold text-sm text-amber-700 transition-all"
+              title="Demo Student Login"
+            >
+              <Zap className="h-4 w-4" />
+              <span>Student Demo</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleDemoLogin('employer')}
+              disabled={isLoading}
+              className="flex items-center justify-center gap-2 px-4 py-3 bg-blue-50 hover:bg-blue-100 disabled:bg-gray-200 border border-blue-300 rounded-xl font-semibold text-sm text-blue-700 transition-all"
+              title="Demo Employer Login"
+            >
+              <Zap className="h-4 w-4" />
+              <span>Employer Demo</span>
+            </button>
+          </div>
         </div>
 
         <div className="relative mb-6">
@@ -136,7 +196,7 @@ export default function Login() {
             <div className="w-full border-t border-slate-200" />
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-white text-slate-500">Or continue with email</span>
+            <span className="px-2 bg-white text-slate-500">Or use your credentials</span>
           </div>
         </div>
 
