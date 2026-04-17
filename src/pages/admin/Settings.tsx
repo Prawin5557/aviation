@@ -141,9 +141,10 @@ export default function SettingsPage() {
                     </label>
                     <input
                       type="text"
+                      title="Platform name"
+                      placeholder="Enter platform name"
                       defaultValue="FlightDeck"
                       className="w-full px-4 py-3 bg-white/50 border-2 border-slate-200 rounded-lg focus:border-purple-400 focus:ring-2 focus:ring-purple-500/50 outline-none transition-all"
-                      placeholder="Enter platform name"
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
@@ -153,6 +154,8 @@ export default function SettingsPage() {
                       </label>
                       <input
                         type="email"
+                        title="Support email address"
+                        placeholder="support@example.com"
                         defaultValue="support@flightdeck.io"
                         className="w-full px-4 py-3 bg-white/50 border-2 border-slate-200 rounded-lg focus:border-purple-400 focus:ring-2 focus:ring-purple-500/50 outline-none transition-all"
                       />
@@ -163,6 +166,8 @@ export default function SettingsPage() {
                       </label>
                       <input
                         type="tel"
+                        title="Support phone number"
+                        placeholder="+1 (800) FLIGHT-1"
                         defaultValue="+1 (800) FLIGHT-1"
                         className="w-full px-4 py-3 bg-white/50 border-2 border-slate-200 rounded-lg focus:border-purple-400 focus:ring-2 focus:ring-purple-500/50 outline-none transition-all"
                       />
@@ -304,6 +309,8 @@ export default function SettingsPage() {
                   </label>
                   <input
                     type="text"
+                    title="SMTP server address"
+                    placeholder="smtp.gmail.com"
                     defaultValue="smtp.gmail.com"
                     className="w-full px-4 py-3 bg-white/50 border-2 border-slate-200 rounded-lg focus:border-purple-400 focus:ring-2 focus:ring-purple-500/50 outline-none transition-all"
                   />
@@ -315,6 +322,8 @@ export default function SettingsPage() {
                     </label>
                     <input
                       type="number"
+                      title="SMTP port number"
+                      placeholder="587"
                       defaultValue="587"
                       className="w-full px-4 py-3 bg-white/50 border-2 border-slate-200 rounded-lg focus:border-purple-400 focus:ring-2 focus:ring-purple-500/50 outline-none transition-all"
                     />
@@ -325,6 +334,8 @@ export default function SettingsPage() {
                     </label>
                     <input
                       type="email"
+                      title="Sender email address"
+                      placeholder="noreply@flightdeck.io"
                       defaultValue="noreply@flightdeck.io"
                       className="w-full px-4 py-3 bg-white/50 border-2 border-slate-200 rounded-lg focus:border-purple-400 focus:ring-2 focus:ring-purple-500/50 outline-none transition-all"
                     />
@@ -357,6 +368,8 @@ export default function SettingsPage() {
                   </label>
                   <input
                     type="number"
+                    title="Minimum password length"
+                    placeholder="8"
                     defaultValue="8"
                     className="w-full px-4 py-3 bg-white/50 border-2 border-slate-200 rounded-lg focus:border-purple-400 focus:ring-2 focus:ring-purple-500/50 outline-none transition-all"
                   />
@@ -365,7 +378,7 @@ export default function SettingsPage() {
                   <label className="block text-sm font-bold text-slate-700 mb-2">
                     Session Timeout (minutes)
                   </label>
-                  <input type="number" defaultValue="30" className="w-full px-4 py-3 bg-white/50 border-2 border-slate-200 rounded-lg focus:border-purple-400 focus:ring-2 focus:ring-purple-500/50 outline-none transition-all" />
+                  <input type="number" title="Session timeout in minutes" placeholder="30" defaultValue="30" className="w-full px-4 py-3 bg-white/50 border-2 border-slate-200 rounded-lg focus:border-purple-400 focus:ring-2 focus:ring-purple-500/50 outline-none transition-all" />
                 </div>
                 <div>
                   <label className="flex items-center gap-3">
@@ -417,6 +430,8 @@ export default function SettingsPage() {
                   <div className="flex items-center gap-2">
                     <input
                       type={showApiKey ? "text" : "password"}
+                      title="API Key field"
+                      placeholder="API Key"
                       value={import.meta.env.VITE_STRIPE_API_KEY || "Not configured"}
                       readOnly
                       className="flex-1 px-4 py-3 bg-slate-50 border-2 border-slate-200 rounded-lg font-mono text-sm"

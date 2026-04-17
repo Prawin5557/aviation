@@ -196,10 +196,10 @@ export default function Programs() {
     : PROGRAMS;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
+    <div className="min-h-screen bg-linear-to-b from-slate-50 to-white">
       {/* Hero Section */}
       <section className="relative py-20 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-600/5 via-transparent to-pink-600/5" />
+        <div className="absolute inset-0 bg-linear-to-br from-purple-600/5 via-transparent to-pink-600/5" />
         <div className="container mx-auto px-4 relative">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -306,7 +306,7 @@ export default function Programs() {
               {/* Category Header */}
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
                 <div className="flex items-center gap-4">
-                  <div className={`p-4 rounded-2xl bg-gradient-to-br ${program.color} text-white shadow-lg`}>
+                  <div className={`p-4 rounded-2xl bg-linear-to-br ${program.color} text-white shadow-lg`}>
                     <program.icon className="h-8 w-8" />
                   </div>
                   <div>
@@ -404,7 +404,7 @@ export default function Programs() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-br from-purple-600 to-indigo-700">
+      <section className="py-20 bg-linear-to-br from-purple-600 to-indigo-700">
         <div className="container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}

@@ -1,4 +1,4 @@
-lly import { useState } from "react";
+import { useState } from "react";
 import { Search, Filter, Briefcase, Calendar, MapPin, Building2, Clock, Eye, ChevronDown, ArrowRight, CheckCircle2, AlertCircle, Mail, MessageSquare, Download, Share2, Trash2, TrendingUp, Users, Award, DollarSign } from "lucide-react";
 import { useAuthStore } from "@/src/store/authStore";
 import { Link } from "react-router-dom";
