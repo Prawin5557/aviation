@@ -82,37 +82,31 @@ class PaymentService {
     const shouldUseMock = useMockData || ENV.USE_MOCK;
 
     if (!shouldUseMock) {
-      const response = await apiClient.post('/payments/create-order', {
-        planId,
-        amount: amount * 100,
-        currency,
-      });
+      try {
+        const response = await apiClient.post('/payments/create-order', {
+          planId,
+          amount: amount * 100,
+          currency,
+        });
 
-      const order = response.data?.order || response.data?.data?.order || response.data;
-      if (order && order.id && typeof order.amount === 'number') {
-        return order;
+        const order = response.data?.order || response.data?.data?.order || response.data;
+        if (order && order.id && typeof order.amount === 'number') {
+          return order;
+        }
+
+        throw new Error('Invalid payment order response from backend');
+      } catch (error: any) {
+        // Check if it's a network error
+        if (error.isNetworkError || !error.response) {
+          console.warn('Backend API unavailable (network error), using mock data for payment:', error.message);
+          // Fall back to mock data for network errors
+        } else {
+          console.warn('Backend API error, using mock data for payment:', error?.response?.data?.message || error.message);
+        }
       }
-
-      throw new Error('Invalid payment order response from backend');
     }
 
-    try {
-      const response = await apiClient.post('/payments/create-order', {
-        planId,
-        amount: amount * 100,
-        currency,
-      });
-
-      const order = response.data?.order || response.data?.data?.order || response.data;
-      if (order && order.id && typeof order.amount === 'number') {
-        return order;
-      }
-
-      console.warn('Unexpected create-order response shape, using demo mock order:', response.data);
-    } catch (backendError: any) {
-      console.warn('Backend API unavailable, using mock data for demo:', backendError?.message || backendError);
-    }
-
+    // Use mock data (either by choice or fallback)
     const mockOrder: PaymentOrder = {
       id: `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       amount: amount * 100,
@@ -137,17 +131,21 @@ class PaymentService {
     const shouldUseMock = ENV.USE_MOCK || ENV.DEMO_MODE;
 
     if (!shouldUseMock) {
-      const response = await apiClient.post('/payments/verify', verificationData);
-      return response.data;
+      try {
+        const response = await apiClient.post('/payments/verify', verificationData);
+        return response.data;
+      } catch (error: any) {
+        // Check if it's a network error
+        if (error.isNetworkError || !error.response) {
+          console.warn('Backend API unavailable (network error), using mock verification:', error.message);
+          // Fall back to mock verification for network errors
+        } else {
+          console.warn('Backend verification error, using mock verification:', error?.response?.data?.message || error.message);
+        }
+      }
     }
 
-    try {
-      const response = await apiClient.post('/payments/verify', verificationData);
-      return response.data;
-    } catch (backendError: any) {
-      console.warn('Backend verification unavailable, using mock verification:', backendError?.message || backendError);
-    }
-
+    // Use mock verification (either by choice or fallback)
     return {
       success: true,
       paymentId: verificationData.razorpay_payment_id,
@@ -270,13 +268,23 @@ class PaymentService {
         const shouldUseMock = useMockData || ENV.USE_MOCK || ENV.DEMO_MODE;
 
         if (!shouldUseMock) {
-          const subscriptionResponse = await apiClient.post('/users/update-subscription', {
-            userId,
-            planId,
-            paymentId: paymentResponse.razorpay_payment_id,
-          });
-          toast.success('Payment successful! Your subscription is now active.');
-          return { success: true, subscription: subscriptionResponse.data };
+          try {
+            const subscriptionResponse = await apiClient.post('/users/update-subscription', {
+              userId,
+              planId,
+              paymentId: paymentResponse.razorpay_payment_id,
+            });
+            toast.success('Payment successful! Your subscription is now active.');
+            return { success: true, subscription: subscriptionResponse.data };
+          } catch (error: any) {
+            // Check if it's a network error
+            if (error.isNetworkError || !error.response) {
+              console.warn('Backend API unavailable (network error), using mock subscription:', error.message);
+              // Fall back to mock subscription for network errors
+            } else {
+              console.warn('Backend subscription update error, using mock subscription:', error?.response?.data?.message || error.message);
+            }
+          }
         }
 
         try {

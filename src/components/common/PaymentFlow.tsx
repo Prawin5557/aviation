@@ -155,7 +155,8 @@ export default function PaymentFlow({ isOpen, onClose, planId, planName }: Payme
             const result = await paymentService.processPaymentCompletion(
               planIdForPayment,
               response,
-              user.id
+              user.id,
+              ENV.DEMO_MODE
             );
 
             if (result.success) {
@@ -199,9 +200,13 @@ export default function PaymentFlow({ isOpen, onClose, planId, planName }: Payme
         },
         ENV.DEMO_MODE
       );
-    } catch (error) {
+    } catch (error: any) {
       console.error('Payment initialization error:', error);
-      toast.error('Failed to initialize payment. Please try again.');
+      if (error.isNetworkError) {
+        toast.error('Network error: Unable to connect to payment service. Please check your connection and try again.');
+      } else {
+        toast.error('Failed to initialize payment. Please try again.');
+      }
       setIsProcessing(false);
     }
   };

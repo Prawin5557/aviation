@@ -28,6 +28,17 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
+    // Handle network errors (no response received)
+    if (!error.response) {
+      console.warn('Network error: Backend API is not reachable. Falling back to demo mode.');
+      // Return a rejected promise with a specific error type for network issues
+      return Promise.reject({
+        ...error,
+        isNetworkError: true,
+        message: 'Network error: Unable to connect to backend API'
+      });
+    }
+
     if (error.response?.status === 401) {
       // Token expired or invalid
       localStorage.removeItem('auth_token');
