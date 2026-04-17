@@ -156,7 +156,7 @@ export default function Jobs() {
       <SEO title="Premium Aviation Careers" description="Discover elite career opportunities in the global aviation industry." />
       
       {/* Premium Hero Section */}
-      <div className="relative pt-32 pb-24 overflow-hidden bg-white border-b border-slate-100">
+      <div className="relative pt-24 sm:pt-32 pb-16 sm:pb-24 overflow-hidden bg-white border-b border-slate-100">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(124,58,237,0.03),transparent_50%)]"></div>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,rgba(59,130,246,0.03),transparent_50%)]"></div>
         
@@ -165,7 +165,7 @@ export default function Jobs() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="inline-flex items-center space-x-3 px-5 py-2 rounded-full bg-purple-50 border border-purple-100/50 text-purple-600 text-[10px] font-bold uppercase tracking-[0.2em]"
+              className="inline-flex items-center space-x-2 sm:space-x-3 px-4 sm:px-5 py-1.5 sm:py-2 rounded-full bg-purple-50 border border-purple-100/50 text-purple-600 text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.2em]"
             >
               <Plane className="h-3.5 w-3.5" />
               <span>Elite Aviation Career Network</span>
@@ -175,7 +175,7 @@ export default function Jobs() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="text-5xl md:text-7xl font-display font-bold text-slate-900 tracking-tight leading-[1.1]"
+              className="text-4xl sm:text-5xl md:text-7xl font-display font-bold text-slate-900 tracking-tight leading-[1.1]"
             >
               Elevate Your <span className="text-transparent bg-clip-text bg-linear-to-r from-purple-600 to-blue-600">Aviation Legacy</span>
             </motion.h1>
@@ -184,7 +184,7 @@ export default function Jobs() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="text-xl text-slate-500 font-medium max-w-2xl mx-auto leading-relaxed"
+              className="text-lg sm:text-xl text-slate-500 font-medium max-w-2xl mx-auto leading-relaxed"
             >
               Access exclusive opportunities with world-class airlines, aerospace leaders, and innovative maintenance hubs globally.
             </motion.p>
@@ -195,9 +195,9 @@ export default function Jobs() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="max-w-5xl mx-auto mt-16"
+            className="max-w-5xl mx-auto mt-10 sm:mt-16"
           >
-            <div className="bg-white p-3 rounded-[40px] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.08)] border border-slate-100 flex flex-col lg:flex-row items-center gap-3">
+            <div className="bg-white p-3 sm:p-4 rounded-3xl sm:rounded-[40px] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.08)] border border-slate-100 flex flex-col lg:flex-row items-center gap-3">
               <div className="flex-1 relative w-full group">
                 <Search className="absolute left-8 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-purple-500 transition-colors" />
                 <input 
@@ -205,7 +205,7 @@ export default function Jobs() {
                   placeholder="Job title, company, or expertise..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full h-16 pl-16 pr-8 bg-slate-50/50 rounded-4xl border-none focus:ring-2 focus:ring-purple-500/20 text-slate-900 font-semibold placeholder:text-slate-400 transition-all"
+                  className="w-full h-14 sm:h-16 pl-16 pr-8 bg-slate-50/50 rounded-2xl sm:rounded-4xl border-none focus:ring-2 focus:ring-purple-500/20 text-slate-900 font-semibold placeholder:text-slate-400 transition-all text-sm sm:text-base"
                 />
               </div>
               <div className="hidden lg:block w-px h-10 bg-slate-100"></div>
@@ -216,10 +216,10 @@ export default function Jobs() {
                   placeholder="Global locations..."
                   value={location === "All" ? "" : location}
                   onChange={(e) => setLocation(e.target.value || "All")}
-                  className="w-full h-16 pl-16 pr-8 bg-slate-50/50 rounded-4xl border-none focus:ring-2 focus:ring-purple-500/20 text-slate-900 font-semibold placeholder:text-slate-400 transition-all"
+                  className="w-full h-14 sm:h-16 pl-16 pr-8 bg-slate-50/50 rounded-2xl sm:rounded-4xl border-none focus:ring-2 focus:ring-purple-500/20 text-slate-900 font-semibold placeholder:text-slate-400 transition-all text-sm sm:text-base"
                 />
               </div>
-              <button className="premium-button-primary h-16 px-12 rounded-4xl w-full lg:w-auto text-base font-bold flex items-center justify-center space-x-3">
+              <button className="premium-button-primary h-14 sm:h-16 px-8 sm:px-12 rounded-2xl sm:rounded-4xl w-full lg:w-auto text-sm sm:text-base font-bold flex items-center justify-center space-x-3">
                 <span>Search Careers</span>
                 <ArrowRight className="h-5 w-5" />
               </button>
@@ -228,12 +228,12 @@ export default function Jobs() {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 mt-20">
-        <div className="flex flex-col lg:flex-row gap-12">
+      <div className="container mx-auto px-4 mt-10 sm:mt-20">
+        <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
           {/* Refined Sidebar Filters */}
           <aside className="lg:w-80 shrink-0">
-            <div className="bg-white p-10 rounded-[40px] border border-slate-100 shadow-sm sticky top-32">
-              <div className="flex items-center justify-between mb-10">
+            <div className="bg-white p-6 sm:p-10 rounded-3xl sm:rounded-[40px] border border-slate-100 shadow-sm lg:sticky top-32">
+              <div className="flex items-center justify-between mb-8 sm:mb-10">
                 <div className="flex items-center space-x-3">
                   <div className="h-10 w-10 rounded-xl bg-purple-50 flex items-center justify-center">
                     <SlidersHorizontal className="h-5 w-5 text-purple-600" />
@@ -254,9 +254,9 @@ export default function Jobs() {
                 </button>
               </div>
 
-              <div className="space-y-10">
+              <div className="space-y-8 sm:space-y-10">
                 {/* Industry Domain */}
-                <div className="space-y-5">
+                <div className="space-y-3 sm:space-y-5">
                   <label htmlFor="industryDomain" className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] ml-1">Industry Domain</label>
                   <div className="relative">
                     <select
@@ -264,7 +264,7 @@ export default function Jobs() {
                       aria-label="Industry domain filter"
                       value={category}
                       onChange={(e) => setCategory(e.target.value)}
-                      className="w-full h-14 rounded-2xl border border-slate-100 bg-slate-50/50 px-5 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-purple-500/20 appearance-none cursor-pointer text-slate-700 transition-all"
+                      className="w-full h-12 sm:h-14 rounded-2xl border border-slate-100 bg-slate-50/50 px-4 sm:px-5 text-xs sm:text-sm font-bold focus:outline-none focus:ring-2 focus:ring-purple-500/20 appearance-none cursor-pointer text-slate-700 transition-all truncate"
                     >
                       {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
                     </select>
@@ -273,7 +273,7 @@ export default function Jobs() {
                 </div>
 
                 {/* Experience Level */}
-                <div className="space-y-5">
+                <div className="space-y-3 sm:space-y-5">
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] ml-1">Experience Level</label>
                   <div className="space-y-2">
                     {experienceLevels.map((level) => (
@@ -293,7 +293,7 @@ export default function Jobs() {
                 </div>
 
                 {/* Job Type */}
-                <div className="space-y-5">
+                <div className="space-y-3 sm:space-y-5">
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] ml-1">Employment Type</label>
                   <div className="flex flex-wrap gap-2">
                     {jobTypes.map((type) => (
@@ -316,11 +316,11 @@ export default function Jobs() {
           </aside>
 
           {/* Jobs Feed */}
-          <div className="flex-1 space-y-10">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 pb-8 border-b border-slate-100">
+          <div className="flex-1 space-y-6 sm:space-y-10 mt-8 lg:mt-0">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-6 pb-6 sm:pb-8 border-b border-slate-100">
               <div>
-                <h2 className="text-2xl font-display font-bold text-slate-900">Available Positions</h2>
-                <p className="text-sm font-medium text-slate-500 mt-1">
+                <h2 className="text-xl sm:text-2xl font-display font-bold text-slate-900">Available Positions</h2>
+                <p className="text-xs sm:text-sm font-medium text-slate-500 mt-1">
                   Discovering <span className="text-purple-600 font-bold">{isLoadingAll ? "..." : filteredJobs.length}</span> curated aviation roles
                 </p>
               </div>
@@ -408,4 +408,3 @@ export default function Jobs() {
     </div>
   );
 }
-

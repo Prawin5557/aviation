@@ -107,13 +107,13 @@ export default function Jobs() {
   };
 
   return (
-    <div className="p-8 space-y-8">
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+    <div className="p-4 sm:p-8 space-y-6 sm:space-y-8">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 sm:gap-6">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">Jobs & Internships</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">Jobs & Internships</h1>
           <p className="text-slate-500">Track your applications, saved positions, and discover new aviation opportunities.</p>
         </div>
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
           <div className="relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
             <input
@@ -121,17 +121,17 @@ export default function Jobs() {
               onChange={(e) => setSearch(e.target.value)}
               type="text"
               placeholder="Search roles, airlines, or locations"
-              className="h-12 pl-12 pr-6 bg-white/90 border border-slate-200 rounded-xl focus:ring-2 focus:ring-purple-600 outline-none w-64"
+              className="h-12 pl-12 pr-6 bg-white/90 border border-slate-200 rounded-xl focus:ring-2 focus:ring-purple-600 outline-none w-full sm:w-64 text-sm"
             />
           </div>
-          <button className="h-12 px-6 bg-white border border-slate-200 rounded-xl flex items-center space-x-2 text-slate-600 hover:border-purple-200">
+          <button className="h-12 px-6 bg-white border border-slate-200 rounded-xl flex items-center justify-center space-x-2 text-slate-600 hover:border-purple-200">
             <Filter className="h-4 w-4" />
             <span>Filter</span>
           </button>
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-2 p-1 bg-slate-100 rounded-2xl w-fit">
+      <div className="flex overflow-x-auto gap-2 p-1 bg-slate-100 rounded-2xl w-full sm:w-fit no-scrollbar">
         {[
           { key: "applications", label: "Applications" },
           { key: "saved", label: "Saved Jobs" },
@@ -141,7 +141,7 @@ export default function Jobs() {
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
             className={cn(
-              "relative px-6 py-2.5 rounded-xl text-sm font-bold transition-colors",
+              "relative whitespace-nowrap px-4 sm:px-6 py-2.5 rounded-xl text-sm font-bold transition-colors",
               activeTab === tab.key ? "text-purple-600" : "text-slate-500 hover:text-slate-700"
             )}
           >
@@ -174,24 +174,24 @@ export default function Jobs() {
       )}
 
       {activeTab === "browse" && (
-        <div className="grid grid-cols-1 xl:grid-cols-[0.75fr_0.25fr] gap-8">
+        <div className="grid grid-cols-1 xl:grid-cols-[0.75fr_0.25fr] gap-6 sm:gap-8">
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="glass-card p-6">
+              <div className="glass-card p-5 sm:p-6">
                 <p className="text-sm text-slate-500">Available Jobs</p>
                 <p className="text-3xl font-bold text-slate-900">{jobCount}</p>
               </div>
-              <div className="glass-card p-6">
+              <div className="glass-card p-5 sm:p-6">
                 <p className="text-sm text-slate-500">Internship Openings</p>
                 <p className="text-3xl font-bold text-slate-900">{internshipCount}</p>
               </div>
-              <div className="glass-card p-6">
+              <div className="glass-card p-5 sm:p-6">
                 <p className="text-sm text-slate-500">Total Opportunities</p>
                 <p className="text-3xl font-bold text-slate-900">{jobs.length}</p>
               </div>
             </div>
 
-            <div className="glass-card p-6 rounded-4xl border border-slate-200">
+            <div className="glass-card p-5 sm:p-6 rounded-3xl sm:rounded-4xl border border-slate-200">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label htmlFor="jobTypeFilter" className="text-xs font-bold uppercase tracking-[0.22em] text-slate-400">Type</label>
@@ -231,7 +231,7 @@ export default function Jobs() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
               {isLoading ? (
                 Array.from({ length: 4 }).map((_, index) => (
                   <div key={index} className="glass-card p-8 animate-pulse rounded-4xl"></div>

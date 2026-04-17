@@ -142,15 +142,15 @@ export default function EmployerSubscriptions() {
   }
 
   return (
-    <div className="space-y-12 pb-20">
+    <div className="space-y-8 sm:space-y-12 pb-20 px-4 sm:px-0">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="text-center max-w-3xl mx-auto space-y-4"
+        className="text-center max-w-3xl mx-auto space-y-4 pt-4 sm:pt-0"
       >
-        <h1 className="text-4xl font-display font-bold text-slate-900">Subscription Center</h1>
-        <p className="text-slate-500 text-lg max-w-2xl mx-auto">
+        <h1 className="text-3xl sm:text-4xl font-display font-bold text-slate-900">Subscription Center</h1>
+        <p className="text-slate-500 text-base sm:text-lg max-w-2xl mx-auto">
           Manage your employer plan, compare upgrade options, and get the hiring tools you need to scale.
         </p>
       </motion.div>
@@ -160,12 +160,12 @@ export default function EmployerSubscriptions() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
-          className="glass-card p-8 rounded-4xl border border-slate-200"
+          className="glass-card p-6 sm:p-8 rounded-3xl sm:rounded-4xl border border-slate-200"
         >
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.25em] text-purple-600">Current plan</p>
-              <h2 className="mt-3 text-3xl font-display font-bold text-slate-900">{currentPlan?.name ?? "Recruiter Starter"}</h2>
+              <h2 className="mt-2 sm:mt-3 text-2xl sm:text-3xl font-display font-bold text-slate-900">{currentPlan?.name ?? "Recruiter Starter"}</h2>
               <p className="mt-3 text-sm text-slate-500 max-w-xl">
                 {currentPlan
                   ? currentPlan.description
@@ -181,7 +181,7 @@ export default function EmployerSubscriptions() {
             </div>
           </div>
 
-          <div className="mt-10 grid gap-4 sm:grid-cols-3">
+          <div className="mt-8 sm:mt-10 grid gap-4 grid-cols-2 sm:grid-cols-3">
             {[
               { label: "Active Jobs", value: "20+" },
               { label: "Team Seats", value: "5" },
@@ -194,17 +194,17 @@ export default function EmployerSubscriptions() {
             ))}
           </div>
 
-          <div className="mt-10 grid gap-4 sm:grid-cols-2">
+          <div className="mt-8 sm:mt-10 grid gap-4 sm:grid-cols-2">
             <div className="rounded-3xl bg-linear-to-r from-purple-600 to-indigo-600 p-6 text-white shadow-xl">
               <p className="text-sm uppercase tracking-[0.2em] text-purple-100">Plan status</p>
-              <p className="mt-4 text-2xl font-bold">Active</p>
+              <p className="mt-2 sm:mt-4 text-xl sm:text-2xl font-bold">Active</p>
               <p className="mt-3 text-sm text-purple-100/90">
                 Your employer subscription is active and ready to power unlimited hiring workflows.
               </p>
             </div>
             <div className="rounded-3xl bg-slate-50 p-6 border border-slate-200">
               <p className="text-sm uppercase tracking-[0.2em] text-slate-500">Next renewal</p>
-              <p className="mt-4 text-2xl font-bold text-slate-900">May 12, 2026</p>
+              <p className="mt-2 sm:mt-4 text-xl sm:text-2xl font-bold text-slate-900">May 12, 2026</p>
               <p className="mt-3 text-sm text-slate-500">Auto-renews monthly so you can keep posting jobs without interruption.</p>
             </div>
           </div>
@@ -214,14 +214,14 @@ export default function EmployerSubscriptions() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.15 }}
-          className="glass-card p-8 rounded-4xl border border-slate-200"
+          className="glass-card p-6 sm:p-8 rounded-3xl sm:rounded-4xl border border-slate-200"
         >
           <div className="flex items-center justify-between gap-4">
             <div>
               <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Hiring health</p>
-              <h3 className="mt-3 text-2xl font-bold text-slate-900">Optimize your hiring</h3>
+              <h3 className="mt-2 sm:mt-3 text-xl sm:text-2xl font-bold text-slate-900">Optimize your hiring</h3>
             </div>
-            <div className="rounded-3xl bg-violet-50 p-3 text-violet-600">
+            <div className="rounded-2xl sm:rounded-3xl bg-violet-50 p-3 text-violet-600">
               <ChartBar className="h-6 w-6" />
             </div>
           </div>
@@ -258,7 +258,7 @@ export default function EmployerSubscriptions() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: idx * 0.08 }}
               className={cn(
-                "glass-card border p-8 rounded-4xl flex flex-col transition-all duration-300",
+                "glass-card border p-6 sm:p-8 rounded-3xl sm:rounded-4xl flex flex-col transition-all duration-300",
                 isFeatured ? "border-purple-500/30 shadow-2xl shadow-purple-200/30 scale-[1.01]" : "border-slate-200 hover:-translate-y-1"
               )}
             >
@@ -275,10 +275,10 @@ export default function EmployerSubscriptions() {
 
               <div className="mt-6 flex-1">
                 <div className="flex items-end gap-3">
-                  <h3 className="text-2xl font-bold text-slate-900">{plan.name}</h3>
+                  <h3 className="text-xl sm:text-2xl font-bold text-slate-900">{plan.name}</h3>
                   <span className="text-sm text-slate-400">{plan.period === "month" ? "/month" : "One-time"}</span>
                 </div>
-                <p className="mt-3 text-3xl font-display font-bold text-slate-900">₹{plan.price.toLocaleString('en-IN')}</p>
+                <p className="mt-2 sm:mt-3 text-2xl sm:text-3xl font-display font-bold text-slate-900">₹{plan.price.toLocaleString('en-IN')}</p>
                 <p className="mt-3 text-sm text-slate-500">{plan.description}</p>
 
                 <ul className="mt-8 space-y-3">
@@ -312,17 +312,17 @@ export default function EmployerSubscriptions() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
-        className="glass-card p-10 rounded-4xl border border-slate-200"
+          className="glass-card p-6 sm:p-10 rounded-3xl sm:rounded-4xl border border-slate-200"
       >
         <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="space-y-4">
             <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Feature comparison</p>
-            <h2 className="text-3xl font-display font-bold text-slate-900">What each employer plan unlocks</h2>
+              <h2 className="text-2xl sm:text-3xl font-display font-bold text-slate-900">What each employer plan unlocks</h2>
             <p className="max-w-2xl text-sm text-slate-500">
               Compare capabilities across plans so you can choose the package that matches your hiring volume and growth goals.
             </p>
           </div>
-          <div className="rounded-3xl bg-violet-50 p-6 text-violet-700">
+            <div className="rounded-2xl sm:rounded-3xl bg-violet-50 p-5 sm:p-6 text-violet-700">
             <MessageSquare className="h-6 w-6" />
             <p className="mt-3 text-sm font-semibold">Need help selecting? Talk to our team.</p>
           </div>
@@ -360,14 +360,14 @@ export default function EmployerSubscriptions() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.25 }}
-        className="glass-card p-10 rounded-4xl border border-slate-200"
+          className="glass-card p-6 sm:p-10 rounded-3xl sm:rounded-4xl border border-slate-200"
       >
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div>
             <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Billing history</p>
-            <h2 className="text-3xl font-display font-bold text-slate-900">Latest invoices</h2>
+              <h2 className="text-2xl sm:text-3xl font-display font-bold text-slate-900">Latest invoices</h2>
           </div>
-          <Button onClick={handleDownloadStatement} className="bg-purple-600 text-white hover:bg-purple-700 flex items-center gap-2">
+            <Button onClick={handleDownloadStatement} className="bg-purple-600 text-white hover:bg-purple-700 flex items-center justify-center gap-2 w-full sm:w-auto">
             <Download className="h-4 w-4" />
             Download statement
           </Button>

@@ -8,9 +8,7 @@ import SolutionsSection from "@/src/sections/SolutionsSection";
 import TalentTrends from "@/src/sections/TalentTrends";
 import DomainsWePower from "@/src/sections/DomainsWePower";
 import LatestInsights from "@/src/sections/LatestInsights";
-import NewsletterSection from "@/src/sections/NewsletterSection";
 import JobOpenings from "@/src/sections/JobOpenings";
-import TrustedPartners from "@/src/sections/TrustedPartners";
 import VoicesFromFlightDeck from "@/src/sections/VoicesFromFlightDeck";
 import NextStepSection from "@/src/sections/NextStepSection";
 
@@ -29,9 +27,6 @@ export default function Home() {
       <div id="trust">
         <TrustSection />
       </div>
-      <div id="trusted-partners">
-        <TrustedPartners />
-      </div>
       <div id="global">
         <GlobalOperations />
       </div>
@@ -49,9 +44,6 @@ export default function Home() {
       </div>
       <div id="insights">
         <LatestInsights />
-      </div>
-      <div id="newsletter">
-        <NewsletterSection />
       </div>
       <div id="job-openings">
         <JobOpenings />

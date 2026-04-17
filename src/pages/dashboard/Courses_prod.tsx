@@ -63,25 +63,25 @@ export default function Courses() {
   }
 
   return (
-    <div className="space-y-8 pb-20">
+    <div className="space-y-6 sm:space-y-8 pb-20 px-4 sm:px-0">
       <SEO title="My Courses" description="View and manage your enrolled courses" />
 
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="space-y-6"
+        className="space-y-4 sm:space-y-6 pt-4 sm:pt-0"
       >
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div>
-            <h1 className="text-4xl font-bold text-slate-900">My Courses</h1>
+            <h1 className="text-3xl sm:text-4xl font-bold text-slate-900">My Courses</h1>
             <p className="text-slate-500 mt-2">Continue learning and track your progress</p>
           </div>
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => navigate('/programs')}
-            className="px-6 py-3 bg-linear-to-r from-purple-600 to-indigo-600 text-white font-semibold rounded-xl hover:shadow-lg transition-all flex items-center gap-2 w-fit"
+            className="px-6 py-3 bg-linear-to-r from-purple-600 to-indigo-600 text-white font-semibold rounded-xl hover:shadow-lg transition-all flex justify-center items-center gap-2 w-full lg:w-fit"
           >
             <BookOpen className="h-5 w-5" />
             Browse All Programs
@@ -89,7 +89,7 @@ export default function Courses() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {stats && [
             { label: 'Enrolled', value: stats.totalEnrolled, icon: BookOpen, color: 'text-blue-600', bg: 'bg-blue-50' },
             { label: 'In Progress', value: stats.inProgress, icon: Play, color: 'text-purple-600', bg: 'bg-purple-50' },
@@ -101,13 +101,13 @@ export default function Courses() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.1 }}
-              className="glass-card p-4 rounded-xl"
+              className="glass-card p-3 sm:p-4 rounded-xl"
             >
               <div className={`${stat.bg} ${stat.color} w-fit p-2 rounded-lg mb-2`}>
                 <stat.icon className="h-5 w-5" />
               </div>
-              <p className="text-2xl font-bold text-slate-900">{stat.value}</p>
-              <p className="text-sm text-slate-500">{stat.label}</p>
+              <p className="text-xl sm:text-2xl font-bold text-slate-900">{stat.value}</p>
+              <p className="text-xs sm:text-sm text-slate-500">{stat.label}</p>
             </motion.div>
           ))}
         </div>
@@ -138,7 +138,7 @@ export default function Courses() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setFilterStatus(status as any)}
-              className={`px-4 py-2 rounded-lg font-semibold transition-all ${
+              className={`whitespace-nowrap px-4 py-2 rounded-lg text-sm sm:text-base font-semibold transition-all ${
                 filterStatus === status
                   ? 'bg-purple-600 text-white shadow-lg'
                   : 'glass-card text-slate-700 hover:bg-slate-100'
@@ -220,7 +220,7 @@ export default function Courses() {
 
                   {/* Title */}
                   <div>
-                    <h3 className="text-lg font-bold text-slate-900 line-clamp-2">{course.title}</h3>
+                    <h3 className="text-base sm:text-lg font-bold text-slate-900 line-clamp-2">{course.title}</h3>
                     <div className="flex items-center gap-2 mt-2 text-sm text-slate-500">
                       <div className="flex items-center gap-1">
                         <Users className="h-4 w-4" />
@@ -237,7 +237,7 @@ export default function Courses() {
                       className="h-10 w-10 rounded-full object-cover"
                     />
                     <div>
-                      <p className="font-semibold text-slate-900 text-sm">{course.instructor}</p>
+                      <p className="font-semibold text-slate-900 text-sm line-clamp-1">{course.instructor}</p>
                       <p className="text-xs text-slate-500">Instructor</p>
                     </div>
                   </div>
@@ -319,4 +319,3 @@ export default function Courses() {
     </div>
   );
 }
-

@@ -39,7 +39,7 @@ export default function NewsletterSection() {
     <section className="py-16 bg-transparent">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div 
-          className="bg-white rounded-[48px] p-10 md:p-20 shadow-2xl shadow-slate-200/50 border border-slate-100 text-center space-y-12 relative overflow-hidden"
+          className="bg-white rounded-[40px] md:rounded-[48px] p-6 sm:p-10 md:p-20 shadow-2xl shadow-slate-200/50 border border-slate-100 text-center space-y-8 sm:space-y-12 relative overflow-hidden"
         >
           {/* Decorative background elements */}
           <div className="absolute top-0 left-0 -translate-y-1/2 -translate-x-1/2 w-96 h-96 bg-purple-50 rounded-full blur-3xl opacity-50" />
@@ -57,11 +57,11 @@ export default function NewsletterSection() {
 
           {/* Content */}
           <div className="space-y-8 max-w-4xl mx-auto relative z-10">
-            <h2 className="text-4xl md:text-7xl font-bold text-slate-900 leading-tight tracking-tight">
+            <h2 className="text-3xl sm:text-4xl md:text-7xl font-bold text-slate-900 leading-tight tracking-tight">
               Join a Thriving Community of <br className="hidden md:block" />
               <span className="text-purple-600">400,000 Aviation Experts</span>
             </h2>
-            <p className="text-xl md:text-2xl text-slate-600 font-medium leading-relaxed max-w-3xl mx-auto">
+            <p className="text-lg sm:text-xl md:text-2xl text-slate-600 font-medium leading-relaxed max-w-3xl mx-auto">
               Get hiring trends, job alerts, regulatory updates, salary intelligence, and global talent insights straight to your inbox.
             </p>
           </div>
@@ -81,11 +81,11 @@ export default function NewsletterSection() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="Enter your professional email" 
-                    className="w-full h-16 rounded-2xl px-8 bg-slate-50 border border-slate-200 shadow-inner focus:outline-none focus:ring-2 focus:ring-purple-600 focus:bg-white text-lg font-medium transition-all"
+                    className="w-full h-14 sm:h-16 rounded-2xl px-5 sm:px-8 bg-slate-50 border border-slate-200 shadow-inner focus:outline-none focus:ring-2 focus:ring-purple-600 focus:bg-white text-base sm:text-lg font-medium transition-all"
                   />
                   <div className="absolute inset-0 rounded-2xl ring-2 ring-purple-600 opacity-0 group-focus-within:opacity-10 transition-opacity pointer-events-none" />
                 </div>
-                <Button type="submit" size="lg" className="h-16 px-12 shrink-0 group" disabled={isSubmitting}>
+                <Button type="submit" size="lg" className="w-full sm:w-auto h-14 sm:h-16 px-8 sm:px-12 shrink-0 group" disabled={isSubmitting}>
                   <span className="flex items-center justify-center space-x-3">
                     {isSubmitting ? (
                       <Loader2 className="h-6 w-6 animate-spin" />
@@ -109,4 +109,3 @@ export default function NewsletterSection() {
     </section>
   );
 }
-

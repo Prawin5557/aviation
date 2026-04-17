@@ -87,7 +87,7 @@ export const JobQuickView: React.FC<JobQuickViewProps> = ({
             {/* Content Section */}
             <div className="flex-1 overflow-y-auto p-8 md:p-12 space-y-12 custom-scrollbar">
               {/* Stats Grid */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 p-8 bg-white rounded-4xl border border-slate-100 shadow-sm">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 p-6 md:p-8 bg-white rounded-3xl md:rounded-4xl border border-slate-100 shadow-sm">
                 <div className="space-y-1">
                   <p className="text-[10px] text-slate-400 uppercase font-bold tracking-widest">Salary Range</p>
                   <p className="text-base font-bold text-slate-900">{job.salary || "Competitive"}</p>
@@ -198,4 +198,3 @@ export const JobQuickView: React.FC<JobQuickViewProps> = ({
     </AnimatePresence>
   );
 };
-

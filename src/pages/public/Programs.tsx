@@ -211,7 +211,7 @@ export default function Programs() {
               <GraduationCap className="h-4 w-4" />
               Industry-Leading Aviation Training
             </div>
-            <h1 className="text-5xl md:text-6xl font-display font-bold text-slate-900 mb-6 text-balance">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-slate-900 mb-6 text-balance">
               Launch Your Aviation Career
             </h1>
             <p className="text-xl text-slate-600 mb-10 text-pretty">
@@ -220,7 +220,7 @@ export default function Programs() {
             <div className="flex flex-wrap justify-center gap-4">
               <button 
                 onClick={() => document.getElementById('programs')?.scrollIntoView({ behavior: 'smooth' })}
-                className="px-8 py-4 bg-linear-to-r from-purple-600 to-indigo-600 text-white font-bold rounded-xl hover:from-purple-700 hover:to-indigo-700 transition-all shadow-lg shadow-purple-200/50 flex items-center gap-2"
+                className="w-full sm:w-auto justify-center px-8 py-4 bg-linear-to-r from-purple-600 to-indigo-600 text-white font-bold rounded-xl hover:from-purple-700 hover:to-indigo-700 transition-all shadow-lg shadow-purple-200/50 flex items-center gap-2"
               >
                 <BookOpen className="h-5 w-5" />
                 Explore Programs
@@ -232,7 +232,7 @@ export default function Programs() {
                   title: 'Get Free Career Counseling',
                   subtitle: 'Our expert counselors will help you choose the right aviation career path.',
                 })}
-                className="px-8 py-4 bg-white text-slate-900 font-bold rounded-xl hover:bg-slate-50 transition-all border border-slate-200 flex items-center gap-2"
+                className="w-full sm:w-auto justify-center px-8 py-4 bg-white text-slate-900 font-bold rounded-xl hover:bg-slate-50 transition-all border border-slate-200 flex items-center gap-2"
               >
                 <Play className="h-5 w-5" />
                 Free Consultation
@@ -426,14 +426,14 @@ export default function Programs() {
                   title: 'Book Free Counseling',
                   subtitle: 'Our career counselors will help you find the perfect aviation career path.',
                 })}
-                className="px-8 py-4 bg-white text-purple-700 font-bold rounded-xl hover:bg-purple-50 transition-all flex items-center gap-2"
+                className="w-full sm:w-auto justify-center px-8 py-4 bg-white text-purple-700 font-bold rounded-xl hover:bg-purple-50 transition-all flex items-center gap-2"
               >
                 <Calendar className="h-5 w-5" />
                 Book Free Session
               </button>
               <button
                 onClick={() => navigate('/contact')}
-                className="px-8 py-4 bg-transparent text-white font-bold rounded-xl border-2 border-white/30 hover:bg-white/10 transition-all"
+                className="w-full sm:w-auto justify-center px-8 py-4 bg-transparent text-white font-bold rounded-xl border-2 border-white/30 hover:bg-white/10 transition-all"
               >
                 Contact Us
               </button>
@@ -460,4 +460,3 @@ export default function Programs() {
     </div>
   );
 }
-

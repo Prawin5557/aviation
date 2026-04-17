@@ -62,17 +62,17 @@ export default function Profile() {
   };
 
   return (
-    <div className="p-8 space-y-8">
+    <div className="p-4 sm:p-8 space-y-6 sm:space-y-8">
       <SEO title="Profile Management" />
-      <div className="flex justify-between items-end">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">Profile Management</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">Profile Management</h1>
           <p className="text-slate-500">Update your personal information and preferences.</p>
         </div>
         <button 
           onClick={handleSubmit(onSubmit)}
           disabled={isSaving}
-          className="premium-button-primary px-8 py-3 flex items-center space-x-2 min-w-40 justify-center"
+          className="premium-button-primary px-8 py-3 flex items-center space-x-2 w-full sm:w-auto min-w-40 justify-center"
         >
           {isSaving ? (
             <Loader2 className="h-4 w-4 animate-spin" />
@@ -85,10 +85,10 @@ export default function Profile() {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
         {/* Left: Avatar & Basic Info */}
-        <div className="lg:col-span-1 space-y-8">
-          <div className="glass-card p-8 text-center space-y-6">
+        <div className="lg:col-span-1 space-y-6 sm:space-y-8">
+          <div className="glass-card p-6 sm:p-8 text-center space-y-6">
             <div className="relative inline-block">
               <div className="h-32 w-32 rounded-full bg-white/50 border-4 border-white shadow-lg overflow-hidden">
                 <img 
@@ -138,7 +138,7 @@ export default function Profile() {
 
         {/* Right: Detailed Info Form */}
         <div className="lg:col-span-2">
-          <form onSubmit={handleSubmit(onSubmit)} className="glass-card p-8 space-y-8">
+          <form onSubmit={handleSubmit(onSubmit)} className="glass-card p-6 sm:p-8 space-y-6 sm:space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-4">Full Name</label>

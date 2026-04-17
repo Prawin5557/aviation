@@ -90,7 +90,7 @@ export default function EmployerDashboard() {
   }));
 
   return (
-    <div className="space-y-10 pb-20">
+    <div className="space-y-6 sm:space-y-10 pb-20 px-4 sm:px-0 pt-4 sm:pt-0">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -98,10 +98,10 @@ export default function EmployerDashboard() {
         className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
       >
         <div>
-          <h1 className="text-4xl font-display font-bold text-slate-900">Employer Dashboard</h1>
+          <h1 className="text-3xl sm:text-4xl font-display font-bold text-slate-900">Employer Dashboard</h1>
           <p className="text-slate-500 mt-2 text-sm">Manage your aviation recruitment process and track your hiring pipeline.</p>
         </div>
-        <Button className="px-6 py-3 bg-purple-600 text-white hover:bg-purple-700 rounded-xl font-bold flex items-center gap-2 w-fit">
+        <Button className="px-6 py-3 bg-purple-600 text-white hover:bg-purple-700 rounded-xl font-bold flex items-center justify-center gap-2 w-full sm:w-fit">
           <PlusCircle className="h-4 w-4" />
           Post New Job
         </Button>

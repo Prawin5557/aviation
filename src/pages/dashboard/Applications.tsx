@@ -1,4 +1,4 @@
-import { useState } from "react";
+lly import { useState } from "react";
 import { Search, Filter, Briefcase, Calendar, MapPin, Building2, Clock, Eye, ChevronDown, ArrowRight, CheckCircle2, AlertCircle, Mail, MessageSquare, Download, Share2, Trash2, TrendingUp, Users, Award, DollarSign } from "lucide-react";
 import { useAuthStore } from "@/src/store/authStore";
 import { Link } from "react-router-dom";
@@ -89,7 +89,7 @@ export default function Applications() {
   };
 
   return (
-    <div className="space-y-10 pb-20">
+    <div className="space-y-6 sm:space-y-10 pb-20 px-4 sm:px-0 pt-4 sm:pt-0">
       <SEO title="My Applications" description="Track your job applications" />
 
       {/* Header */}
@@ -99,12 +99,12 @@ export default function Applications() {
         className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
       >
         <div>
-          <h1 className="text-4xl font-display font-bold text-slate-900">My Applications</h1>
+          <h1 className="text-3xl sm:text-4xl font-display font-bold text-slate-900">My Applications</h1>
           <p className="text-slate-500 mt-2 text-sm">Track, manage, and monitor your job applications in one place.</p>
         </div>
         <Link 
           to="/jobs" 
-          className="px-6 py-3 bg-purple-600 text-white hover:bg-purple-700 rounded-xl font-bold flex items-center gap-2 w-fit"
+          className="w-full sm:w-auto justify-center px-6 py-3 bg-purple-600 text-white hover:bg-purple-700 rounded-xl font-bold flex items-center gap-2"
         >
           <Briefcase className="h-4 w-4" />
           Browse Jobs
@@ -141,7 +141,7 @@ export default function Applications() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.15 }}
-        className="glass-card p-6 rounded-2xl border border-slate-200 space-y-4"
+        className="glass-card p-4 sm:p-6 rounded-2xl border border-slate-200 space-y-4"
       >
         <div className="flex flex-col lg:flex-row gap-4">
           <div className="relative flex-1">

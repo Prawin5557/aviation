@@ -78,15 +78,15 @@ export default function DashboardHome() {
   ];
 
   return (
-    <div className="space-y-10 pb-20">
+    <div className="space-y-6 sm:space-y-10 pb-20 px-4 sm:px-0 pt-4 sm:pt-0">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6">
         <div>
-          <h1 className="text-3xl font-display font-bold text-slate-900">
+          <h1 className="text-2xl sm:text-3xl font-display font-bold text-slate-900">
             Welcome back, <span className="text-purple-600">{user?.name || 'Captain'}</span> ✈️
           </h1>
           <div className="flex items-center space-x-2 mt-1">
-            <p className="text-slate-500 font-medium">Here's what's happening with your aviation career today.</p>
+            <p className="text-slate-500 text-sm sm:text-base font-medium">Here's what's happening with your aviation career today.</p>
             <span className={cn(
               "text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-widest",
               user?.subscription === 'elite' ? "bg-indigo-100 text-indigo-700" :
@@ -96,15 +96,15 @@ export default function DashboardHome() {
             </span>
           </div>
         </div>
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-3 sm:space-x-4">
           <button 
             aria-label="View notifications"
             onClick={handleNotificationClick}
-            className="p-3 bg-white rounded-2xl border border-slate-200 text-slate-400 hover:text-purple-600 hover:border-purple-200 transition-all shadow-sm"
+            className="p-2 sm:p-3 bg-white rounded-xl sm:rounded-2xl border border-slate-200 text-slate-400 hover:text-purple-600 hover:border-purple-200 transition-all shadow-sm"
           >
             <Bell className="h-5 w-5" />
           </button>
-          <Link to="/dashboard/resume" className="premium-button-primary px-6 py-3 flex items-center space-x-2">
+          <Link to="/dashboard/resume" className="premium-button-primary px-4 sm:px-6 py-2 sm:py-3 flex items-center space-x-2 w-full sm:w-auto justify-center">
             <FileText className="h-4 w-4" />
             <span>Update Resume</span>
           </Link>
@@ -112,9 +112,9 @@ export default function DashboardHome() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {/* Profile Completeness Card */}
-        <div className="glass-card p-6 rounded-3xl bg-linear-to-br from-purple-600 to-indigo-700 text-white border-none shadow-xl shadow-purple-200/50">
+        <div className="glass-card p-5 sm:p-6 rounded-3xl bg-linear-to-br from-purple-600 to-indigo-700 text-white border-none shadow-xl shadow-purple-200/50">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-bold">Profile Strength</h3>
             <span className="text-xs font-bold bg-white/20 px-2 py-1 rounded-lg">{profileCompleteness}%</span>
@@ -150,7 +150,7 @@ export default function DashboardHome() {
           statCards.slice(0, 3).map((stat, idx) => (
             <div
               key={idx}
-              className="glass-card p-6 rounded-3xl group hover:-translate-y-1 transition-all duration-300"
+              className="glass-card p-5 sm:p-6 rounded-3xl group hover:-translate-y-1 transition-all duration-300"
             >
               <div className={`h-14 w-14 ${stat.bg} ${stat.color} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500`}>
                 <stat.icon className="h-7 w-7" />
@@ -164,15 +164,15 @@ export default function DashboardHome() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Main Content */}
-        <div className="lg:col-span-2 space-y-8">
+        <div className="lg:col-span-2 space-y-6 sm:space-y-8">
           {/* Market Trends Chart */}
-          <div className="glass-card p-8 rounded-4xl border-purple-50">
-            <div className="flex items-center justify-between mb-8">
+          <div className="glass-card p-5 sm:p-8 rounded-3xl sm:rounded-4xl border-purple-50">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
               <div>
-                <h3 className="text-xl font-display font-bold text-slate-900">Aviation Job Trends</h3>
+                <h3 className="text-lg sm:text-xl font-display font-bold text-slate-900">Aviation Job Trends</h3>
                 <p className="text-xs text-slate-500 mt-1 font-medium">Monthly hiring volume in your sector</p>
               </div>
-              <div className="flex items-center space-x-2 text-green-600 bg-green-50 px-3 py-1 rounded-full">
+              <div className="flex items-center w-fit space-x-2 text-green-600 bg-green-50 px-3 py-1 rounded-full">
                 <TrendingUp className="h-4 w-4" />
                 <span className="text-xs font-bold">+12.5%</span>
               </div>
@@ -284,9 +284,9 @@ export default function DashboardHome() {
           <div className="space-y-4">
             {isLoading ? (
               Array.from({ length: 2 }).map((_, i) => (
-                <div key={i} className="glass-card p-6 space-y-4">
+                <div key={i} className="glass-card p-4 sm:p-6 space-y-4">
                   <div className="flex items-center space-x-3">
-                    <Skeleton className="h-10 w-10 rounded-lg" />
+                    <Skeleton className="h-10 w-10 shrink-0 rounded-lg" />
                     <div className="space-y-2 grow">
                       <Skeleton className="h-4 w-1/2" />
                       <Skeleton className="h-3 w-1/3" />
@@ -297,9 +297,9 @@ export default function DashboardHome() {
               ))
             ) : internshipRecommendations.length > 0 ? (
               internshipRecommendations.map((job, idx) => (
-                <div key={idx} className="glass-card p-6 space-y-4 hover:shadow-md transition-shadow">
+                <div key={idx} className="glass-card p-4 sm:p-6 space-y-4 hover:shadow-md transition-shadow">
                   <div className="flex items-center space-x-3">
-                    <div className="h-10 w-10 rounded-lg bg-purple-50 flex items-center justify-center text-purple-600">
+                    <div className="h-10 w-10 shrink-0 rounded-lg bg-purple-50 flex items-center justify-center text-purple-600">
                       <Plane className="h-5 w-5" />
                     </div>
                     <div>
