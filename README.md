@@ -161,7 +161,7 @@ cp .env.example .env
 VITE_API_BASE_URL=http://localhost:3000/api
 
 # Payment Gateway
-VITE_RAZORPAY_KEY_ID=rzp_test_your_key_here
+VITE_RAZORPAY_KEY_ID=<YOUR_RAZORPAY_KEY>
 
 # Google OAuth
 VITE_GOOGLE_CLIENT_ID=your_google_client_id_here
@@ -277,7 +277,7 @@ npm run preview
 ```env
 NODE_ENV=production
 VITE_API_BASE_URL=https://api.armzaviation.com
-VITE_RAZORPAY_KEY_ID=rzp_live_your_live_key
+VITE_RAZORPAY_KEY_ID=<YOUR_PRODUCTION_RAZORPAY_KEY>
 VITE_GOOGLE_CLIENT_ID=your_production_client_id
 ```
 

@@ -4,7 +4,14 @@ dist/
 coverage/
 .DS_Store
 *.log
-.env*
+
+# ENV FILES (IMPORTANT)
+.env
+.env.local
+.env.development
+.env.production
+
+# Allow example env
 !.env.example
 
 /src/generated/prisma
