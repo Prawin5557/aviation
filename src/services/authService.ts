@@ -1,5 +1,6 @@
 import apiClient from './apiClient';
 import toast from 'react-hot-toast';
+import { ENV } from '@/src/config/env';
 
 export interface User {
   id: string;
@@ -96,26 +97,38 @@ class AuthService {
     useMockData = false
   ): Promise<AuthResponse> {
     try {
-      console.log('→ Login attempt for:', credentials.email, 'requested role:', requestedRole);
-      
-      if (!useMockData) {
-        try {
-          const response = await apiClient.post('/auth/login', credentials);
-          const { user, token, refreshToken } = response.data;
+      const shouldUseMock = useMockData || ENV.USE_MOCK || ENV.DEMO_MODE;
 
-          const normalizedUser = {
-            ...user,
-            role: user.role || requestedRole || credentials.requestedRole || 'student',
-          };
+      if (!shouldUseMock) {
+        const response = await apiClient.post('/auth/login', credentials);
+        const { user, token, refreshToken } = response.data;
 
-          localStorage.setItem('auth_token', token);
-          localStorage.setItem('refresh_token', refreshToken);
-          console.log('✓ Backend login successful');
-          toast.success(`Welcome back, ${normalizedUser.name}!`);
-          return { user: normalizedUser, token, refreshToken };
-        } catch (backendError: any) {
-          console.warn('Backend login unavailable, using mock:', backendError.message);
-        }
+        const normalizedUser = {
+          ...user,
+          role: user.role || requestedRole || credentials.requestedRole || 'student',
+        };
+
+        localStorage.setItem('auth_token', token);
+        localStorage.setItem('refresh_token', refreshToken);
+        toast.success(`Welcome back, ${normalizedUser.name}!`);
+        return { user: normalizedUser, token, refreshToken };
+      }
+
+      try {
+        const response = await apiClient.post('/auth/login', credentials);
+        const { user, token, refreshToken } = response.data;
+
+        const normalizedUser = {
+          ...user,
+          role: user.role || requestedRole || credentials.requestedRole || 'student',
+        };
+
+        localStorage.setItem('auth_token', token);
+        localStorage.setItem('refresh_token', refreshToken);
+        toast.success(`Welcome back, ${normalizedUser.name}!`);
+        return { user: normalizedUser, token, refreshToken };
+      } catch (backendError: any) {
+        console.warn('Backend login unavailable, using mock:', backendError.message);
       }
 
       // Check demo users
@@ -124,7 +137,6 @@ class AuthService {
       );
 
       if (demoUser && demoUser.password === credentials.password) {
-        console.log('✓ Demo user login successful');
         const token = this.generateMockToken();
         const refreshToken = this.generateMockToken();
 
@@ -142,7 +154,6 @@ class AuthService {
       }
 
       // For any other email/password, create mock user
-      console.log('✓ Creating new mock user for:', credentials.email);
       const token = this.generateMockToken();
       const refreshToken = this.generateMockToken();
 
@@ -160,7 +171,6 @@ class AuthService {
       toast.success(`Welcome, ${user.name}! (Demo Mode)`);
       return { user, token, refreshToken };
     } catch (error: any) {
-      console.error('Login error:', error.message || error);
       const message = error.response?.data?.message || 'Login failed';
       toast.error(message);
       throw error;
@@ -170,23 +180,22 @@ class AuthService {
   // Register new user
   async register(data: RegisterData, useMockData = false): Promise<{ user: User; requiresVerification: boolean; token?: string }> {
     try {
-      console.log('Register attempt:', { ...data, password: '***hidden***' });
-      
-      // Try backend first
-      if (!useMockData) {
-        try {
-          const response = await apiClient.post('/auth/register', data);
-          console.log('Backend registration successful');
-          toast.success('Account created successfully!');
-          return response.data;
-        } catch (backendError: any) {
-          console.warn('Backend registration unavailable, using mock data:', backendError.message);
-          // Fall through to mock data
-        }
+      const shouldUseMock = useMockData || ENV.USE_MOCK || ENV.DEMO_MODE;
+
+      if (!shouldUseMock) {
+        const response = await apiClient.post('/auth/register', data);
+        toast.success('Account created successfully!');
+        return response.data;
       }
 
-      // Use mock data for demo/testing
-      console.log('Creating mock user for demo');
+      try {
+        const response = await apiClient.post('/auth/register', data);
+        toast.success('Account created successfully!');
+        return response.data;
+      } catch (backendError: any) {
+        console.warn('Backend registration unavailable, using mock data:', backendError.message);
+      }
+
       const mockUser: User = {
         id: `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         name: data.name,
@@ -211,7 +220,6 @@ class AuthService {
       };
     } catch (error: any) {
       const message = error.response?.data?.message || 'Registration failed';
-      console.error('Registration error:', message);
       toast.error(message);
       throw error;
     }
@@ -220,34 +228,31 @@ class AuthService {
   // Send OTP for verification
   async sendOTP(email?: string, phone?: string, type: 'email' | 'phone' | 'password_reset' = 'email', useMockData = false): Promise<void> {
     try {
-      console.log('→ Sending OTP to:', email || phone);
-      
-      if (!useMockData) {
-        try {
-          await apiClient.post('/auth/send-otp', { email, phone, type });
-          const target = email || phone;
-          console.log('✓ OTP sent via backend');
-          toast.success(`OTP sent to ${target}`);
-          return;
-        } catch (backendError: any) {
-          console.warn('Backend OTP send unavailable, using mock:', backendError.message);
-        }
+      const shouldUseMock = useMockData || ENV.USE_MOCK || ENV.DEMO_MODE;
+
+      if (!shouldUseMock) {
+        await apiClient.post('/auth/send-otp', { email, phone, type });
+        const target = email || phone;
+        toast.success(`OTP sent to ${target}`);
+        return;
       }
 
-      // Mock OTP sending
+      try {
+        await apiClient.post('/auth/send-otp', { email, phone, type });
+        const target = email || phone;
+        toast.success(`OTP sent to ${target}`);
+        return;
+      } catch (backendError: any) {
+        console.warn('Backend OTP send unavailable, using mock:', backendError.message);
+      }
+
       const target = email || phone || 'your account';
-      console.log('✓ Mock OTP generated and would be sent to:', target);
-      
-      // Store mock OTP in localStorage for verification
       const mockOtp = Math.floor(100000 + Math.random() * 900000).toString();
       localStorage.setItem(`otp_${email || phone}`, mockOtp);
       localStorage.setItem(`otp_timestamp`, Date.now().toString());
-      
-      console.log('Mock OTP (for testing):', mockOtp);
       toast.success(`OTP sent to ${target} (Demo Mode - Check console)`);
     } catch (error: any) {
       const message = error.response?.data?.message || 'Failed to send OTP';
-      console.error('Send OTP error:', message);
       toast.error(message);
       throw error;
     }
@@ -256,29 +261,32 @@ class AuthService {
   // Verify OTP
   async verifyOTP(data: OTPData, useMockData = false): Promise<any> {
     try {
-      console.log('→ Verifying OTP for:', data.email || data.phone);
-      
-      if (!useMockData) {
-        try {
-          const response = await apiClient.post('/auth/verify-otp', data);
-          console.log('✓ Backend OTP verification successful', response.data);
-          const { token, refreshToken } = response.data;
-          localStorage.setItem('auth_token', token);
-          localStorage.setItem('refresh_token', refreshToken);
-          toast.success('OTP verified successfully!');
-          return response.data;
-        } catch (backendError: any) {
-          console.warn('Backend OTP verification unavailable, using mock:', backendError.message);
-        }
+      const shouldUseMock = useMockData || ENV.USE_MOCK || ENV.DEMO_MODE;
+
+      if (!shouldUseMock) {
+        const response = await apiClient.post('/auth/verify-otp', data);
+        const { token, refreshToken } = response.data;
+        localStorage.setItem('auth_token', token);
+        localStorage.setItem('refresh_token', refreshToken);
+        toast.success('OTP verified successfully!');
+        return response.data;
       }
 
-      // Mock OTP verification
-      console.log('✓ Mock OTP verification (always succeeds in demo mode)');
+      try {
+        const response = await apiClient.post('/auth/verify-otp', data);
+        const { token, refreshToken } = response.data;
+        localStorage.setItem('auth_token', token);
+        localStorage.setItem('refresh_token', refreshToken);
+        toast.success('OTP verified successfully!');
+        return response.data;
+      } catch (backendError: any) {
+        console.warn('Backend OTP verification unavailable, using mock:', backendError.message);
+      }
+
       const token = this.generateMockToken();
       const refreshToken = this.generateMockToken();
 
       if (data.type === 'password_reset') {
-        console.log('✓ Mock password reset OTP verified, returning token.');
         toast.success('OTP Verified! (Demo Mode)');
         return { token };
       }
@@ -296,7 +304,6 @@ class AuthService {
       toast.success('OTP verified! (Demo Mode)');
       return { user, token, refreshToken };
     } catch (error: any) {
-      console.error('OTP verification error:', error.message || error);
       const message = error.response?.data?.message || 'OTP verification failed';
       toast.error(message);
       throw error;
@@ -325,17 +332,22 @@ class AuthService {
   // Request password reset
   async requestPasswordReset(email: string, useMockData = false): Promise<void> {
     try {
-      if (!useMockData) {
-        try {
-          await apiClient.post('/auth/forgot-password', { email });
-          toast.success('Password reset instructions sent to your email');
-          return;
-        } catch (backendError: any) {
-          console.warn('Backend password reset request unavailable, using mock:', backendError.message);
-        }
+      const shouldUseMock = useMockData || ENV.USE_MOCK || ENV.DEMO_MODE;
+
+      if (!shouldUseMock) {
+        await apiClient.post('/auth/forgot-password', { email });
+        toast.success('Password reset instructions sent to your email');
+        return;
       }
-      // Mock sending reset instructions
-      console.log(`✓ Mock password reset instructions would be sent to ${email}`);
+
+      try {
+        await apiClient.post('/auth/forgot-password', { email });
+        toast.success('Password reset instructions sent to your email');
+        return;
+      } catch (backendError: any) {
+        console.warn('Backend password reset request unavailable, using mock:', backendError.message);
+      }
+
       toast.success(`Password reset instructions sent to ${email} (Demo Mode)`);
     } catch (error: any) {
       const message = error.response?.data?.message || 'Failed to send reset email';
@@ -347,12 +359,22 @@ class AuthService {
   // Reset password with OTP
   async resetPassword(data: PasswordResetData, useMockData = false): Promise<void> {
     try {
-      if (!useMockData) {
+      const shouldUseMock = useMockData || ENV.USE_MOCK || ENV.DEMO_MODE;
+
+      if (!shouldUseMock) {
         await apiClient.post('/auth/reset-password', data);
         toast.success('Password reset successful! Please login with your new password.');
         return;
       }
-      console.log('✓ Mock password reset successful for token:', data.token);
+
+      try {
+        await apiClient.post('/auth/reset-password', data);
+        toast.success('Password reset successful! Please login with your new password.');
+        return;
+      } catch (backendError: any) {
+        console.warn('Backend password reset unavailable, using mock:', backendError.message);
+      }
+
       toast.success('Password reset successful! (Demo Mode)');
     } catch (error: any) {
       const message = error.response?.data?.message || 'Password reset failed';

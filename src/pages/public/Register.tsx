@@ -7,6 +7,7 @@ import * as z from "zod";
 import { useAuthStore } from "../../store/authStore";
 import { authService } from "../../services/authService";
 import { paymentService } from "../../services/paymentService";
+import { ENV } from "../../config/env";
 import { Button } from "../../components/ui/Button";
 import { Input } from "../../components/ui/Input";
 import SEO from "../../components/common/SEO";
@@ -90,16 +91,15 @@ export default function Register() {
 
     // Safety timeout - reset loading after 5 minutes
     const loadingTimeout = setTimeout(() => {
-      console.warn('⚠️ Payment process timeout after 5 minutes, resetting loading state');
       setLoading(false);
       toast.error('Payment process took too long. Please try again.');
     }, 5 * 60 * 1000);
 
+    const useMockData = ENV.USE_MOCK || ENV.DEMO_MODE;
+
     if (selectedPlan === "prime") {
-      // Free plan, just complete registration
       setLoading(true);
       try {
-        console.log('✓ Free plan registration started');
         const response = await authService.register({
           name: accountData.fullName,
           email: accountData.email,
@@ -109,9 +109,8 @@ export default function Register() {
           companyName: accountData.companyName,
           hrName: accountData.hrName,
           companyDetails: accountData.companyDetails,
-        }, true); // Use mock data if backend unavailable
+        }, useMockData);
 
-        console.log('✓ Registration successful:', response);
         clearTimeout(loadingTimeout);
         login(response.user);
         if (accountData.role === "employer") {
@@ -120,7 +119,6 @@ export default function Register() {
           setStep(4);
         }
       } catch (err: any) {
-        console.error("✗ Registration error:", err.message || err);
         clearTimeout(loadingTimeout);
         toast.error(err.response?.data?.message || "Registration failed. Please try again.");
       } finally {
@@ -129,23 +127,12 @@ export default function Register() {
       return;
     }
 
-    // Paid plan - initiate payment
     setLoading(true);
-    console.log('✓ Payment flow started for plan:', selectedPlan, 'amount:', amount);
-    
     try {
-      // Create payment order (with mock fallback if backend is unavailable)
-      console.log('→ Creating payment order...');
-      const order = await paymentService.createOrder(selectedPlan, amount, 'INR', true);
-      console.log('✓ Payment order created:', order.id);
-
-      // Initialize payment
-      console.log('→ Initializing Razorpay payment...');
-      
-      // Reset loading after we initiate payment (modal will show instead)
-      // This prevents the loading spinner from blocking the Razorpay modal
+      await paymentService.loadRazorpay();
+      const order = await paymentService.createOrder(selectedPlan, amount, 'INR', useMockData);
       setLoading(false);
-      
+
       await paymentService.initiatePayment(
         order,
         {
@@ -154,23 +141,17 @@ export default function Register() {
           phone: accountData.phone || '',
         },
         async (response) => {
-          // Payment successful - show loading again
           setLoading(true);
-          console.log('✓ Payment successful, response:', response);
           clearTimeout(loadingTimeout);
           try {
             const result = await paymentService.processPaymentCompletion(
               selectedPlan,
               response,
               'demo_user',
-              true
+              useMockData
             );
 
-            console.log('✓ Payment completion result:', result);
-
             if (result.success) {
-              // Complete registration with payment
-              console.log('→ Completing registration...');
               const regResponse = await authService.register({
                 name: accountData.fullName,
                 email: accountData.email,
@@ -180,46 +161,38 @@ export default function Register() {
                 companyName: accountData.companyName,
                 hrName: accountData.hrName,
                 companyDetails: accountData.companyDetails,
-              }, true); // Use mock data if backend unavailable
+              }, useMockData);
 
-              console.log('✓ Registration completed:', regResponse);
               setLoading(false);
               login(regResponse.user);
               toast.success('Payment successful! Account created.');
-              
+
               if (accountData.role === "employer") {
                 navigate("/employer");
               } else {
                 setStep(4);
               }
             } else {
-              console.error('✗ Payment verification failed');
               setLoading(false);
               toast.error("Payment verification failed. Please try again.");
             }
           } catch (error: any) {
-            console.error('✗ Registration completion error:', error.message || error);
             setLoading(false);
             toast.error(error.response?.data?.message || "An error occurred after payment. Please try again.");
           }
         },
         (error) => {
-          // Payment cancelled or failed
           clearTimeout(loadingTimeout);
           setLoading(false);
-          console.error('✗ Payment failed or cancelled:', error);
           if (error?.reason === 'user_cancelled') {
-            console.log('User cancelled payment');
             toast.error("Payment cancelled.");
           } else {
-            console.error('Payment error details:', error);
-            toast.error(error?.message || "Payment failed. Please try again.");
+            toast.error(error?.description || error?.message || error?.reason || "Payment failed. Please try again.");
           }
         }
       );
     } catch (err: any) {
       clearTimeout(loadingTimeout);
-      console.error("✗ Payment initialization error:", err.message || err);
       setLoading(false);
       toast.error(err.message || "Failed to initialize payment. Please try again.");
     }

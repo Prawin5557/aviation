@@ -26,38 +26,8 @@ export default function GoogleLogin({
   const [isGoogleLoaded, setIsGoogleLoaded] = useState(false);
 
   useEffect(() => {
-    // Load Google Identity Services
-    const loadGoogleScript = () => {
-      if (window.google) {
-        setIsGoogleLoaded(true);
-        return;
-      }
-
-      const script = document.createElement('script');
-      script.src = 'https://accounts.google.com/gsi/client';
-      script.async = true;
-      script.defer = true;
-      script.onload = () => {
-        setIsGoogleLoaded(true);
-        initializeGoogleSignIn();
-      };
-      script.onerror = () => {
-        console.error('Failed to load Google Identity Services');
-        if (onError) onError(new Error('Failed to load Google services'));
-      };
-      document.head.appendChild(script);
-    };
-
-    const initializeGoogleSignIn = () => {
-      if (!window.google) return;
-
-      window.google.accounts.id.initialize({
-        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID || 'mock-google-client-id',
-        callback: handleGoogleResponse,
-        auto_select: false,
-        cancel_on_tap_outside: true,
-      });
-    };
+    const scriptSrc = 'https://accounts.google.com/gsi/client';
+    const existingScript = document.querySelector<HTMLScriptElement>(`script[src="${scriptSrc}"]`);
 
     const handleGoogleResponse = async (response: any) => {
       setIsLoading(true);
@@ -65,28 +35,73 @@ export default function GoogleLogin({
         const result = await authService.googleLogin(response.credential);
         onSuccess(result);
       } catch (error) {
-        console.error('Google login error:', error);
         if (onError) onError(error);
       } finally {
         setIsLoading(false);
       }
     };
 
+    const initializeGoogleSignIn = () => {
+      if (!window.google?.accounts?.id) {
+        return;
+      }
+
+      const accountsId = window.google.accounts.id as any;
+      if (accountsId.__initialized) {
+        setIsGoogleLoaded(true);
+        return;
+      }
+
+      accountsId.initialize({
+        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID || 'mock-google-client-id',
+        callback: handleGoogleResponse,
+        auto_select: false,
+        cancel_on_tap_outside: true,
+      });
+
+      accountsId.__initialized = true;
+      setIsGoogleLoaded(true);
+    };
+
+    const loadGoogleScript = () => {
+      if (window.google?.accounts?.id) {
+        initializeGoogleSignIn();
+        return;
+      }
+
+      if (existingScript) {
+        existingScript.addEventListener('load', initializeGoogleSignIn);
+        existingScript.addEventListener('error', () => {
+          if (onError) onError(new Error('Failed to load Google services'));
+        });
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.src = scriptSrc;
+      script.async = true;
+      script.defer = true;
+      script.onload = initializeGoogleSignIn;
+      script.onerror = () => {
+        if (onError) onError(new Error('Failed to load Google services'));
+      };
+      document.head.appendChild(script);
+    };
+
     loadGoogleScript();
 
-    // Cleanup
     return () => {
-      // Remove Google script if component unmounts
-      const script = document.querySelector('script[src*="accounts.google.com"]');
-      if (script) {
-        document.head.removeChild(script);
+      if (existingScript) {
+        existingScript.removeEventListener('load', initializeGoogleSignIn);
       }
     };
-  }, [onSuccess, onError]);
+  }, [onError, onSuccess]);
 
   const handleGoogleSignIn = () => {
     if (!isGoogleLoaded || !window.google) {
-      console.error('Google Identity Services not loaded');
+      if (onError) {
+        onError(new Error('Google Identity Services not loaded'));
+      }
       return;
     }
 

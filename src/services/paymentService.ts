@@ -10,6 +10,7 @@ export interface PaymentOrder {
   planId: string;
   userId: string;
   createdAt: string;
+  isMock?: boolean;
 }
 
 export interface PaymentVerification {
@@ -42,6 +43,9 @@ class PaymentService {
       return Promise.resolve();
     }
 
+    const scriptSrc = 'https://checkout.razorpay.com/v1/checkout.js';
+    const existingScript = document.querySelector<HTMLScriptElement>(`script[src="${scriptSrc}"]`);
+
     return new Promise((resolve, reject) => {
       if (window.Razorpay) {
         this.razorpayLoaded = true;
@@ -49,57 +53,78 @@ class PaymentService {
         return;
       }
 
-      const script = document.createElement('script');
-      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-      script.async = true;
-      script.onload = () => {
+      const handleLoad = () => {
         this.razorpayLoaded = true;
         resolve();
       };
-      script.onerror = () => {
+
+      const handleError = () => {
         reject(new Error('Failed to load Razorpay'));
       };
+
+      if (existingScript) {
+        existingScript.addEventListener('load', handleLoad);
+        existingScript.addEventListener('error', handleError);
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.src = scriptSrc;
+      script.async = true;
+      script.onload = handleLoad;
+      script.onerror = handleError;
       document.body.appendChild(script);
     });
   }
 
   // Create payment order
   async createOrder(planId: string, amount: number, currency = 'INR', useMockData = false): Promise<PaymentOrder> {
-    try {
-      // Try backend first
-      if (!useMockData) {
-        try {
-          const response = await apiClient.post('/payments/create-order', {
-            planId,
-            amount: amount * 100, // Convert to paisa
-            currency,
-          });
-          return response.data.order;
-        } catch (backendError: any) {
-          console.warn('Backend API unavailable, using mock data for demo:', backendError.message);
-          // Fall through to mock data
-        }
-      }
+    const shouldUseMock = useMockData || ENV.USE_MOCK;
 
-      // Use mock data for testing/demo
-      console.log('Creating mock payment order for demo');
-      const mockOrder: PaymentOrder = {
-        id: `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+    if (!shouldUseMock) {
+      const response = await apiClient.post('/payments/create-order', {
+        planId,
         amount: amount * 100,
         currency,
-        status: 'created',
-        planId,
-        userId: 'demo_user',
-        createdAt: new Date().toISOString(),
-      };
-      toast.success('Demo order created (Razorpay test mode)');
-      return mockOrder;
-    } catch (error: any) {
-      const message = error.response?.data?.message || 'Failed to create payment order';
-      console.error('Payment order creation error:', message);
-      toast.error(message);
-      throw error;
+      });
+
+      const order = response.data?.order || response.data?.data?.order || response.data;
+      if (order && order.id && typeof order.amount === 'number') {
+        return order;
+      }
+
+      throw new Error('Invalid payment order response from backend');
     }
+
+    try {
+      const response = await apiClient.post('/payments/create-order', {
+        planId,
+        amount: amount * 100,
+        currency,
+      });
+
+      const order = response.data?.order || response.data?.data?.order || response.data;
+      if (order && order.id && typeof order.amount === 'number') {
+        return order;
+      }
+
+      console.warn('Unexpected create-order response shape, using demo mock order:', response.data);
+    } catch (backendError: any) {
+      console.warn('Backend API unavailable, using mock data for demo:', backendError?.message || backendError);
+    }
+
+    const mockOrder: PaymentOrder = {
+      id: `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      amount: amount * 100,
+      currency,
+      status: 'created',
+      planId,
+      userId: 'demo_user',
+      createdAt: new Date().toISOString(),
+      isMock: true,
+    };
+
+    return mockOrder;
   }
 
   // Verify payment
@@ -109,32 +134,27 @@ class PaymentService {
     razorpay_signature: string;
     planId: string;
   }): Promise<PaymentVerification> {
-    try {
-      // Try backend verification first
-      try {
-        const response = await apiClient.post('/payments/verify', verificationData);
-        return response.data;
-      } catch (backendError: any) {
-        console.warn('Backend verification unavailable, using mock verification:', backendError.message);
-        // For demo, accept the payment
-      }
+    const shouldUseMock = ENV.USE_MOCK || ENV.DEMO_MODE;
 
-      // Mock verification for testing
-      console.log('Using mock payment verification for demo');
-      const mockVerification: PaymentVerification = {
-        success: true,
-        paymentId: verificationData.razorpay_payment_id,
-        orderId: verificationData.razorpay_order_id,
-        signature: verificationData.razorpay_signature,
-        status: 'captured',
-      };
-      return mockVerification;
-    } catch (error: any) {
-      const message = error.response?.data?.message || 'Payment verification failed';
-      console.error('Payment verification error:', message);
-      toast.error(message);
-      throw error;
+    if (!shouldUseMock) {
+      const response = await apiClient.post('/payments/verify', verificationData);
+      return response.data;
     }
+
+    try {
+      const response = await apiClient.post('/payments/verify', verificationData);
+      return response.data;
+    } catch (backendError: any) {
+      console.warn('Backend verification unavailable, using mock verification:', backendError?.message || backendError);
+    }
+
+    return {
+      success: true,
+      paymentId: verificationData.razorpay_payment_id,
+      orderId: verificationData.razorpay_order_id,
+      signature: verificationData.razorpay_signature,
+      status: 'captured',
+    };
   }
 
   // Create subscription (for recurring payments)
@@ -166,15 +186,24 @@ class PaymentService {
     order: PaymentOrder,
     user: { name: string; email: string; phone?: string },
     onSuccess: (response: any) => void,
-    onFailure: (error: any) => void
+    onFailure: (error: any) => void,
+    useMockData = false
   ): Promise<void> {
     try {
-      console.log('Loading Razorpay script...');
+      const shouldUseMock = ENV.DEMO_MODE || useMockData;
       await this.loadRazorpay();
-      console.log('Razorpay script loaded successfully');
 
-      // Check if Razorpay is available
       if (!window.Razorpay) {
+        if (shouldUseMock) {
+          console.warn('Razorpay SDK unavailable; falling back to mock success for demo-mode payment');
+          onSuccess({
+            razorpay_order_id: order.id,
+            razorpay_payment_id: `pay_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            razorpay_signature: `sig_${Math.random().toString(36).substr(2, 9)}`,
+          });
+          return;
+        }
+
         throw new Error('Razorpay SDK not available. Please check your internet connection.');
       }
 
@@ -193,12 +222,10 @@ class PaymentService {
           color: '#7c3aed',
         },
         handler: (response: any) => {
-          console.log('✓ Razorpay payment handler called with response:', response);
           onSuccess(response);
         },
         modal: {
           ondismiss: () => {
-            console.log('Payment modal dismissed by user');
             onFailure({ reason: 'user_cancelled', message: 'Payment cancelled by user' });
           },
           confirm_close: true,
@@ -206,31 +233,18 @@ class PaymentService {
         },
       };
 
-      // Only include order_id if it's a valid Razorpay order ID (not our mock)
-      // Our mock IDs contain multiple underscores (e.g., order_123456_abcde)
-      if (order.id && !order.id.substring(6).includes('_')) {
+      if (!order.isMock && order.id) {
         options.order_id = order.id;
       }
 
-      console.log('Creating Razorpay instance with options:', { ...options, key: '***hidden***' });
       const rzp = new window.Razorpay(options);
 
       rzp.on('payment.failed', (response: any) => {
-        console.error('✗ Razorpay payment failed event:', response.error);
-        onFailure(response.error);
+        onFailure(response.error || { message: 'Payment failed' });
       });
 
-      console.log('Opening Razorpay modal...');
       rzp.open();
-      console.log('✓ Razorpay modal opened successfully');
-      
-      // Add a timeout to handle cases where modal might hang
-      setTimeout(() => {
-        console.warn('Payment modal still open after 60 seconds (this is normal if user is still in payment process)');
-      }, 60000);
-      
     } catch (error: any) {
-      console.error('✗ Payment initialization error:', error);
       const errorMessage = error?.message || 'Failed to initialize payment. Please try again.';
       toast.error(errorMessage);
       onFailure(error);
@@ -245,9 +259,6 @@ class PaymentService {
     useMockData = false
   ): Promise<{ success: boolean; subscription?: any }> {
     try {
-      console.log('Processing payment completion for plan:', planId, 'useMockData:', useMockData);
-      
-      // Verify payment with backend
       const verification = await this.verifyPayment({
         razorpay_order_id: paymentResponse.razorpay_order_id,
         razorpay_payment_id: paymentResponse.razorpay_payment_id,
@@ -255,29 +266,32 @@ class PaymentService {
         planId,
       });
 
-      console.log('Payment verification result:', verification);
-
       if (verification.success) {
-        // Try to update subscription on backend, fallback to mock if unavailable
-        if (!useMockData) {
-          try {
-            console.log('Attempting to update subscription on backend...');
-            const subscriptionResponse = await apiClient.post('/users/update-subscription', {
-              userId,
-              planId,
-              paymentId: paymentResponse.razorpay_payment_id,
-            });
-            console.log('Backend subscription update successful');
-            toast.success('Payment successful! Your subscription is now active.');
-            return { success: true, subscription: subscriptionResponse.data };
-          } catch (backendError: any) {
-            console.warn('Backend subscription update unavailable, using mock:', backendError.message);
-            // Fall through to mock
-          }
+        const shouldUseMock = useMockData || ENV.USE_MOCK || ENV.DEMO_MODE;
+
+        if (!shouldUseMock) {
+          const subscriptionResponse = await apiClient.post('/users/update-subscription', {
+            userId,
+            planId,
+            paymentId: paymentResponse.razorpay_payment_id,
+          });
+          toast.success('Payment successful! Your subscription is now active.');
+          return { success: true, subscription: subscriptionResponse.data };
         }
 
-        // Use mock subscription response
-        console.log('Creating mock subscription response for demo');
+        try {
+          const subscriptionResponse = await apiClient.post('/users/update-subscription', {
+            userId,
+            planId,
+            paymentId: paymentResponse.razorpay_payment_id,
+          });
+
+          toast.success('Payment successful! Your subscription is now active.');
+          return { success: true, subscription: subscriptionResponse.data };
+        } catch (backendError: any) {
+          console.warn('Backend subscription update unavailable, using mock:', backendError.message);
+        }
+
         const mockSubscription = {
           id: `sub_${Date.now()}`,
           userId,
@@ -296,9 +310,8 @@ class PaymentService {
       }
     } catch (error: any) {
       console.error('Payment completion error:', error.message || error);
-      toast.error('Payment verified but subscription setup pending. Please refresh.');
-      // Still return success since payment was verified
-      return { success: true };
+      toast.error('Payment could not be completed. Please contact support.');
+      return { success: false };
     }
   }
 

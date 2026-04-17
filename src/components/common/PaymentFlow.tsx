@@ -4,7 +4,6 @@ import { X, Loader2, Check, Zap, Shield, CreditCard, Lock, ArrowRight, AlertCirc
 import { usePlanStore } from '@/src/store/planStore';
 import { useAuthStore } from '@/src/store/authStore';
 import { useLeadStore } from '@/src/store/leadStore';
-import { apiService } from '@/src/services/api';
 import { paymentService } from '@/src/services/paymentService';
 import { ENV } from '@/src/config/env';
 import toast from 'react-hot-toast';
@@ -30,6 +29,8 @@ export default function PaymentFlow({ isOpen, onClose, planId, planName }: Payme
   const [step, setStep] = useState<'confirmation' | 'details' | 'payment' | 'success'>('confirmation');
   const [isProcessing, setIsProcessing] = useState(false);
   const [razorpayLoaded, setRazorpayLoaded] = useState(false);
+  const [showDemoModal, setShowDemoModal] = useState(false);
+  const [demoModalProcessing, setDemoModalProcessing] = useState(false);
   const [cardData, setCardData] = useState({
     cardNumber: '4111 1111 1111 1111',
     cardName: user?.name || '',
@@ -39,30 +40,80 @@ export default function PaymentFlow({ isOpen, onClose, planId, planName }: Payme
   });
 
   const plan = plans.find(p => p.id === planId);
+  const planIdForPayment = planId || plan?.id || 'premium';
   const selectedPlanName = planName || plan?.name || 'Premium';
   const selectedPlanPrice = plan?.price || 9999;
   const selectedPlanFeatures = plan?.features || [];
+  const normalizedPlanName = selectedPlanName.replace(/\s*plan$/i, '').trim();
+  const displayPlanName = normalizedPlanName || selectedPlanName;
 
   useEffect(() => {
     if (isOpen) {
       setStep('confirmation');
       setIsProcessing(false);
-      
-      // Load Razorpay script if not already loaded
-      if (!window.Razorpay && !razorpayLoaded) {
-        const script = document.createElement('script');
-        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-        script.async = true;
-        script.onload = () => setRazorpayLoaded(true);
-        script.onerror = () => {
+
+      paymentService.loadRazorpay()
+        .then(() => setRazorpayLoaded(true))
+        .catch(() => {
+          setRazorpayLoaded(false);
           toast.error('Failed to load payment system. Please refresh and try again.');
-        };
-        document.body.appendChild(script);
-      } else {
-        setRazorpayLoaded(true);
-      }
+        });
     }
-  }, [isOpen, razorpayLoaded]);
+  }, [isOpen]);
+
+  const handleDemoPaymentCompletion = async () => {
+    try {
+      setDemoModalProcessing(false);
+      
+      // Create mock response
+      const mockResponse = {
+        razorpay_order_id: `order_${Date.now()}`,
+        razorpay_payment_id: `pay_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        razorpay_signature: `sig_${Math.random().toString(36).substr(2, 9)}`,
+      };
+
+      // Process payment completion
+      const result = await paymentService.processPaymentCompletion(
+        planIdForPayment,
+        mockResponse,
+        user?.id || 'demo_user'
+      );
+
+      if (result.success) {
+        // Create lead for payment conversion
+        await createLead({
+          name: user?.name || 'Demo User',
+          email: user?.email || 'demo@example.com',
+          phone: user?.phone || '+91-0000000000',
+          interest: `Subscribed to ${displayPlanName} Plan`,
+          source: 'course_enroll',
+          message: `Payment successful for ${displayPlanName} plan - ₹${Math.round(selectedPlanPrice * 1.18)} - Payment ID: ${mockResponse.razorpay_payment_id}`,
+        });
+
+        // Update user subscription
+        if (user) {
+          login({
+            ...user,
+            subscription: planIdForPayment,
+          });
+        }
+        setStep('success');
+
+        setTimeout(() => {
+          toast.success(`Welcome to ${displayPlanName}! Your subscription is now active.`, {
+            duration: 5000,
+            icon: '🎉',
+          });
+          onClose();
+        }, 2500);
+      } else {
+        toast.error('Payment verification failed');
+      }
+    } catch (error) {
+      console.error('Demo payment completion error:', error);
+      toast.error('Payment verification failed');
+    }
+  };
 
   const handlePayment = async () => {
     if (!user) {
@@ -79,9 +130,18 @@ export default function PaymentFlow({ isOpen, onClose, planId, planName }: Payme
 
     try {
       // Create payment order
-      const order = await paymentService.createOrder(planId || 'premium', Math.round(selectedPlanPrice * 1.18));
+      await paymentService.loadRazorpay();
+      const order = await paymentService.createOrder(planIdForPayment, Math.round(selectedPlanPrice * 1.18));
 
-      // Initialize payment
+      // Show demo modal for demo/mock orders
+      if (ENV.DEMO_MODE || order.isMock) {
+        console.log('✓ Demo mode detected, showing demo modal...');
+        setIsProcessing(false);
+        setShowDemoModal(true);
+        return;
+      }
+
+      // Initialize payment (real Razorpay flow)
       await paymentService.initiatePayment(
         order,
         {
@@ -93,7 +153,7 @@ export default function PaymentFlow({ isOpen, onClose, planId, planName }: Payme
           // Payment successful
           try {
             const result = await paymentService.processPaymentCompletion(
-              planId || 'premium',
+              planIdForPayment,
               response,
               user.id
             );
@@ -104,21 +164,20 @@ export default function PaymentFlow({ isOpen, onClose, planId, planName }: Payme
                 name: user.name,
                 email: user.email,
                 phone: user.phone || '+91-0000000000',
-                interest: `Subscribed to ${selectedPlanName} Plan`,
+                interest: `Subscribed to ${displayPlanName} Plan`,
                 source: 'course_enroll',
-                message: `Payment successful for ${selectedPlanName} plan - ₹${Math.round(selectedPlanPrice * 1.18)} - Payment ID: ${response.razorpay_payment_id}`,
+                message: `Payment successful for ${displayPlanName} plan - ₹${Math.round(selectedPlanPrice * 1.18)} - Payment ID: ${response.razorpay_payment_id}`,
               });
 
               // Update user subscription
               login({
                 ...user,
-                subscription: planId || 'professional',
+                subscription: planIdForPayment,
               });
-
               setStep('success');
 
               setTimeout(() => {
-                toast.success(`Welcome to ${selectedPlanName}! Your subscription is now active.`, {
+                toast.success(`Welcome to ${displayPlanName}! Your subscription is now active.`, {
                   duration: 5000,
                   icon: '🎉',
                 });
@@ -137,7 +196,8 @@ export default function PaymentFlow({ isOpen, onClose, planId, planName }: Payme
         (error) => {
           console.error('Payment failed:', error);
           setIsProcessing(false);
-        }
+        },
+        ENV.DEMO_MODE
       );
     } catch (error) {
       console.error('Payment initialization error:', error);
@@ -160,7 +220,7 @@ export default function PaymentFlow({ isOpen, onClose, planId, planName }: Payme
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={onClose}
+            onClick={!isProcessing ? onClose : undefined}
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
           />
 
@@ -175,7 +235,7 @@ export default function PaymentFlow({ isOpen, onClose, planId, planName }: Payme
             <div className="bg-linear-to-r from-purple-600 to-purple-700 text-white p-8 flex items-center justify-between">
               <div>
                 <h2 className="text-3xl font-bold">Secure Payment</h2>
-                <p className="text-purple-200 mt-1">Complete your {selectedPlanName} Plan upgrade</p>
+                <p className="text-purple-200 mt-1">Complete your {displayPlanName} Plan upgrade</p>
               </div>
               {step !== 'payment' && !isProcessing && (
                 <motion.button
@@ -241,7 +301,7 @@ export default function PaymentFlow({ isOpen, onClose, planId, planName }: Payme
                         <Zap className="h-8 w-8 text-purple-600 shrink-0 mt-1" />
                         <div>
                           <h3 className="text-2xl font-bold text-slate-900 mb-2">
-                            {selectedPlanName} Plan
+                            {displayPlanName} Plan
                           </h3>
                           <p className="text-4xl font-bold text-purple-600 mb-4">
                             ₹{selectedPlanPrice.toLocaleString()}
@@ -314,6 +374,14 @@ export default function PaymentFlow({ isOpen, onClose, planId, planName }: Payme
                         placeholder={user?.email || 'example@example.com'}
                         title="Email address"
                       />
+                    </div>
+
+                    {/* Demo Mode Notice */}
+                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-start space-x-3">
+                      <AlertCircle className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
+                      <p className="text-sm text-blue-700">
+                        <span className="font-bold">Demo Mode:</span> This is a mock payment flow. Use the pre-filled test card details to proceed.
+                      </p>
                     </div>
 
                     <div className="flex gap-4">
@@ -405,10 +473,19 @@ export default function PaymentFlow({ isOpen, onClose, planId, planName }: Payme
                       </div>
                     </div>
 
+                    {/* Demo Mode Notice */}
+                    <div className="bg-amber-50 border-2 border-amber-300 rounded-xl p-4 flex items-start space-x-3">
+                      <AlertCircle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-bold text-amber-900">🧪 Demo Mode Payment</p>
+                        <p className="text-xs text-amber-800 mt-1">This is a test transaction. No real payment will be processed. This card will be automatically approved.</p>
+                      </div>
+                    </div>
+
                     {/* Amount Summary */}
                     <div className="bg-slate-50 rounded-xl p-4 space-y-3 border border-slate-200">
                       <div className="flex justify-between items-center">
-                        <span className="text-slate-600 font-medium">{selectedPlanName} Plan</span>
+                        <span className="text-slate-600 font-medium">{displayPlanName} Plan</span>
                         <span className="font-bold text-slate-900">₹{selectedPlanPrice.toLocaleString()}</span>
                       </div>
                       <div className="flex justify-between items-center">
@@ -467,7 +544,7 @@ export default function PaymentFlow({ isOpen, onClose, planId, planName }: Payme
                         Payment Successful!
                       </h3>
                       <p className="text-slate-600 text-lg">
-                        You're now a {selectedPlanName} member
+                        You're now a {displayPlanName} member
                       </p>
                     </div>
 
@@ -476,7 +553,7 @@ export default function PaymentFlow({ isOpen, onClose, planId, planName }: Payme
                         <span className="font-bold">✓ Order Confirmation</span>
                       </p>
                       <div className="text-left space-y-2 text-sm">
-                        <p><span className="font-bold">Plan:</span> {selectedPlanName}</p>
+                        <p><span className="font-bold">Plan:</span> {displayPlanName}</p>
                         <p><span className="font-bold">Amount:</span> ₹{Math.round(selectedPlanPrice * 1.18).toLocaleString()}</p>
                         <p><span className="font-bold">Status:</span> <span className="text-green-600 font-bold">Active</span></p>
                       </div>
@@ -490,6 +567,129 @@ export default function PaymentFlow({ isOpen, onClose, planId, planName }: Payme
               </AnimatePresence>
             </div>
           </motion.div>
+
+          {/* Demo Razorpay Modal */}
+          <AnimatePresence>
+            {showDemoModal && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+              >
+                {/* Demo Payment Modal */}
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9, y: 40 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.9, y: 40 }}
+                  className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden"
+                >
+                  {/* Header */}
+                  <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
+                    <div className="flex items-center space-x-2">
+                      <div className="text-white font-bold text-lg">
+                        🧪 Razorpay Test Mode
+                      </div>
+                    </div>
+                    <p className="text-blue-100 text-xs mt-1">Demo Payment Gateway</p>
+                  </div>
+
+                  {/* Content */}
+                  <div className="p-6 space-y-6">
+                    {/* Payment Summary */}
+                    <div className="bg-slate-50 rounded-lg p-4 space-y-3">
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-600 text-sm">Amount</span>
+                        <span className="text-2xl font-bold text-blue-600">
+                          ₹{Math.round(selectedPlanPrice * 1.18).toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="border-t border-slate-200 pt-3 flex justify-between items-center">
+                        <span className="text-slate-600 text-sm">Plan</span>
+                        <span className="font-semibold text-slate-900">{displayPlanName}</span>
+                      </div>
+                    </div>
+
+                    {/* Card Display */}
+                    <div className="bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl p-4 text-white space-y-8">
+                      <div>
+                        <div className="text-xs opacity-75 mb-2">Card Number</div>
+                        <div className="text-lg font-mono tracking-widest">
+                          {cardData.cardNumber}
+                        </div>
+                      </div>
+                      <div className="flex justify-between items-end">
+                        <div>
+                          <div className="text-xs opacity-75">Card Holder</div>
+                          <div className="font-semibold">{cardData.cardName.toUpperCase()}</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-xs opacity-75">Expires</div>
+                          <div className="font-semibold">{cardData.expiryMonth}/{cardData.expiryYear.slice(-2)}</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Demo Notice */}
+                    <div className="bg-amber-50 border-2 border-amber-300 rounded-lg p-3">
+                      <p className="text-xs font-bold text-amber-900">⚠️ This is a test transaction</p>
+                      <p className="text-xs text-amber-700 mt-1">No real payment will be processed. Card will be auto-approved.</p>
+                    </div>
+
+                    {/* Processing Status */}
+                    {demoModalProcessing && (
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-center space-x-2">
+                          <Loader2 className="h-5 w-5 text-blue-600 animate-spin" />
+                          <span className="text-sm font-semibold text-blue-600">Processing payment...</span>
+                        </div>
+                        <div className="w-full bg-slate-200 rounded-full h-1 overflow-hidden">
+                          <motion.div
+                            initial={{ width: '0%' }}
+                            animate={{ width: '100%' }}
+                            transition={{ duration: 3, ease: 'easeInOut' }}
+                            className="h-full bg-green-500"
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Action Button */}
+                    <motion.button
+                      whileHover={!demoModalProcessing ? { scale: 1.02 } : {}}
+                      whileTap={!demoModalProcessing ? { scale: 0.98 } : {}}
+                      onClick={async () => {
+                        console.log('✓ Demo payment authorize clicked');
+                        setDemoModalProcessing(true);
+                        // Simulate Razorpay processing
+                        await new Promise(resolve => setTimeout(resolve, 3000));
+                        console.log('✓ Demo payment processing complete');
+                        setDemoModalProcessing(false);
+                        // Close modal and trigger payment completion
+                        setShowDemoModal(false);
+                        // Trigger payment completion after a brief delay
+                        setTimeout(() => handleDemoPaymentCompletion(), 300);
+                      }}
+                      disabled={demoModalProcessing}
+                      className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-lg font-bold flex items-center justify-center space-x-2 hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {demoModalProcessing ? (
+                        <>
+                          <Loader2 className="h-5 w-5 animate-spin" />
+                          <span>Processing...</span>
+                        </>
+                      ) : (
+                        <>
+                          <CreditCard className="h-5 w-5" />
+                          <span>Authorize Payment</span>
+                        </>
+                      )}
+                    </motion.button>
+                  </div>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       )}
     </AnimatePresence>
