@@ -100,18 +100,28 @@ class AuthService {
       const shouldUseMock = useMockData || ENV.USE_MOCK || ENV.DEMO_MODE;
 
       if (!shouldUseMock) {
-        const response = await apiClient.post('/auth/login', credentials);
-        const { user, token, refreshToken } = response.data;
+        try {
+          const response = await apiClient.post('/auth/login', credentials);
+          const { user, token, refreshToken } = response.data;
 
-        const normalizedUser = {
-          ...user,
-          role: user.role || requestedRole || credentials.requestedRole || 'student',
-        };
+          const normalizedUser = {
+            ...user,
+            role: user.role || requestedRole || credentials.requestedRole || 'student',
+          };
 
-        localStorage.setItem('auth_token', token);
-        localStorage.setItem('refresh_token', refreshToken);
-        toast.success(`Welcome back, ${normalizedUser.name}!`);
-        return { user: normalizedUser, token, refreshToken };
+          localStorage.setItem('auth_token', token);
+          localStorage.setItem('refresh_token', refreshToken);
+          toast.success(`Welcome back, ${normalizedUser.name}!`);
+          return { user: normalizedUser, token, refreshToken };
+        } catch (error: any) {
+          if (error.isNetworkError || !error.response) {
+            console.warn('Backend login unavailable, using mock:', error.message);
+          } else {
+            const message = error.response?.data?.message || 'Login failed';
+            toast.error(message);
+            throw error;
+          }
+        }
       }
 
       try {
@@ -183,9 +193,19 @@ class AuthService {
       const shouldUseMock = useMockData || ENV.USE_MOCK || ENV.DEMO_MODE;
 
       if (!shouldUseMock) {
-        const response = await apiClient.post('/auth/register', data);
-        toast.success('Account created successfully!');
-        return response.data;
+        try {
+          const response = await apiClient.post('/auth/register', data);
+          toast.success('Account created successfully!');
+          return response.data;
+        } catch (error: any) {
+          if (error.isNetworkError || !error.response) {
+            console.warn('Backend registration unavailable, using mock data:', error.message);
+          } else {
+            const message = error.response?.data?.message || 'Registration failed';
+            toast.error(message);
+            throw error;
+          }
+        }
       }
 
       try {
