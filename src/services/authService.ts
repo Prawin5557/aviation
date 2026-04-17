@@ -116,6 +116,10 @@ class AuthService {
         } catch (error: any) {
           if (error.isNetworkError || !error.response) {
             console.warn('Backend login unavailable, using mock:', error.message);
+            toast(
+              'Backend unavailable, continuing login in demo mode.',
+              { icon: '⚠️', duration: 5000 }
+            );
           } else {
             const message = error.response?.data?.message || 'Login failed';
             toast.error(message);
@@ -139,6 +143,10 @@ class AuthService {
         return { user: normalizedUser, token, refreshToken };
       } catch (backendError: any) {
         console.warn('Backend login unavailable, using mock:', backendError.message);
+        toast(
+          'Backend unavailable, continuing login in demo mode.',
+          { icon: '⚠️', duration: 5000 }
+        );
       }
 
       // Check demo users
@@ -200,6 +208,10 @@ class AuthService {
         } catch (error: any) {
           if (error.isNetworkError || !error.response) {
             console.warn('Backend registration unavailable, using mock data:', error.message);
+            toast(
+              'Backend unavailable, continuing registration in demo mode.',
+              { icon: '⚠️', duration: 5000 }
+            );
           } else {
             const message = error.response?.data?.message || 'Registration failed';
             toast.error(message);
@@ -214,6 +226,10 @@ class AuthService {
         return response.data;
       } catch (backendError: any) {
         console.warn('Backend registration unavailable, using mock data:', backendError.message);
+        toast(
+          'Backend unavailable, continuing registration in demo mode.',
+          { icon: '⚠️', duration: 5000 }
+        );
       }
 
       const mockUser: User = {
