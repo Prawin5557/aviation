@@ -574,6 +574,16 @@ const MOCK_ADMINS = [
     status: "Active", 
     permissions: ["manage_jobs", "manage_students"],
     joinedAt: "2024-01-10"
+  },
+  { 
+    id: "admin_demo", 
+    name: "Demo Admin", 
+    email: "demo@admin.com", 
+    role: "admin", 
+    isPrime: false, 
+    status: "Active", 
+    permissions: ["manage_jobs", "manage_students", "manage_leads"],
+    joinedAt: "2024-01-01"
   }
 ];
 

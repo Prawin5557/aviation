@@ -91,8 +91,8 @@ export default function Login() {
   };
 
   const demoLogins = {
-    student: { email: 'student@demo.com', password: 'demo123456' },
-    employer: { email: 'employer@demo.com', password: 'demo123456' }
+    student: { email: 'student@demo.com', password: 'password123' },
+    employer: { email: 'employer@demo.com', password: 'password123' }
   };
 
   const handleDemoLogin = async (role: 'student' | 'employer') => {

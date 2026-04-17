@@ -47,7 +47,7 @@ export default function AdminLogin() {
   const handleDemoAdminLogin = async () => {
     setLoading(true);
     try {
-      const response = await apiService.adminLogin('admin@demo.com', 'demo123456');
+      const response = await apiService.adminLogin('demo@admin.com');
       login(response.data);
       navigate("/admin");
     } catch (err: any) {
