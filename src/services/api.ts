@@ -1479,7 +1479,7 @@ export const apiService = {
       return response;
     } catch (error) {
       // Mock sync
-      return { data: { razorpay_plan_id: "rzp_plan_" + Math.random().toString(36).substr(2, 9) } };
+    return { data: { razorpay_plan_id: "plan_mock_" + Math.random().toString(36).substr(2, 9) } };
     }
   },
 
