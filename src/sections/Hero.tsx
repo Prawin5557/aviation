@@ -1,5 +1,5 @@
-import React, { useEffect, useRef } from "react";
-import { ArrowRight, Sparkles, Globe, Users, Check, Zap, Crown } from "lucide-react";
+import React, { useEffect, useRef, useState } from "react";
+import { ArrowRight, Sparkles, Globe, Users, Check, Zap, Crown, GraduationCap, Building2 } from "lucide-react";
 import { Button } from "@/src/components/ui/Button";
 import { Link, useNavigate } from "react-router-dom";
 import { SmartSearch } from "@/src/components/common/SmartSearch";
@@ -11,6 +11,7 @@ import { cn } from "@/src/lib/utils";
 export default function Hero() {
   const navigate = useNavigate();
   const { plans, fetchPlans, isLoading } = usePlanStore();
+  const [selectedPlanType, setSelectedPlanType] = useState<'student' | 'employer'>('student');
 
   useEffect(() => {
     if (plans.length === 0) {
@@ -38,11 +39,37 @@ export default function Hero() {
     navigate(`/jobs?${params.toString()}`);
   };
 
+  const filteredPlans = plans.filter(plan => plan.type === selectedPlanType);
+
+  const planTypeOptions = [
+    {
+      id: 'student',
+      label: 'For Students',
+      description: 'Launch your aviation career',
+      icon: GraduationCap,
+      color: 'text-blue-600',
+      bgColor: 'bg-blue-50',
+      borderColor: 'border-blue-200'
+    },
+    {
+      id: 'employer',
+      label: 'For Employers',
+      description: 'Find top aviation talent',
+      icon: Building2,
+      color: 'text-purple-600',
+      bgColor: 'bg-purple-50',
+      borderColor: 'border-purple-200'
+    }
+  ];
+
   const getPlanIcon = (id: string) => {
     switch (id.toLowerCase()) {
       case "prime": return Globe;
       case "premium": return Zap;
-      case "elite": return Crown;
+      case "placement": return Crown;
+      case "recruiter_starter": return Users;
+      case "recruiter_growth": return Building2;
+      case "recruiter_enterprise": return Sparkles;
       default: return Zap;
     }
   };
@@ -51,7 +78,10 @@ export default function Hero() {
     switch (id.toLowerCase()) {
       case "prime": return { color: "text-blue-500", bg: "bg-blue-50" };
       case "premium": return { color: "text-purple-600", bg: "bg-purple-50" };
-      case "elite": return { color: "text-amber-600", bg: "bg-amber-50" };
+      case "placement": return { color: "text-amber-600", bg: "bg-amber-50" };
+      case "recruiter_starter": return { color: "text-emerald-600", bg: "bg-emerald-50" };
+      case "recruiter_growth": return { color: "text-purple-600", bg: "bg-purple-50" };
+      case "recruiter_enterprise": return { color: "text-rose-600", bg: "bg-rose-50" };
       default: return { color: "text-purple-600", bg: "bg-purple-50" };
     }
   };
@@ -97,25 +127,82 @@ export default function Hero() {
           </motion.div>
         </div>
 
+        {/* Plan Type Selector */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4, duration: 0.6 }}
+          className="mb-12"
+        >
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-display font-bold text-slate-900 mb-2">Choose Your Path</h2>
+            <p className="text-slate-500 font-medium">Select the perfect plan for your aviation journey</p>
+          </div>
+
+          <div className="flex justify-center">
+            <div className="inline-flex bg-white/80 backdrop-blur-sm border border-slate-200 rounded-3xl p-2 shadow-premium">
+              {planTypeOptions.map((option) => {
+                const Icon = option.icon;
+                const isSelected = selectedPlanType === option.id;
+
+                return (
+                  <motion.button
+                    key={option.id}
+                    onClick={() => setSelectedPlanType(option.id as 'student' | 'employer')}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className={cn(
+                      "relative px-8 py-4 rounded-2xl font-bold text-sm transition-all duration-300 flex items-center gap-3",
+                      isSelected
+                        ? `${option.color} ${option.bgColor} shadow-lg ring-2 ring-offset-2 ring-offset-white ring-purple-500/20`
+                        : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+                    )}
+                  >
+                    <Icon size={20} />
+                    <div className="text-left">
+                      <div className="font-bold">{option.label}</div>
+                      <div className="text-xs opacity-75">{option.description}</div>
+                    </div>
+                    {isSelected && (
+                      <motion.div
+                        layoutId="activeTab"
+                        className="absolute inset-0 bg-white/20 rounded-2xl"
+                        transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                      />
+                    )}
+                  </motion.button>
+                );
+              })}
+            </div>
+          </div>
+        </motion.div>
+
         {/* Subscription Plans Grid - The Primary Focus */}
-        <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
+        <motion.div
+          key={selectedPlanType}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="w-full grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch"
+        >
           {isLoading ? (
             [1, 2, 3].map(i => <Skeleton key={i} className="h-150 rounded-[40px]" />)
           ) : (
-            plans.map((plan, i) => {
+            filteredPlans.map((plan, i) => {
               return (
                 <InteractivePlanCard
                   key={plan.id}
                   plan={plan}
                   Icon={getPlanIcon(plan.id)}
                   colors={getPlanColors(plan.id)}
-                  isPopular={plan.id === "premium"}
+                  isPopular={selectedPlanType === 'student' ? plan.id === "premium" : plan.id === "recruiter_growth"}
                   index={i}
+                  selectedPlanType={selectedPlanType}
                 />
               );
             })
           )}
-        </div>
+        </motion.div>
 
         {/* Secondary Search Focus */}
         <motion.div
@@ -132,7 +219,7 @@ export default function Hero() {
   );
 }
 
-const InteractivePlanCard = ({ plan, isPopular, Icon, colors, index }: any) => {
+const InteractivePlanCard = ({ plan, isPopular, Icon, colors, index, selectedPlanType }: any) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const x = useMotionValue(0);
   const y = useMotionValue(0);
@@ -179,7 +266,7 @@ const InteractivePlanCard = ({ plan, isPopular, Icon, colors, index }: any) => {
       >
         {isPopular && (
           <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-linear-to-r from-purple-600 to-fuchsia-600 text-white text-[10px] font-bold uppercase tracking-[0.2em] px-6 py-2 rounded-full shadow-xl">
-            Recommended for Professionals
+            {selectedPlanType === 'student' ? 'Most Popular' : 'Best Value'}
           </div>
         )}
 
