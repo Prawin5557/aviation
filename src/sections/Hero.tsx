@@ -139,8 +139,8 @@ export default function Hero() {
             <p className="text-slate-500 font-medium">Select the perfect plan for your aviation journey</p>
           </div>
 
-          <div className="flex justify-center">
-            <div className="inline-flex bg-white/80 backdrop-blur-sm border border-slate-200 rounded-3xl p-2 shadow-premium">
+          <div className="flex justify-center w-full px-4">
+            <div className="flex flex-col sm:flex-row w-full sm:w-auto bg-white/80 backdrop-blur-sm border border-slate-200 rounded-3xl p-2 shadow-premium gap-2 sm:gap-0">
               {planTypeOptions.map((option) => {
                 const Icon = option.icon;
                 const isSelected = selectedPlanType === option.id;

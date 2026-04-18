@@ -158,16 +158,16 @@ export default function Jobs() {
       </div>
 
       {activeTab === "applications" && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6">
           {[
             { label: "Total Applied", value: applications.length.toString(), color: "text-purple-600" },
             { label: "Interviews", value: applications.filter((a: any) => a.status === "Interview Scheduled").length.toString(), color: "text-purple-600" },
             { label: "Offers", value: applications.filter((a: any) => a.status === "Offer Extended").length.toString(), color: "text-green-600" },
             { label: "Rejected", value: applications.filter((a: any) => a.status === "Rejected").length.toString(), color: "text-red-600" }
           ].map((stat, idx) => (
-            <div key={idx} className="glass-card p-6">
+            <div key={idx} className="glass-card p-4 sm:p-6 flex flex-col justify-between">
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">{stat.label}</p>
-              <p className={`text-2xl font-bold ${stat.color}`}>{stat.value}</p>
+              <p className={`text-xl sm:text-2xl font-bold ${stat.color}`}>{stat.value}</p>
             </div>
           ))}
         </div>

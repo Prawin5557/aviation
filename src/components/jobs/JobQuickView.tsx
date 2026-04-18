@@ -34,7 +34,7 @@ export const JobQuickView: React.FC<JobQuickViewProps> = ({
     <AnimatePresence>
       {isOpen && (
         <div 
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8 bg-slate-900/40 backdrop-blur-md"
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 md:p-8 bg-slate-900/40 backdrop-blur-md"
           onClick={onClose}
         >
           <motion.div
@@ -42,7 +42,7 @@ export const JobQuickView: React.FC<JobQuickViewProps> = ({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="bg-white rounded-[40px] w-full max-w-4xl max-h-[90vh] overflow-hidden shadow-[0_32px_64px_-12px_rgba(0,0,0,0.14)] relative flex flex-col border border-white/20"
+            className="bg-white rounded-t-[32px] sm:rounded-[40px] w-full max-w-4xl h-[90vh] sm:h-auto sm:max-h-[90vh] overflow-hidden shadow-[0_32px_64px_-12px_rgba(0,0,0,0.14)] relative flex flex-col border border-white/20 mt-auto sm:mt-0"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header Section */}

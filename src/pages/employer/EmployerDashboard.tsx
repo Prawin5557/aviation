@@ -112,11 +112,11 @@ export default function EmployerDashboard() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+        className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6"
       >
         {isLoading ? (
           Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="glass-card p-6 rounded-2xl animate-pulse">
+            <div key={i} className="glass-card p-4 sm:p-6 rounded-2xl animate-pulse">
               <div className="h-12 w-12 bg-slate-100 rounded-lg mb-4"></div>
               <div className="h-3 w-24 bg-slate-100 rounded-full mb-3"></div>
               <div className="h-8 w-16 bg-slate-100 rounded-full"></div>
@@ -131,14 +131,14 @@ export default function EmployerDashboard() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.15 + idx * 0.05 }}
-                className="glass-card p-6 rounded-2xl border border-slate-200 group hover:shadow-lg transition-all"
+                className="glass-card p-4 sm:p-6 rounded-2xl border border-slate-200 group hover:shadow-lg transition-all flex flex-col justify-between"
               >
-                <div className={`inline-flex p-3 rounded-lg bg-linear-to-br ${stat.color} text-white mb-4 group-hover:scale-110 transition-transform`}>
-                  <Icon className="h-5 w-5" />
+                <div className={`inline-flex w-fit p-2 sm:p-3 rounded-lg bg-linear-to-br ${stat.color} text-white mb-3 sm:mb-4 group-hover:scale-110 transition-transform`}>
+                  <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
                 </div>
-                <p className="text-xs uppercase tracking-widest font-semibold text-slate-500 mb-1">{stat.label}</p>
-                <h3 className="text-3xl font-bold text-slate-900">{stat.value}</h3>
-                <p className="text-xs text-slate-600 mt-2 flex items-center gap-1">
+                <p className="text-[10px] sm:text-xs uppercase tracking-widest font-semibold text-slate-500 mb-1">{stat.label}</p>
+                <h3 className="text-2xl sm:text-3xl font-bold text-slate-900">{stat.value}</h3>
+                <p className="text-[10px] sm:text-xs text-slate-600 mt-2 flex items-center gap-1 leading-tight">
                   <ArrowUpRight className="h-3 w-3 text-emerald-600" />
                   {stat.increase}
                 </p>

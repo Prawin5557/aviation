@@ -199,24 +199,24 @@ export default function Jobs() {
           >
             <div className="bg-white p-3 sm:p-4 rounded-3xl sm:rounded-[40px] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.08)] border border-slate-100 flex flex-col lg:flex-row items-center gap-3">
               <div className="flex-1 relative w-full group">
-                <Search className="absolute left-8 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-purple-500 transition-colors" />
+                <Search className="absolute left-4 sm:left-8 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-purple-500 transition-colors" />
                 <input 
                   type="text"
                   placeholder="Job title, company, or expertise..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full h-14 sm:h-16 pl-16 pr-8 bg-slate-50/50 rounded-2xl sm:rounded-4xl border-none focus:ring-2 focus:ring-purple-500/20 text-slate-900 font-semibold placeholder:text-slate-400 transition-all text-sm sm:text-base"
+                  className="w-full h-14 sm:h-16 pl-12 sm:pl-16 pr-4 sm:pr-8 bg-slate-50/50 rounded-2xl sm:rounded-4xl border-none focus:ring-2 focus:ring-purple-500/20 text-slate-900 font-semibold placeholder:text-slate-400 transition-all text-sm sm:text-base"
                 />
               </div>
               <div className="hidden lg:block w-px h-10 bg-slate-100"></div>
               <div className="flex-1 relative w-full group">
-                <MapPin className="absolute left-8 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-purple-500 transition-colors" />
+                <MapPin className="absolute left-4 sm:left-8 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-purple-500 transition-colors" />
                 <input 
                   type="text"
                   placeholder="Global locations..."
                   value={location === "All" ? "" : location}
                   onChange={(e) => setLocation(e.target.value || "All")}
-                  className="w-full h-14 sm:h-16 pl-16 pr-8 bg-slate-50/50 rounded-2xl sm:rounded-4xl border-none focus:ring-2 focus:ring-purple-500/20 text-slate-900 font-semibold placeholder:text-slate-400 transition-all text-sm sm:text-base"
+                  className="w-full h-14 sm:h-16 pl-12 sm:pl-16 pr-4 sm:pr-8 bg-slate-50/50 rounded-2xl sm:rounded-4xl border-none focus:ring-2 focus:ring-purple-500/20 text-slate-900 font-semibold placeholder:text-slate-400 transition-all text-sm sm:text-base"
                 />
               </div>
               <button className="premium-button-primary h-14 sm:h-16 px-8 sm:px-12 rounded-2xl sm:rounded-4xl w-full lg:w-auto text-sm sm:text-base font-bold flex items-center justify-center space-x-3">

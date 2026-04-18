@@ -373,32 +373,36 @@ export default function EmployerSubscriptions() {
           </Button>
         </div>
 
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto pb-4">
           <table className="min-w-full text-left text-sm">
             <thead>
               <tr className="border-b border-slate-200 text-slate-500">
-                <th className="py-4 pr-4">Invoice</th>
-                <th className="py-4 pr-4">Date</th>
-                <th className="py-4 pr-4">Plan</th>
-                <th className="py-4 pr-4">Amount</th>
-                <th className="py-4 pr-4">Status</th>
-                <th className="py-4 text-right">Action</th>
+                <th className="py-4 pr-4 whitespace-nowrap">Invoice</th>
+                <th className="py-4 pr-4 whitespace-nowrap">Date</th>
+                <th className="py-4 pr-4 whitespace-nowrap">Plan</th>
+                <th className="py-4 pr-4 whitespace-nowrap">Amount</th>
+                <th className="py-4 pr-4 whitespace-nowrap">Status</th>
+                <th className="py-4 text-right whitespace-nowrap">Action</th>
               </tr>
             </thead>
             <tbody>
               {billingHistory.map((invoice) => (
                 <tr key={invoice.id} className="border-b border-slate-100 hover:bg-slate-50">
-                  <td className="py-4 pr-4 font-semibold text-slate-900">{invoice.id}</td>
-                  <td className="py-4 pr-4 text-slate-600 flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-slate-400" />
-                    {invoice.date}
+                  <td className="py-4 pr-4 font-semibold text-slate-900 whitespace-nowrap">{invoice.id}</td>
+                  <td className="py-4 pr-4 text-slate-600 whitespace-nowrap">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-4 w-4 text-slate-400" />
+                      {invoice.date}
+                    </div>
                   </td>
-                  <td className="py-4 pr-4 text-slate-900 flex items-center gap-2">
-                    <CreditCard className="h-4 w-4 text-slate-400" />
-                    {invoice.planName}
+                  <td className="py-4 pr-4 text-slate-900 whitespace-nowrap">
+                    <div className="flex items-center gap-2">
+                      <CreditCard className="h-4 w-4 text-slate-400" />
+                      {invoice.planName}
+                    </div>
                   </td>
-                  <td className="py-4 pr-4 font-semibold text-slate-900">₹{invoice.amount.toLocaleString('en-IN')}</td>
-                  <td className="py-4 pr-4">
+                  <td className="py-4 pr-4 font-semibold text-slate-900 whitespace-nowrap">₹{invoice.amount.toLocaleString('en-IN')}</td>
+                  <td className="py-4 pr-4 whitespace-nowrap">
                     <span className={cn(
                       "inline-flex rounded-full px-3 py-1 text-xs font-semibold",
                       invoice.status === "Paid" ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"

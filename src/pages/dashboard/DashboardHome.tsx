@@ -112,9 +112,9 @@ export default function DashboardHome() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
         {/* Profile Completeness Card */}
-        <div className="glass-card p-5 sm:p-6 rounded-3xl bg-linear-to-br from-purple-600 to-indigo-700 text-white border-none shadow-xl shadow-purple-200/50">
+        <div className="col-span-2 lg:col-span-1 glass-card p-5 sm:p-6 rounded-3xl bg-linear-to-br from-purple-600 to-indigo-700 text-white border-none shadow-xl shadow-purple-200/50">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-bold">Profile Strength</h3>
             <span className="text-xs font-bold bg-white/20 px-2 py-1 rounded-lg">{profileCompleteness}%</span>
@@ -150,13 +150,13 @@ export default function DashboardHome() {
           statCards.slice(0, 3).map((stat, idx) => (
             <div
               key={idx}
-              className="glass-card p-5 sm:p-6 rounded-3xl group hover:-translate-y-1 transition-all duration-300"
+              className="glass-card p-4 sm:p-6 rounded-3xl group hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between"
             >
-              <div className={`h-14 w-14 ${stat.bg} ${stat.color} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500`}>
-                <stat.icon className="h-7 w-7" />
+              <div className={`h-10 w-10 sm:h-14 sm:w-14 ${stat.bg} ${stat.color} rounded-xl sm:rounded-2xl flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform duration-500`}>
+                <stat.icon className="h-5 w-5 sm:h-7 sm:w-7" />
               </div>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">{stat.label}</p>
-              <h3 className="text-3xl font-display font-bold text-slate-900">{stat.value}</h3>
+              <p className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">{stat.label}</p>
+              <h3 className="text-2xl sm:text-3xl font-display font-bold text-slate-900">{stat.value}</h3>
             </div>
           ))
         )}

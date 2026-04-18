@@ -116,18 +116,18 @@ export default function Applications() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+        className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6"
       >
         {stats.map((stat, idx) => {
           const Icon = stat.icon;
           return (
-            <div key={idx} className={`glass-card p-6 rounded-2xl border border-slate-200 bg-linear-to-br ${stat.color}/10`}>
+            <div key={idx} className={`glass-card p-4 sm:p-6 rounded-2xl border border-slate-200 bg-linear-to-br ${stat.color}/10 flex flex-col justify-between`}>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs uppercase tracking-widest font-semibold text-slate-500 mb-2">{stat.label}</p>
-                  <p className="text-3xl font-bold text-slate-900">{stat.value}</p>
+                  <p className="text-[10px] sm:text-xs uppercase tracking-widest font-semibold text-slate-500 mb-1 sm:mb-2">{stat.label}</p>
+                  <p className="text-2xl sm:text-3xl font-bold text-slate-900">{stat.value}</p>
                 </div>
-                <div className={`p-3 rounded-lg bg-linear-to-br ${stat.color} text-white`}>
+                <div className={`p-2 sm:p-3 rounded-lg bg-linear-to-br ${stat.color} text-white hidden sm:block`}>
                   <Icon className="h-5 w-5" />
                 </div>
               </div>

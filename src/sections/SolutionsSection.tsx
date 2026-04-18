@@ -151,10 +151,10 @@ export default function SolutionsSection() {
             <span className="text-purple-600">Achieve Today?</span>
           </h2>
           
-          <div className="flex sm:inline-flex flex-row p-1.5 bg-slate-200 rounded-xl w-full sm:w-auto">
+          <div className="flex sm:inline-flex flex-row p-1 bg-slate-200 rounded-xl w-full sm:w-auto max-w-[280px] sm:max-w-none mx-auto">
             <button
               onClick={() => handleUserTypeChange("Employer")}
-              className={`flex-1 sm:flex-none px-4 sm:px-8 py-2.5 sm:py-2 rounded-lg text-[10px] sm:text-xs font-bold uppercase tracking-[0.15em] transition-all duration-300 active:scale-95 ${
+              className={`flex-1 sm:flex-none px-4 sm:px-8 py-3 sm:py-2 rounded-lg text-[10px] sm:text-xs font-bold uppercase tracking-[0.15em] transition-all duration-300 active:scale-95 ${
                 userType === "Employer"
                   ? "bg-white text-purple-600 shadow-sm"
                   : "text-slate-500 hover:text-slate-700"
@@ -164,7 +164,7 @@ export default function SolutionsSection() {
             </button>
             <button
               onClick={() => handleUserTypeChange("Candidate")}
-              className={`flex-1 sm:flex-none px-4 sm:px-8 py-2.5 sm:py-2 rounded-lg text-[10px] sm:text-xs font-bold uppercase tracking-[0.15em] transition-all duration-300 active:scale-95 ${
+              className={`flex-1 sm:flex-none px-4 sm:px-8 py-3 sm:py-2 rounded-lg text-[10px] sm:text-xs font-bold uppercase tracking-[0.15em] transition-all duration-300 active:scale-95 ${
                 userType === "Candidate"
                   ? "bg-white text-purple-600 shadow-sm"
                   : "text-slate-500 hover:text-slate-700"
