@@ -190,9 +190,13 @@ export default function AdminLayout() {
       {/* Main Content */}
       <div className="grow flex flex-col overflow-hidden bg-transparent">
         {/* Header */}
-        <header className="h-20 bg-transparent border-b border-slate-200 px-4 lg:px-8 flex items-center justify-between shrink-0">
+        <header className="h-20 bg-transparent border-b border-slate-200 px-3 sm:px-4 lg:px-8 flex items-center justify-between shrink-0">
           <div className="flex items-center grow max-w-md">
-            <div className="relative w-full group">
+            <div className="sm:hidden inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white/70 px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-600">
+              <LayoutDashboard className="h-4 w-4 text-purple-600" />
+              Admin
+            </div>
+            <div className="hidden sm:block relative w-full group">
               <Search className={cn(
                 "absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors",
                 searchQuery ? "text-purple-600" : "text-slate-400 group-focus-within:text-purple-600"
@@ -215,12 +219,12 @@ export default function AdminLayout() {
             </div>
           </div>
           
-          <div className="flex items-center space-x-6">
+          <div className="flex items-center space-x-3 sm:space-x-6">
             <button aria-label="View notifications" className="relative h-11 w-11 inline-flex items-center justify-center text-slate-500 hover:text-purple-600 hover:bg-slate-100 rounded-xl transition-colors">
               <Bell className="h-6 w-6" />
               <span className="absolute top-2 right-2 w-2 h-2 bg-purple-600 rounded-full border-2 border-white" />
             </button>
-            <div className="pl-6 border-l border-slate-200">
+            <div className="pl-3 sm:pl-6 border-l border-slate-200">
               <UserMenuDropdown
                 name={user?.name || "Admin"}
                 subtitle={user?.isPrime ? "Prime Admin" : "Staff Admin"}
@@ -244,29 +248,31 @@ export default function AdminLayout() {
           </motion.div>
         </main>
 
-        <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-16 bg-white/85 backdrop-blur-lg border-t border-slate-200 flex items-center justify-around px-2 z-50 safe-bottom">
-          {[
-            { name: "Home", path: "/admin", icon: LayoutDashboard },
-            { name: "Students", path: "/admin/students", icon: Users },
-            { name: "Jobs", path: "/admin/jobs", icon: Briefcase },
-            { name: "Reports", path: "/admin/reports", icon: BarChart3 },
-            { name: "Settings", path: "/admin/settings", icon: Settings },
-          ].map((item) => (
-            <Link
-              key={item.path}
-              to={item.path}
-              className={cn(
-                "flex flex-col items-center justify-center space-y-1 px-2 py-1 rounded-xl transition-all",
-                (location.pathname === item.path || (item.path !== "/admin" && location.pathname.startsWith(item.path)))
-                  ? "text-purple-600"
-                  : "text-slate-400"
-              )}
-            >
-              <item.icon className="h-5 w-5" />
-              <span className="text-xs font-bold uppercase tracking-tight">{item.name}</span>
-            </Link>
-          ))}
-        </nav>
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 safe-bottom px-3 pb-2">
+          <nav className="h-16 rounded-2xl bg-white/85 backdrop-blur-xl border border-slate-200/90 shadow-lg shadow-purple-100/60 flex items-center justify-between px-3">
+            {[
+              { name: "Home", path: "/admin", icon: LayoutDashboard },
+              { name: "Students", path: "/admin/students", icon: Users },
+              { name: "Jobs", path: "/admin/jobs", icon: Briefcase },
+              { name: "Reports", path: "/admin/reports", icon: BarChart3 },
+              { name: "Settings", path: "/admin/settings", icon: Settings },
+            ].map((item) => (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={cn(
+                  "flex flex-col items-center justify-center space-y-1 px-1.5 py-1 rounded-xl transition-all min-w-0",
+                  (location.pathname === item.path || (item.path !== "/admin" && location.pathname.startsWith(item.path)))
+                    ? "text-purple-600"
+                    : "text-slate-400"
+                )}
+              >
+                <item.icon className="h-4 w-4" />
+                <span className="text-[10px] font-bold uppercase tracking-tight">{item.name}</span>
+              </Link>
+            ))}
+          </nav>
+        </div>
       </div>
     </div>
   );

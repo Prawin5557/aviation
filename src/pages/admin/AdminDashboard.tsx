@@ -207,8 +207,8 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="space-y-12 pb-12">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+    <div className="space-y-8 sm:space-y-12 pb-24 lg:pb-12 overflow-x-hidden lg:max-w-7xl lg:mx-auto">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between rounded-3xl border border-purple-100 bg-linear-to-br from-purple-100/60 via-white/90 to-indigo-100/60 p-4 sm:p-6 lg:bg-transparent lg:border-none lg:p-0">
         <div className="space-y-3 max-w-2xl">
           <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-xs uppercase tracking-[0.24em] text-slate-500">
             <Sparkles className="h-4 w-4 text-purple-600" /> Platform overview
@@ -217,7 +217,7 @@ export default function AdminDashboard() {
             <h1 className="text-4xl font-display font-bold tracking-tight text-slate-900">Dashboard Overview</h1>
             <p className="text-slate-500 text-sm sm:text-base">A complete view of platform performance, team activity and growth signals for your admin operations.</p>
           </div>
-          <div className="flex flex-wrap gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="rounded-3xl bg-slate-900/95 px-5 py-4 text-white shadow-xl shadow-slate-900/5">
               <p className="text-xs uppercase tracking-[0.28em] text-slate-300">Live performance</p>
               <p className="mt-3 text-3xl font-semibold">{stats?.platformScore ?? 92}<span className="text-sm text-slate-300">/100</span></p>
@@ -248,7 +248,7 @@ export default function AdminDashboard() {
 
       <AdminAnalytics />
 
-      <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-6">
         {statsCards.map((card) => {
           const Icon = card.icon;
           const trendText = String(card.trend);
@@ -260,11 +260,11 @@ export default function AdminDashboard() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.35 }}
             >
-              <GlassCard className="p-6">
+              <GlassCard className="p-4 sm:p-6">
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">{card.label}</p>
-                    <p className="mt-4 text-3xl font-display font-bold text-slate-900">{card.value}</p>
+                    <p className="mt-3 sm:mt-4 text-2xl sm:text-3xl font-display font-bold text-slate-900">{card.value}</p>
                   </div>
                   <div className={`rounded-3xl px-3 py-3 ${card.color}`}>
                     <Icon className="h-5 w-5" />
@@ -280,8 +280,8 @@ export default function AdminDashboard() {
         })}
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-[1.7fr,1fr] gap-8">
-        <GlassCard className="p-8">
+      <div className="grid grid-cols-1 xl:grid-cols-[1.7fr,1fr] gap-6 sm:gap-8">
+        <GlassCard className="p-4 sm:p-8">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <h2 className="text-xl font-display font-bold text-slate-900">Job Market Pulse</h2>
@@ -292,8 +292,8 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          <div className="mt-8 h-80 w-full">
-            <ResponsiveContainer width="100%" height={320} minWidth={0} minHeight={200}>
+          <div className="mt-6 sm:mt-8 h-60 sm:h-80 w-full">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={200}>
               <AreaChart data={trendData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
                 <defs>
                   <linearGradient id="trendGradient" x1="0" y1="0" x2="0" y2="1">
@@ -317,14 +317,14 @@ export default function AdminDashboard() {
             </ResponsiveContainer>
           </div>
 
-          <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
+          <div className="mt-6 sm:mt-8 grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-4">
             {[
               { label: "Total Applicants", value: stats?.totalApplications ?? 0 },
               { label: "Hires", value: stats?.totalHires ?? 0 },
               { label: "Avg Time", value: stats?.avgResponseTime ?? "2.4d" },
               { label: "Offer Rate", value: stats?.offerRate ?? "18%" },
             ].map((item) => (
-              <div key={item.label} className="rounded-3xl bg-slate-50 p-4">
+              <div key={item.label} className="rounded-2xl sm:rounded-3xl bg-slate-50 p-3 sm:p-4">
                 <p className="text-xs uppercase tracking-[0.22em] text-slate-400">{item.label}</p>
                 <p className="mt-3 text-xl font-semibold text-slate-900">{item.value}</p>
               </div>
@@ -333,29 +333,29 @@ export default function AdminDashboard() {
         </GlassCard>
 
         <div className="space-y-6">
-          <GlassCard className="p-8">
+          <GlassCard className="p-4 sm:p-8">
             <div className="flex items-center justify-between gap-4 mb-6">
               <div>
                 <h2 className="text-xl font-display font-bold text-slate-900">Quick Actions</h2>
                 <p className="text-slate-500 text-sm mt-1">Actions to keep the overview moving.</p>
               </div>
             </div>
-            <div className="grid grid-cols-1 gap-3">
+            <div className="grid grid-cols-2 xl:grid-cols-1 gap-3">
               {quickActions.map((action) => {
                 const Icon = action.icon;
                 return (
                   <button
                     key={action.label}
                     onClick={() => handleQuickAction(action.label)}
-                    className="group flex items-center justify-between rounded-3xl border border-slate-200 bg-white px-4 py-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                    className="group flex items-center justify-between rounded-2xl sm:rounded-3xl border border-slate-200 bg-white px-3 sm:px-4 py-3 sm:py-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md min-h-15"
                   >
                     <div className="flex items-center gap-4">
-                      <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${action.bg}`}>
+                      <div className={`flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-2xl ${action.bg}`}>
                         <Icon className={`h-5 w-5 ${action.color}`} />
                       </div>
                       <div>
                         <p className="text-sm font-semibold text-slate-900">{action.label}</p>
-                        <p className="text-xs text-slate-500">Quick access to high-priority admin workflows.</p>
+                        <p className="hidden sm:block text-xs text-slate-500">Quick access to high-priority admin workflows.</p>
                       </div>
                     </div>
                     <ArrowRight className="h-4 w-4 text-slate-400 transition group-hover:text-purple-600" />
@@ -365,7 +365,7 @@ export default function AdminDashboard() {
             </div>
           </GlassCard>
 
-          <GlassCard className="p-8">
+          <GlassCard className="p-4 sm:p-8">
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="text-xl font-display font-bold text-slate-900">System Health</h2>
@@ -397,14 +397,51 @@ export default function AdminDashboard() {
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         <GlassCard className="overflow-hidden">
-          <div className="p-8 border-b border-slate-100 flex items-center justify-between">
+          <div className="p-4 sm:p-8 border-b border-slate-100 flex items-center justify-between gap-3">
             <div>
               <h2 className="text-xl font-display font-bold text-slate-900">Engaged Applicants</h2>
               <p className="text-slate-500 text-sm mt-1">Latest leads captured across campaigns.</p>
             </div>
             <Button variant="outline" size="sm" className="rounded-2xl border-slate-200 text-slate-600" onClick={() => navigate("/admin/leads")}>View all leads</Button>
           </div>
-          <div className="overflow-x-auto">
+
+          <div className="sm:hidden p-4 space-y-3">
+            {isLeadsLoading ? (
+              Array.from({ length: 3 }).map((_, index) => (
+                <div key={index} className="h-24 rounded-2xl bg-slate-100 animate-pulse" />
+              ))
+            ) : topLeads.length > 0 ? (
+              topLeads.map((lead: any, index: number) => (
+                <motion.div
+                  key={lead.id || index}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  className="rounded-2xl border border-slate-200 bg-white p-4"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="font-semibold text-slate-900 text-sm">{lead.name}</p>
+                      <p className="text-xs text-slate-400 mt-0.5">{lead.email}</p>
+                    </div>
+                    <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] ${
+                      lead.status === "Qualified" ? "bg-emerald-50 text-emerald-700" : lead.status === "Contacted" ? "bg-blue-50 text-blue-700" : "bg-amber-50 text-amber-700"
+                    }`}>
+                      {lead.status}
+                    </span>
+                  </div>
+                  <div className="mt-3 flex items-center justify-between text-xs text-slate-500">
+                    <span>{lead.interest}</span>
+                    <span>{lead.phone || "-"}</span>
+                  </div>
+                </motion.div>
+              ))
+            ) : (
+              <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 py-8 text-center text-slate-400 text-sm">No leads found for "{searchQuery}"</div>
+            )}
+          </div>
+
+          <div className="hidden sm:block overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead className="bg-slate-50/70 text-slate-400 uppercase text-[10px] font-bold tracking-widest">
                 <tr>
@@ -464,14 +501,53 @@ export default function AdminDashboard() {
         </GlassCard>
 
         <GlassCard className="overflow-hidden">
-          <div className="p-8 border-b border-slate-100 flex items-center justify-between">
+          <div className="p-4 sm:p-8 border-b border-slate-100 flex items-center justify-between gap-3">
             <div>
               <h2 className="text-xl font-display font-bold text-slate-900">Recent Registrations</h2>
               <p className="text-slate-500 text-sm mt-1">Newest members who joined the platform.</p>
             </div>
             <Button variant="outline" size="sm" className="rounded-2xl border-slate-200 text-slate-600" onClick={() => navigate("/admin/students")}>View all</Button>
           </div>
-          <div className="overflow-x-auto">
+
+          <div className="sm:hidden p-4 space-y-3">
+            {isUsersLoading ? (
+              Array.from({ length: 3 }).map((_, index) => (
+                <div key={index} className="h-24 rounded-2xl bg-slate-100 animate-pulse" />
+              ))
+            ) : recentUsers.length > 0 ? (
+              recentUsers.map((user: any, index: number) => (
+                <motion.div
+                  key={user.id || index}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  className="rounded-2xl border border-slate-200 bg-white p-4"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-linear-to-br from-purple-100 to-indigo-100 text-sm font-semibold text-purple-700">
+                      {user.first_name?.[0] || "U"}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-slate-900 text-sm">{user.first_name} {user.last_name}</p>
+                      <p className="text-xs text-slate-400">{user.email}</p>
+                    </div>
+                  </div>
+                  <div className="mt-3 flex items-center justify-between text-xs">
+                    <span className="text-slate-600 font-semibold uppercase tracking-[0.14em]">{user.role || "Student"}</span>
+                    <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] ${
+                      user.status === "Active" ? "bg-emerald-50 text-emerald-700" : user.status === "Pending" ? "bg-amber-50 text-amber-700" : "bg-slate-100 text-slate-600"
+                    }`}>
+                      {user.status || "Active"}
+                    </span>
+                  </div>
+                </motion.div>
+              ))
+            ) : (
+              <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 py-8 text-center text-slate-400 text-sm">No recent registrations match "{searchQuery}"</div>
+            )}
+          </div>
+
+          <div className="hidden sm:block overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead className="bg-slate-50/70 text-slate-400 uppercase text-[10px] font-bold tracking-widest">
                 <tr>
@@ -535,7 +611,7 @@ export default function AdminDashboard() {
         </GlassCard>
       </div>
 
-      <GlassCard className="p-8">
+      <GlassCard className="p-4 sm:p-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-xl font-display font-bold text-slate-900">Activity Logs</h2>
@@ -543,7 +619,7 @@ export default function AdminDashboard() {
           </div>
           <Button variant="outline" size="sm" className="rounded-2xl border-slate-200 text-slate-600">View full log</Button>
         </div>
-        <div className="mt-8 grid gap-5">
+        <div className="mt-6 sm:mt-8 grid gap-4 sm:gap-5">
           {isLoading ? (
             Array.from({ length: 4 }).map((_, index) => (
               <div key={index} className="flex items-center gap-4 animate-pulse">
@@ -561,10 +637,10 @@ export default function AdminDashboard() {
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
-                className="flex items-center justify-between gap-4 rounded-3xl border border-slate-100 p-4"
+                className="flex items-start sm:items-center justify-between gap-3 sm:gap-4 rounded-2xl sm:rounded-3xl border border-slate-100 p-4"
               >
                 <div className="flex items-center gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-3xl bg-purple-50 text-purple-600">
+                  <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-2xl sm:rounded-3xl bg-purple-50 text-purple-600 shrink-0">
                     <Activity className="h-5 w-5" />
                   </div>
                   <div>
@@ -572,7 +648,7 @@ export default function AdminDashboard() {
                     <p className="text-xs text-slate-400 mt-1 flex items-center gap-1"><Clock className="h-3.5 w-3.5" />{log.time}</p>
                   </div>
                 </div>
-                <div className="text-xs text-slate-500 uppercase tracking-[0.2em]">{log.source || "Web"}</div>
+                <div className="text-[10px] sm:text-xs text-slate-500 uppercase tracking-[0.18em]">{log.source || "Web"}</div>
               </motion.div>
             ))
           ) : (
