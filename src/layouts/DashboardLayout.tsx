@@ -94,7 +94,7 @@ export default function DashboardLayout() {
       {/* Main Content */}
       <div className="grow flex flex-col overflow-x-hidden">
         {/* Header */}
-        <header className="h-20 bg-transparent border-b border-slate-200 px-6 lg:px-8 flex items-center justify-between shrink-0 print:hidden">
+        <header className="h-16 sm:h-20 bg-transparent border-b border-slate-200 px-4 sm:px-6 lg:px-8 flex items-center justify-between shrink-0 print:hidden">
           <div className="flex items-center space-x-3 lg:hidden">
             <div className="bg-purple-600 p-1.5 rounded-lg">
               <Plane className="h-4 w-4 text-white transform -rotate-45" />
@@ -102,7 +102,7 @@ export default function DashboardLayout() {
             <span className="text-lg font-bold text-slate-900 font-display">ARMZ</span>
           </div>
           
-          <h2 className="text-lg lg:text-xl font-bold text-slate-800">
+          <h2 className="hidden sm:block text-lg lg:text-xl font-bold text-slate-800">
             {menuItems.find(item => item.path === location.pathname)?.name || "Dashboard"}
           </h2>
           
@@ -137,7 +137,7 @@ export default function DashboardLayout() {
 
         {/* Bottom Navigation - Mobile */}
         <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 print:hidden safe-bottom px-3 pb-2">
-          <nav className="relative h-16 rounded-2xl bg-white/80 backdrop-blur-xl border border-slate-200/90 shadow-lg shadow-purple-100/60 flex items-center justify-between px-4">
+          <nav className="relative h-14 rounded-2xl bg-white/82 backdrop-blur-xl border border-slate-200/90 shadow-lg shadow-purple-100/60 flex items-center justify-between px-3">
             {[
               { name: "Home", path: "/dashboard", icon: LayoutDashboard },
               { name: "Jobs", path: "/dashboard/jobs", icon: Briefcase },
@@ -157,18 +157,18 @@ export default function DashboardLayout() {
                       : "text-slate-400"
                   )}
                 >
-                  <item.icon className={cn("h-5 w-5", location.pathname === item.path && "fill-current")} />
-                  <span className="text-[10px] font-bold uppercase tracking-tight">{item.name}</span>
+                  <item.icon className={cn("h-4 w-4", location.pathname === item.path && "fill-current")} />
+                  <span className="text-[9px] font-bold uppercase tracking-tight">{item.name}</span>
                 </Link>
               );
             })}
 
             <Link
               to="/dashboard/jobs"
-              className="absolute left-1/2 -translate-x-1/2 -top-5 h-14 w-14 rounded-2xl bg-linear-to-br from-purple-600 to-indigo-600 text-white shadow-xl shadow-purple-200 inline-flex items-center justify-center border-4 border-white"
+              className="absolute left-1/2 -translate-x-1/2 -top-4 h-12 w-12 rounded-2xl bg-linear-to-br from-purple-600 to-indigo-600 text-white shadow-xl shadow-purple-200 inline-flex items-center justify-center border-4 border-white"
               aria-label="Apply"
             >
-              <ClipboardList className="h-6 w-6" />
+              <ClipboardList className="h-5 w-5" />
             </Link>
           </nav>
         </div>

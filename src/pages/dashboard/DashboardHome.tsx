@@ -109,11 +109,11 @@ export default function DashboardHome() {
   return (
     <div className="space-y-6 sm:space-y-10 pb-32 lg:pb-8 px-4 sm:px-0 pt-4 sm:pt-0 overflow-x-hidden">
       {/* Header */}
-      <div className="relative rounded-3xl p-4 sm:p-5 lg:p-0 lg:rounded-none bg-linear-to-br from-purple-100/70 via-white/80 to-indigo-100/70 lg:bg-transparent border border-purple-100/80 lg:border-none shadow-xl shadow-purple-100/50 lg:shadow-none backdrop-blur-md">
+      <div className="relative rounded-3xl p-3 sm:p-5 lg:p-0 lg:rounded-none bg-linear-to-br from-purple-100/70 via-white/80 to-indigo-100/70 lg:bg-transparent border border-purple-100/80 lg:border-none shadow-xl shadow-purple-100/50 lg:shadow-none backdrop-blur-md">
         <div className="absolute inset-0 rounded-3xl bg-white/25 lg:hidden" aria-hidden="true" />
         <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6 lg:max-w-7xl lg:mx-auto">
-          <div className="flex items-start gap-3 sm:gap-4">
-            <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl bg-purple-600/90 text-white flex items-center justify-center shrink-0 shadow-lg shadow-purple-200/70">
+          <div className="flex items-start gap-2.5 sm:gap-4">
+            <div className="h-11 w-11 sm:h-14 sm:w-14 rounded-2xl bg-purple-600/90 text-white flex items-center justify-center shrink-0 shadow-lg shadow-purple-200/70">
               <span className="text-base sm:text-lg font-bold">{user?.name?.charAt(0) || "C"}</span>
             </div>
             <div>
@@ -132,7 +132,7 @@ export default function DashboardHome() {
                 </span>
               </div>
 
-              <div className="mt-3 max-w-xs">
+              <div className="mt-3 max-w-xs hidden sm:block">
                 <div className="flex items-center justify-between mb-1.5">
                   <p className="text-[10px] sm:text-xs font-semibold text-slate-500">Profile Strength</p>
                   <span className="text-[10px] sm:text-xs font-bold text-purple-700">{profileCompleteness}%</span>
@@ -166,7 +166,7 @@ export default function DashboardHome() {
               Complete Profile
               <ChevronRight className="h-4 w-4 ml-1" />
             </Button>
-            <Link to="/dashboard/resume" className="premium-button-primary px-4 sm:px-6 py-2 sm:py-3 flex items-center space-x-2 w-full sm:w-auto justify-center basis-full sm:basis-auto">
+            <Link to="/dashboard/resume" className="premium-button-primary hidden sm:flex px-4 sm:px-6 py-2 sm:py-3 items-center space-x-2 w-full sm:w-auto justify-center basis-full sm:basis-auto">
               <FileText className="h-4 w-4" />
               <span>Update Resume</span>
             </Link>
