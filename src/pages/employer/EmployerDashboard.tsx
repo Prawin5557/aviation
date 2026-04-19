@@ -158,12 +158,12 @@ export default function EmployerDashboard() {
   };
 
   return (
-    <div className="space-y-6 sm:space-y-10 pb-20 px-4 sm:px-0 pt-4 sm:pt-0">
+    <div className="space-y-6 sm:space-y-10 pb-24 lg:pb-8 px-4 sm:px-0 pt-4 sm:pt-0 overflow-x-hidden lg:max-w-7xl lg:mx-auto">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
+        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 rounded-3xl border border-purple-100 bg-linear-to-br from-purple-100/60 via-white/90 to-indigo-100/60 p-4 sm:p-6 lg:bg-transparent lg:border-none lg:p-0"
       >
         <div>
           <h1 className="text-3xl sm:text-4xl font-display font-bold text-slate-900">Employer Dashboard</h1>
@@ -180,7 +180,7 @@ export default function EmployerDashboard() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6"
+        className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6"
       >
         {isLoading ? (
           Array.from({ length: 4 }).map((_, i) => (
@@ -216,13 +216,13 @@ export default function EmployerDashboard() {
         )}
       </motion.div>
 
-      <div className="grid gap-8 lg:grid-cols-3">
+      <div className="grid gap-6 sm:gap-8 lg:grid-cols-3">
         {/* Analytics Chart */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="lg:col-span-2 glass-card p-8 rounded-2xl border border-slate-200"
+          className="lg:col-span-2 glass-card p-4 sm:p-8 rounded-2xl border border-slate-200 shadow-sm"
         >
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
             <div>
@@ -247,8 +247,8 @@ export default function EmployerDashboard() {
             </div>
           </div>
           
-          <div className="h-96 w-full">
-            <ResponsiveContainer width="100%" height={384} minWidth={0} minHeight={200}>
+          <div className="h-64 sm:h-96 w-full">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={200}>
               <AreaChart data={chartData}>
                 <defs>
                   <linearGradient id="colorGradient" x1="0" y1="0" x2="0" y2="1">
@@ -276,7 +276,7 @@ export default function EmployerDashboard() {
             </ResponsiveContainer>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8 pt-8 border-t border-slate-200">
+          <div className="grid grid-cols-3 gap-3 sm:gap-4 mt-6 sm:mt-8 pt-6 sm:pt-8 border-t border-slate-200">
             <div className="text-center">
               <p className="text-sm font-bold text-slate-900">487</p>
               <p className="text-xs text-slate-600">Total Applications</p>
@@ -300,24 +300,24 @@ export default function EmployerDashboard() {
           className="space-y-6"
         >
           {/* Quick Actions */}
-          <div className="glass-card p-6 rounded-2xl border border-slate-200">
+          <div className="glass-card p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm">
             <h4 className="font-bold text-slate-900 mb-4 flex items-center gap-2">
               <Zap className="h-4 w-4 text-purple-600" />
               Quick Actions
             </h4>
-            <div className="space-y-3">
-              <button onClick={() => navigate("/employer/post-job")} className="w-full px-4 py-2.5 bg-purple-100 text-purple-700 hover:bg-purple-200 rounded-lg text-sm font-bold transition-all hover:scale-105">
+            <div className="grid grid-cols-2 gap-3">
+              <button onClick={() => navigate("/employer/post-job")} className="min-h-15 w-full px-3 py-2.5 bg-purple-100 text-purple-700 hover:bg-purple-200 rounded-xl text-sm font-bold transition-all active:scale-[0.98]">
                 Post New Job
               </button>
-              <button onClick={() => navigate("/employer/applicants")} className="w-full px-4 py-2.5 bg-blue-100 text-blue-700 hover:bg-blue-200 rounded-lg text-sm font-bold transition-all hover:scale-105">
+              <button onClick={() => navigate("/employer/applicants")} className="min-h-15 w-full px-3 py-2.5 bg-blue-100 text-blue-700 hover:bg-blue-200 rounded-xl text-sm font-bold transition-all active:scale-[0.98]">
                 Review Applications
               </button>
-              <button onClick={() => navigate("/employer/interviews")} className="w-full px-4 py-2.5 bg-emerald-100 text-emerald-700 hover:bg-emerald-200 rounded-lg text-sm font-bold transition-all hover:scale-105">
+              <button onClick={() => navigate("/employer/interviews")} className="min-h-15 w-full px-3 py-2.5 bg-emerald-100 text-emerald-700 hover:bg-emerald-200 rounded-xl text-sm font-bold transition-all active:scale-[0.98]">
                 Schedule Interviews
               </button>
               <button 
                 onClick={handleLogout}
-                className="w-full px-4 py-2.5 bg-red-100 text-red-700 hover:bg-red-200 rounded-lg text-sm font-bold transition-all hover:scale-105 flex items-center justify-center gap-2"
+                className="min-h-15 w-full px-3 py-2.5 bg-red-100 text-red-700 hover:bg-red-200 rounded-xl text-sm font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2"
                 title="Logout from your account"
               >
                 <LogOut className="h-4 w-4" />
@@ -327,7 +327,7 @@ export default function EmployerDashboard() {
           </div>
 
           {/* Performance Highlights */}
-          <div className="glass-card p-6 rounded-2xl border border-slate-200">
+          <div className="glass-card p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm">
             <h4 className="font-bold text-slate-900 mb-4 flex items-center gap-2">
               <Award className="h-4 w-4 text-amber-600" />
               This Month
@@ -353,7 +353,7 @@ export default function EmployerDashboard() {
           </div>
 
           {/* Premium Upgrade */}
-          <div className="glass-card p-6 rounded-2xl bg-linear-to-br from-purple-600 to-indigo-600 text-white border border-purple-500/50">
+          <div className="glass-card p-5 sm:p-6 rounded-2xl bg-linear-to-br from-purple-600 to-indigo-600 text-white border border-purple-500/50 shadow-lg shadow-purple-200/50">
             <h4 className="font-bold mb-2">Grow Faster</h4>
             <p className="text-xs text-purple-100 mb-4">Upgrade to Pro for featured job placement and priority support.</p>
             <Button onClick={() => navigate("/employer/subscription")} className="w-full py-2 bg-white text-purple-600 hover:bg-purple-50 rounded-lg text-xs font-bold">
@@ -368,7 +368,7 @@ export default function EmployerDashboard() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
-        className="glass-card p-8 rounded-2xl border border-slate-200"
+        className="glass-card p-4 sm:p-8 rounded-2xl border border-slate-200"
       >
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
           <h3 className="text-2xl font-bold text-slate-900 flex items-center gap-3">
@@ -380,7 +380,7 @@ export default function EmployerDashboard() {
           </Button>
         </div>
 
-        <div className="grid gap-4">
+        <div className="grid gap-3 sm:gap-4">
           {isLoading ? (
             Array.from({ length: 3 }).map((_, i) => (
               <div key={i} className="p-6 rounded-xl bg-slate-50 border border-slate-200 animate-pulse h-28" />
@@ -392,7 +392,7 @@ export default function EmployerDashboard() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.35 + idx * 0.05 }}
-              className="p-6 rounded-xl bg-slate-50 border border-slate-200 hover:shadow-md transition-all group"
+              className="p-4 sm:p-6 rounded-xl bg-slate-50 border border-slate-200 hover:shadow-md transition-all group"
             >
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div className="flex-1">
@@ -441,7 +441,7 @@ export default function EmployerDashboard() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.35 }}
-        className="glass-card p-8 rounded-2xl border border-slate-200"
+        className="glass-card p-4 sm:p-8 rounded-2xl border border-slate-200"
       >
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
           <h3 className="text-2xl font-bold text-slate-900 flex items-center gap-3">
@@ -472,7 +472,44 @@ export default function EmployerDashboard() {
           />
         </div>
 
-        <div className="overflow-x-auto">
+        <div className="md:hidden space-y-3">
+          {isLoading ? (
+            Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="p-4 rounded-xl bg-slate-100 animate-pulse h-20" />
+            ))
+          ) : (
+            pagedApplications.map((app: any, idx: number) => (
+              <div key={app.id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                <div className="flex items-start gap-3">
+                  <div className="mt-1 flex flex-col items-center">
+                    <div className="h-8 w-8 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center text-xs font-bold">
+                      {app.name.charAt(0)}
+                    </div>
+                    {idx !== pagedApplications.length - 1 && <div className="w-px h-8 bg-purple-100 mt-1" />}
+                  </div>
+                  <div className="grow">
+                    <p className="font-semibold text-slate-900 text-sm">{app.name}</p>
+                    <p className="text-xs text-slate-500 mt-0.5">{app.position}</p>
+                    <div className="mt-2 flex items-center justify-between gap-2">
+                      <span className="text-xs text-slate-600">{app.time}</span>
+                      <span className={cn(
+                        "px-2.5 py-1 rounded-full text-[11px] font-bold",
+                        app.status === "Applied" ? "bg-blue-100 text-blue-700" :
+                        app.status === "Under Review" ? "bg-purple-100 text-purple-700" :
+                        app.status === "Interview Scheduled" ? "bg-emerald-100 text-emerald-700" :
+                        "bg-slate-100 text-slate-700"
+                      )}>
+                        {app.status}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-slate-200">

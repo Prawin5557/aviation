@@ -11,6 +11,11 @@ import {
   Plane,
   Bell,
   FileText,
+  Sparkles,
+  User,
+  LineChart,
+  Send,
+  ChevronRight,
 } from "lucide-react";
 import { Button } from "@/src/components/ui/Button";
 import { Skeleton } from "@/src/components/ui/Skeleton";
@@ -67,6 +72,21 @@ export default function DashboardHome() {
   const savedJobsCount = savedJobs.length;
   const internshipRecommendations = internshipJobs.slice(0, 3);
 
+  const fallbackRecommendations = [
+    {
+      id: "sample-1",
+      title: "Cabin Crew Trainee",
+      company: "SkyBridge Air",
+      location: "Dubai",
+    },
+    {
+      id: "sample-2",
+      title: "Airport Operations Intern",
+      company: "Falcon Ground Services",
+      location: "Abu Dhabi",
+    },
+  ];
+
   const appsPageCount = Math.max(1, Math.ceil(recentApps.length / APPS_PAGE_SIZE));
   const pagedRecentApps = useMemo(() => {
     const start = (currentAppsPage - 1) * APPS_PAGE_SIZE;
@@ -87,41 +107,75 @@ export default function DashboardHome() {
   ];
 
   return (
-    <div className="space-y-6 sm:space-y-10 pb-20 px-4 sm:px-0 pt-4 sm:pt-0">
+    <div className="space-y-6 sm:space-y-10 pb-24 lg:pb-8 px-4 sm:px-0 pt-4 sm:pt-0 overflow-x-hidden">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-display font-bold text-slate-900">
-            Welcome back, <span className="text-purple-600">{user?.name || 'Captain'}</span> ✈️
-          </h1>
-          <div className="flex items-center space-x-2 mt-1">
-            <p className="text-slate-500 text-sm sm:text-base font-medium">Here's what's happening with your aviation career today.</p>
-            <span className={cn(
-              "text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-widest",
-              user?.subscription === 'elite' ? "bg-indigo-100 text-indigo-700" :
-              user?.subscription === 'professional' ? "bg-purple-100 text-purple-700" : "bg-slate-100 text-slate-700"
-            )}>
-              {user?.subscription || 'Starter'} Plan
-            </span>
+      <div className="relative rounded-3xl p-4 sm:p-5 lg:p-0 lg:rounded-none bg-linear-to-br from-purple-100/70 via-white/80 to-indigo-100/70 lg:bg-transparent border border-purple-100/80 lg:border-none shadow-xl shadow-purple-100/50 lg:shadow-none backdrop-blur-md">
+        <div className="absolute inset-0 rounded-3xl bg-white/25 lg:hidden" aria-hidden="true" />
+        <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6 lg:max-w-7xl lg:mx-auto">
+          <div className="flex items-start gap-3 sm:gap-4">
+            <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl bg-purple-600/90 text-white flex items-center justify-center shrink-0 shadow-lg shadow-purple-200/70">
+              <span className="text-base sm:text-lg font-bold">{user?.name?.charAt(0) || "C"}</span>
+            </div>
+            <div>
+              <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.22em] text-purple-600">Good to see you</p>
+              <h1 className="text-2xl sm:text-3xl font-display font-bold text-slate-900 leading-tight">
+                Welcome back, <span className="text-purple-600">{user?.name || "Captain"}</span> ✈️
+              </h1>
+              <div className="flex flex-wrap items-center gap-2 mt-2">
+                <p className="text-slate-500 text-xs sm:text-sm font-medium">Here is what is happening with your aviation career today.</p>
+                <span className={cn(
+                  "text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-widest",
+                  user?.subscription === 'elite' ? "bg-indigo-100 text-indigo-700" :
+                  user?.subscription === 'professional' ? "bg-purple-100 text-purple-700" : "bg-slate-100 text-slate-700"
+                )}>
+                  {user?.subscription || 'Starter'} Plan
+                </span>
+              </div>
+
+              <div className="mt-3 max-w-xs">
+                <div className="flex items-center justify-between mb-1.5">
+                  <p className="text-[10px] sm:text-xs font-semibold text-slate-500">Profile Strength</p>
+                  <span className="text-[10px] sm:text-xs font-bold text-purple-700">{profileCompleteness}%</span>
+                </div>
+                <div className="h-2 w-full bg-white/80 rounded-full overflow-hidden border border-purple-100">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${profileCompleteness}%` }}
+                    transition={{ duration: 1.1, ease: "easeOut" }}
+                    className="h-full bg-linear-to-r from-purple-500 to-purple-700"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-        <div className="flex items-center space-x-3 sm:space-x-4">
-          <button 
-            aria-label="View notifications"
-            onClick={handleNotificationClick}
-            className="p-2 sm:p-3 bg-white rounded-xl sm:rounded-2xl border border-slate-200 text-slate-400 hover:text-purple-600 hover:border-purple-200 transition-all shadow-sm"
-          >
-            <Bell className="h-5 w-5" />
-          </button>
-          <Link to="/dashboard/resume" className="premium-button-primary px-4 sm:px-6 py-2 sm:py-3 flex items-center space-x-2 w-full sm:w-auto justify-center">
-            <FileText className="h-4 w-4" />
-            <span>Update Resume</span>
-          </Link>
+
+          <div className="flex items-center space-x-3 sm:space-x-4 w-full md:w-auto">
+            <button
+              aria-label="View notifications"
+              onClick={handleNotificationClick}
+              className="p-2.5 sm:p-3 bg-white/90 rounded-xl sm:rounded-2xl border border-slate-200 text-slate-400 hover:text-purple-600 hover:border-purple-200 transition-all shadow-sm"
+            >
+              <Bell className="h-5 w-5" />
+            </button>
+            <Button
+              variant="secondary"
+              size="sm"
+              className="h-11 sm:h-12 px-4 sm:px-5 rounded-xl bg-white text-purple-700 border border-purple-100 hover:bg-purple-50 font-bold shadow-sm"
+              onClick={() => navigate("/dashboard/profile")}
+            >
+              Complete Profile
+              <ChevronRight className="h-4 w-4 ml-1" />
+            </Button>
+            <Link to="/dashboard/resume" className="premium-button-primary px-4 sm:px-6 py-2 sm:py-3 flex items-center space-x-2 w-full sm:w-auto justify-center">
+              <FileText className="h-4 w-4" />
+              <span>Update Resume</span>
+            </Link>
+          </div>
         </div>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6 lg:max-w-7xl lg:mx-auto">
         {/* Profile Completeness Card */}
         <div className="col-span-2 lg:col-span-1 glass-card p-5 sm:p-6 rounded-3xl bg-linear-to-br from-purple-600 to-indigo-700 text-white border-none shadow-xl shadow-purple-200/50">
           <div className="flex items-center justify-between mb-4">
@@ -159,7 +213,7 @@ export default function DashboardHome() {
           statCards.slice(0, 3).map((stat, idx) => (
             <div
               key={idx}
-              className="glass-card p-4 sm:p-6 rounded-3xl group hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between"
+              className="glass-card p-4 sm:p-6 rounded-3xl group hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between shadow-sm hover:shadow-lg"
             >
               <div className={`h-10 w-10 sm:h-14 sm:w-14 ${stat.bg} ${stat.color} rounded-xl sm:rounded-2xl flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform duration-500`}>
                 <stat.icon className="h-5 w-5 sm:h-7 sm:w-7" />
@@ -171,11 +225,36 @@ export default function DashboardHome() {
         )}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      {/* Mobile Quick Actions */}
+      <div className="lg:hidden glass-card rounded-3xl p-4 border border-purple-100/70 shadow-lg shadow-purple-100/40">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-purple-600" />
+            Quick Actions
+          </h3>
+          <span className="text-[10px] uppercase tracking-widest font-bold text-slate-400">Fast Access</span>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <button onClick={() => navigate("/dashboard/jobs")} className="min-h-15 rounded-2xl bg-purple-50 text-purple-700 font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-transform">
+            <Briefcase className="h-4 w-4" /> Jobs
+          </button>
+          <button onClick={() => navigate("/dashboard/profile")} className="min-h-15 rounded-2xl bg-indigo-50 text-indigo-700 font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-transform">
+            <User className="h-4 w-4" /> Profile
+          </button>
+          <button onClick={() => navigate("/dashboard/applications")} className="min-h-15 rounded-2xl bg-green-50 text-green-700 font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-transform">
+            <LineChart className="h-4 w-4" /> Track
+          </button>
+          <button onClick={() => navigate("/dashboard/interviews")} className="min-h-15 rounded-2xl bg-orange-50 text-orange-700 font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-transform">
+            <Send className="h-4 w-4" /> Interviews
+          </button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 lg:max-w-7xl lg:mx-auto">
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6 sm:space-y-8">
           {/* Market Trends Chart */}
-          <div className="glass-card p-5 sm:p-8 rounded-3xl sm:rounded-4xl border-purple-50">
+          <div className="glass-card p-4 sm:p-8 rounded-3xl sm:rounded-4xl border-purple-50 shadow-sm">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
               <div>
                 <h3 className="text-lg sm:text-xl font-display font-bold text-slate-900">Aviation Job Trends</h3>
@@ -187,8 +266,8 @@ export default function DashboardHome() {
               </div>
             </div>
             
-            <div className="h-[300px] w-full">
-              <ResponsiveContainer width="100%" height={300} minWidth={0} minHeight={200}>
+            <div className="h-60 sm:h-75 w-full">
+              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={200}>
                 <AreaChart data={stats?.jobTrends || []}>
                   <defs>
                     <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
@@ -234,14 +313,14 @@ export default function DashboardHome() {
           {/* Recent Applications */}
           <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold text-slate-900">Recent Applications</h2>
+            <h2 className="text-xl font-bold text-slate-900">Recent Activity</h2>
             <Button 
               variant="ghost" 
               size="sm" 
               className="text-purple-600"
               onClick={handleViewAllApps}
             >
-              View All Applications
+              View All
             </Button>
           </div>
           <div className="space-y-4">
@@ -260,24 +339,27 @@ export default function DashboardHome() {
               ))
             ) : pagedRecentApps.length > 0 ? (
               pagedRecentApps.map((app: any, i: number) => (
-                <div key={i} className="glass-card p-5 flex items-center justify-between hover:shadow-md transition-shadow">
-                  <div className="flex items-center space-x-4">
-                    <div className="h-12 w-12 rounded-xl bg-white/40 flex items-center justify-center border border-white/20">
-                      <Building2 className="h-6 w-6 text-slate-400" />
+                <div key={i} className="glass-card p-4 sm:p-5 rounded-2xl hover:shadow-md transition-shadow border border-slate-100">
+                  <div className="flex items-start gap-3 sm:gap-4">
+                    <div className="mt-1 flex flex-col items-center">
+                      <div className="h-8 w-8 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center border border-purple-200">
+                        <Building2 className="h-4 w-4" />
+                      </div>
+                      {i !== pagedRecentApps.length - 1 && <div className="w-px h-9 bg-purple-100 mt-1" />}
                     </div>
-                    <div>
+                    <div className="grow">
                       <h4 className="font-bold text-slate-900">Job ID: {app.jobId}</h4>
-                      <p className="text-sm text-slate-500">Applied on {new Date(app.appliedAt).toLocaleDateString()}</p>
+                      <p className="text-xs sm:text-sm text-slate-500 mt-0.5">Applied on {new Date(app.appliedAt).toLocaleDateString()}</p>
+                      <div className="mt-2">
+                        <span className={cn(
+                          "text-[11px] font-bold px-2.5 py-1 rounded-full",
+                          app.status === "Interview Scheduled" ? "bg-green-100/50 text-green-700" :
+                          app.status === "In Review" ? "bg-purple-100/50 text-purple-700" : "bg-slate-100/50 text-slate-700"
+                        )}>
+                          {app.status}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                  <div className="text-right">
-                    <span className={cn(
-                      "text-xs font-bold px-3 py-1 rounded-full",
-                      app.status === "Interview Scheduled" ? "bg-green-100/50 text-green-700" : 
-                      app.status === "In Review" ? "bg-purple-100/50 text-purple-700" : "bg-slate-100/50 text-slate-700"
-                    )}>
-                      {app.status}
-                    </span>
                   </div>
                 </div>
               ))
@@ -313,8 +395,19 @@ export default function DashboardHome() {
       </div>
 
       <div className="space-y-6">
-          <AICareerCoach />
-          {stats?.roadmap && <CareerRoadmap milestones={stats.roadmap} />}
+          <div className="rounded-3xl border border-purple-100/70 bg-linear-to-br from-white via-purple-50/30 to-white p-2 shadow-sm">
+            <AICareerCoach />
+          </div>
+          {stats?.roadmap && (
+            <motion.div
+              initial={{ opacity: 0.95, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+              className="rounded-3xl border border-purple-100/70 bg-white p-2 shadow-sm"
+            >
+              <CareerRoadmap milestones={stats.roadmap} />
+            </motion.div>
+          )}
           <h2 className="text-xl font-bold text-slate-900">Recommended for You</h2>
           <div className="space-y-4">
             {isLoading ? (
@@ -356,9 +449,33 @@ export default function DashboardHome() {
                 </div>
               ))
             ) : (
-              <div className="glass-card p-6 text-center">
-                <p className="text-sm text-slate-500">No internships available at the moment.</p>
-              </div>
+              fallbackRecommendations.map((job, idx) => (
+                <div key={job.id} className="glass-card p-4 sm:p-6 space-y-4 hover:shadow-md transition-shadow border border-purple-100/60">
+                  <div className="flex items-center space-x-3">
+                    <div className="h-10 w-10 shrink-0 rounded-lg bg-purple-50 flex items-center justify-center text-purple-600">
+                      <Plane className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-sm">{job.title}</h4>
+                      <p className="text-xs text-slate-500">{job.company}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center text-xs text-slate-500">
+                    <MapPin className="h-3 w-3 mr-1" /> {job.location}
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                    onClick={() => navigate('/dashboard/jobs')}
+                  >
+                    Explore Jobs
+                  </Button>
+                  {idx === fallbackRecommendations.length - 1 && (
+                    <p className="text-[11px] text-slate-400">Showing sample opportunities while live recommendations are being refreshed.</p>
+                  )}
+                </div>
+              ))
             )}
           </div>
           <div className="glass-card p-8 rounded-4xl border border-slate-100">

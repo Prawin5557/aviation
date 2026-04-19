@@ -135,28 +135,43 @@ export default function DashboardLayout() {
           </motion.div>
         </main>
 
-        {/* Bottom Navigation - Mobile (Instagram Style) */}
-        <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-16 bg-white/80 backdrop-blur-lg border-t border-slate-200 flex items-center justify-around px-2 z-50 print:hidden safe-bottom">
-          {[
-            { name: "Home", path: "/dashboard", icon: LayoutDashboard },
-            { name: "Jobs", path: "/dashboard/jobs", icon: Briefcase },
-            { name: "Profile", path: "/dashboard/profile", icon: User },
-          ].map((item) => (
+        {/* Bottom Navigation - Mobile */}
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 print:hidden safe-bottom px-3 pb-2">
+          <nav className="relative h-16 rounded-2xl bg-white/80 backdrop-blur-xl border border-slate-200/90 shadow-lg shadow-purple-100/60 flex items-center justify-between px-4">
+            {[
+              { name: "Home", path: "/dashboard", icon: LayoutDashboard },
+              { name: "Jobs", path: "/dashboard/jobs", icon: Briefcase },
+              { name: "Profile", path: "/dashboard/profile", icon: User },
+              { name: "Alerts", path: "/dashboard/notifications", icon: Bell },
+            ].map((item, index) => {
+              const isCenterGap = index === 2;
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className={cn(
+                    "flex flex-col items-center justify-center space-y-1 px-2 py-1 rounded-xl transition-all min-w-0",
+                    isCenterGap && "ml-10",
+                    location.pathname === item.path
+                      ? "text-purple-600"
+                      : "text-slate-400"
+                  )}
+                >
+                  <item.icon className={cn("h-5 w-5", location.pathname === item.path && "fill-current")} />
+                  <span className="text-[10px] font-bold uppercase tracking-tight">{item.name}</span>
+                </Link>
+              );
+            })}
+
             <Link
-              key={item.path}
-              to={item.path}
-              className={cn(
-                "flex flex-col items-center justify-center space-y-1 px-3 py-1 rounded-xl transition-all",
-                location.pathname === item.path
-                  ? "text-purple-600"
-                  : "text-slate-400"
-              )}
+              to="/dashboard/jobs"
+              className="absolute left-1/2 -translate-x-1/2 -top-5 h-14 w-14 rounded-2xl bg-linear-to-br from-purple-600 to-indigo-600 text-white shadow-xl shadow-purple-200 inline-flex items-center justify-center border-4 border-white"
+              aria-label="Apply"
             >
-              <item.icon className={cn("h-6 w-6", location.pathname === item.path && "fill-current")} />
-              <span className="text-xs font-bold uppercase tracking-tight">{item.name}</span>
+              <ClipboardList className="h-6 w-6" />
             </Link>
-          ))}
-        </nav>
+          </nav>
+        </div>
       </div>
     </div>
   );

@@ -25,7 +25,7 @@ const pageBackgroundClass = "bg-brand-50";
 const contentMaxWidthClass = "max-w-400";
 
 export default function EmployerLayout() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
@@ -46,10 +46,18 @@ export default function EmployerLayout() {
   };
 
   return (
-    <div className={`${minHeightViewportClass} ${pageBackgroundClass} flex`}>
+    <div className={`${minHeightViewportClass} ${pageBackgroundClass} flex overflow-x-hidden`}>
+      {isSidebarOpen && (
+        <button
+          aria-label="Close sidebar overlay"
+          onClick={() => setIsSidebarOpen(false)}
+          className="lg:hidden fixed inset-0 z-40 bg-slate-900/30 backdrop-blur-sm"
+        />
+      )}
+
       {/* Sidebar */}
       <aside className={cn(
-        "fixed inset-y-0 left-0 z-50 w-72 bg-white/70 backdrop-blur-xl border-r border-slate-200 transition-transform duration-300 lg:translate-x-0 lg:static lg:inset-0",
+        "fixed inset-y-0 left-0 z-50 w-72 bg-white/80 backdrop-blur-xl border-r border-slate-200 transition-transform duration-300 lg:translate-x-0 lg:static lg:inset-0",
         !isSidebarOpen && "-translate-x-full"
       )}>
         <div className="h-full flex flex-col">
@@ -68,6 +76,7 @@ export default function EmployerLayout() {
               <Link
                 key={item.path}
                 to={item.path}
+                onClick={() => setIsSidebarOpen(false)}
                 className={cn(
                   "flex items-center space-x-3 px-4 py-3.5 rounded-2xl text-sm font-bold uppercase tracking-widest transition-all",
                   location.pathname === item.path
@@ -100,7 +109,7 @@ export default function EmployerLayout() {
             <button
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
               aria-label={isSidebarOpen ? "Close sidebar" : "Open sidebar"}
-              className="lg:hidden h-11 w-11 inline-flex items-center justify-center text-slate-500 hover:bg-slate-100 rounded-xl"
+              className="lg:hidden h-11 w-11 inline-flex items-center justify-center text-slate-500 hover:bg-slate-100 rounded-xl border border-slate-200 bg-white/70"
             >
               {isSidebarOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
