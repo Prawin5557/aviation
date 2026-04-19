@@ -21,7 +21,8 @@ import {
   ShieldCheck,
   DollarSign,
   ChevronLeft,
-  X
+  X,
+  Menu,
 } from "lucide-react";
 import { useAuthStore } from "@/src/store/authStore";
 import { useAdminStore } from "@/src/store/adminStore";
@@ -37,6 +38,7 @@ export default function AdminLayout() {
   const { user, logout } = useAuthStore();
   const { searchQuery, setSearchQuery } = useAdminStore();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   const menuItems = [
     { name: "Overview", path: "/admin", icon: LayoutDashboard, desc: "System performance & stats" },
@@ -66,6 +68,64 @@ export default function AdminLayout() {
 
   return (
     <div className="flex min-h-dvh bg-transparent overflow-x-hidden text-slate-600">
+      {isMobileSidebarOpen && (
+        <button
+          aria-label="Close sidebar overlay"
+          onClick={() => setIsMobileSidebarOpen(false)}
+          className="lg:hidden fixed inset-0 z-40 bg-slate-900/30 backdrop-blur-sm"
+        />
+      )}
+
+      {/* Sidebar - Mobile Drawer */}
+      <aside className={cn(
+        "lg:hidden fixed inset-y-0 left-0 z-50 w-72 bg-white/80 backdrop-blur-xl border-r border-slate-200 transition-transform duration-300",
+        isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full"
+      )}>
+        <div className="h-full flex flex-col">
+          <div className="p-6">
+            <Link to="/admin" className="flex items-center space-x-2" onClick={() => setIsMobileSidebarOpen(false)}>
+              <div className="bg-purple-600 p-1.5 rounded-lg shrink-0">
+                <Plane className="h-5 w-5 text-white transform -rotate-45" />
+              </div>
+              <span className="text-xl font-bold text-slate-900 font-display whitespace-nowrap">ARMZ Admin</span>
+            </Link>
+          </div>
+
+          <nav className="grow px-4 space-y-2 overflow-y-auto pb-6">
+            {menuItems.map((item) => {
+              const isActive = location.pathname === item.path ||
+                (item.path !== "/admin" && location.pathname.startsWith(item.path));
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  onClick={() => setIsMobileSidebarOpen(false)}
+                  className={cn(
+                    "flex items-center space-x-3 px-4 py-3.5 rounded-2xl text-sm font-bold uppercase tracking-widest transition-all",
+                    isActive
+                      ? "bg-purple-600 text-white shadow-lg shadow-purple-200"
+                      : "text-slate-500 hover:bg-purple-50 hover:text-purple-600"
+                  )}
+                >
+                  <item.icon className="h-5 w-5" />
+                  <span>{item.name}</span>
+                </Link>
+              );
+            })}
+          </nav>
+
+          <div className="p-4 mt-auto border-t border-slate-200">
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center space-x-3 px-4 py-3.5 rounded-2xl text-sm font-bold uppercase tracking-widest text-rose-600 hover:bg-rose-50 transition-all"
+            >
+              <LogOut className="h-5 w-5" />
+              <span>Logout</span>
+            </button>
+          </div>
+        </div>
+      </aside>
+
       {/* Sidebar */}
       <motion.aside 
         initial={false}
@@ -190,12 +250,15 @@ export default function AdminLayout() {
       {/* Main Content */}
       <div className="grow flex flex-col overflow-x-hidden bg-transparent">
         {/* Header */}
-        <header className="h-16 sm:h-20 bg-transparent border-b border-slate-200 px-3 sm:px-4 lg:px-8 flex items-center justify-between shrink-0">
+        <header className="h-20 bg-transparent border-b border-slate-200 px-3 sm:px-4 lg:px-8 flex items-center justify-between shrink-0">
           <div className="flex items-center grow max-w-md">
-            <div className="sm:hidden inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white/70 px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-600">
-              <LayoutDashboard className="h-4 w-4 text-purple-600" />
-              Admin
-            </div>
+            <button
+              onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
+              aria-label={isMobileSidebarOpen ? "Close menu" : "Open menu"}
+              className="lg:hidden h-11 w-11 inline-flex items-center justify-center text-slate-500 hover:bg-slate-100 rounded-xl border border-slate-200 bg-white/70"
+            >
+              {isMobileSidebarOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </button>
             <div className="hidden sm:block relative w-full group">
               <Search className={cn(
                 "absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors",
@@ -236,7 +299,7 @@ export default function AdminLayout() {
         </header>
 
         {/* Page Content */}
-        <main className="grow p-4 lg:p-8 pb-32 lg:pb-8">
+        <main className="grow p-4 lg:p-8 pb-8">
           <motion.div
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -247,32 +310,6 @@ export default function AdminLayout() {
             <Outlet />
           </motion.div>
         </main>
-
-        <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 safe-bottom px-3 pb-2">
-          <nav className="h-14 rounded-2xl bg-white/85 backdrop-blur-xl border border-slate-200/90 shadow-lg shadow-purple-100/60 flex items-center justify-between px-3">
-            {[
-              { name: "Home", path: "/admin", icon: LayoutDashboard },
-              { name: "Students", path: "/admin/students", icon: Users },
-              { name: "Jobs", path: "/admin/jobs", icon: Briefcase },
-              { name: "Reports", path: "/admin/reports", icon: BarChart3 },
-              { name: "Settings", path: "/admin/settings", icon: Settings },
-            ].map((item) => (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={cn(
-                  "flex flex-col items-center justify-center space-y-1 px-1.5 py-1 rounded-xl transition-all min-w-0",
-                  (location.pathname === item.path || (item.path !== "/admin" && location.pathname.startsWith(item.path)))
-                    ? "text-purple-600"
-                    : "text-slate-400"
-                )}
-              >
-                <item.icon className="h-4 w-4" />
-                <span className="text-[9px] font-bold uppercase tracking-tight">{item.name}</span>
-              </Link>
-            ))}
-          </nav>
-        </div>
       </div>
     </div>
   );

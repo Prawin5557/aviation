@@ -1,5 +1,6 @@
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
+import { useState } from "react";
 import { 
   LayoutDashboard, 
   Briefcase, 
@@ -16,7 +17,9 @@ import {
   CreditCard,
   Video,
   BookOpen,
-  ClipboardList
+  ClipboardList,
+  Menu,
+  X,
 } from "lucide-react";
 import { useAuthStore } from "@/src/store/authStore";
 import { cn } from "@/src/lib/utils";
@@ -27,6 +30,7 @@ export default function DashboardLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   const menuItems = [
     { name: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
@@ -48,6 +52,60 @@ export default function DashboardLayout() {
 
   return (
     <div className="flex layout-min-h-dvh bg-transparent overflow-x-hidden flex-col lg:flex-row">
+      {isMobileSidebarOpen && (
+        <button
+          aria-label="Close menu overlay"
+          onClick={() => setIsMobileSidebarOpen(false)}
+          className="lg:hidden fixed inset-0 z-40 bg-slate-900/30 backdrop-blur-sm"
+        />
+      )}
+
+      {/* Sidebar - Mobile Drawer */}
+      <aside className={cn(
+        "lg:hidden fixed inset-y-0 left-0 z-50 w-72 bg-white/80 backdrop-blur-xl border-r border-slate-200 transition-transform duration-300",
+        isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full"
+      )}>
+        <div className="h-full flex flex-col">
+          <div className="p-6">
+            <Link to="/" className="flex items-center space-x-2" onClick={() => setIsMobileSidebarOpen(false)}>
+              <div className="bg-purple-600 p-1.5 rounded-lg">
+                <Plane className="h-5 w-5 text-white transform -rotate-45" />
+              </div>
+              <span className="text-xl font-bold text-slate-900 font-display">ARMZ Aviation</span>
+            </Link>
+          </div>
+
+          <nav className="grow px-4 space-y-2 overflow-y-auto pb-6">
+            {menuItems.map((item) => (
+              <Link
+                key={item.path}
+                to={item.path}
+                onClick={() => setIsMobileSidebarOpen(false)}
+                className={cn(
+                  "flex items-center space-x-3 px-4 py-3.5 rounded-2xl text-sm font-bold uppercase tracking-widest transition-all",
+                  location.pathname === item.path
+                    ? "bg-purple-600 text-white shadow-lg shadow-purple-200"
+                    : "text-slate-500 hover:bg-purple-50 hover:text-purple-600"
+                )}
+              >
+                <item.icon className="h-5 w-5" />
+                <span>{item.name}</span>
+              </Link>
+            ))}
+          </nav>
+
+          <div className="p-4 mt-auto border-t border-slate-200">
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center space-x-3 px-4 py-3.5 rounded-2xl text-sm font-bold uppercase tracking-widest text-rose-600 hover:bg-rose-50 transition-all"
+            >
+              <LogOut className="h-5 w-5" />
+              <span>Logout</span>
+            </button>
+          </div>
+        </div>
+      </aside>
+
       {/* Sidebar - Desktop */}
       <aside className="hidden lg:flex flex-col w-72 bg-transparent border-r border-slate-200 print:hidden">
         <div className="p-6">
@@ -94,17 +152,22 @@ export default function DashboardLayout() {
       {/* Main Content */}
       <div className="grow flex flex-col overflow-x-hidden">
         {/* Header */}
-        <header className="h-16 sm:h-20 bg-transparent border-b border-slate-200 px-4 sm:px-6 lg:px-8 flex items-center justify-between shrink-0 print:hidden">
-          <div className="flex items-center space-x-3 lg:hidden">
-            <div className="bg-purple-600 p-1.5 rounded-lg">
-              <Plane className="h-4 w-4 text-white transform -rotate-45" />
+        <header className="h-20 bg-transparent border-b border-slate-200 px-4 sm:px-6 lg:px-8 flex items-center justify-between shrink-0 print:hidden">
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
+              aria-label={isMobileSidebarOpen ? "Close menu" : "Open menu"}
+              className="lg:hidden h-11 w-11 inline-flex items-center justify-center text-slate-500 hover:bg-slate-100 rounded-xl border border-slate-200 bg-white/70"
+            >
+              {isMobileSidebarOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </button>
+
+            <div className="hidden md:block">
+              <h2 className="text-lg lg:text-xl font-bold text-slate-800">
+                {menuItems.find(item => item.path === location.pathname)?.name || "Dashboard"}
+              </h2>
             </div>
-            <span className="text-lg font-bold text-slate-900 font-display">ARMZ</span>
           </div>
-          
-          <h2 className="hidden sm:block text-lg lg:text-xl font-bold text-slate-800">
-            {menuItems.find(item => item.path === location.pathname)?.name || "Dashboard"}
-          </h2>
           
           <div className="flex items-center space-x-4 lg:space-x-6">
             <Link to="/dashboard/notifications" aria-label="View notifications" className="relative h-11 w-11 inline-flex items-center justify-center text-slate-500 hover:text-purple-600 hover:bg-slate-100 rounded-xl transition-colors">
@@ -123,7 +186,7 @@ export default function DashboardLayout() {
         </header>
 
         {/* Page Content */}
-        <main className="grow p-4 lg:p-8 pb-32 lg:pb-8 print:p-0 print:overflow-visible">
+        <main className="grow p-4 lg:p-8 pb-8 print:p-0 print:overflow-visible">
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -134,44 +197,6 @@ export default function DashboardLayout() {
             <Outlet />
           </motion.div>
         </main>
-
-        {/* Bottom Navigation - Mobile */}
-        <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 print:hidden safe-bottom px-3 pb-2">
-          <nav className="relative h-14 rounded-2xl bg-white/82 backdrop-blur-xl border border-slate-200/90 shadow-lg shadow-purple-100/60 flex items-center justify-between px-3">
-            {[
-              { name: "Home", path: "/dashboard", icon: LayoutDashboard },
-              { name: "Jobs", path: "/dashboard/jobs", icon: Briefcase },
-              { name: "Profile", path: "/dashboard/profile", icon: User },
-              { name: "Alerts", path: "/dashboard/notifications", icon: Bell },
-            ].map((item, index) => {
-              const isCenterGap = index === 2;
-              return (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className={cn(
-                    "flex flex-col items-center justify-center space-y-1 px-2 py-1 rounded-xl transition-all min-w-0",
-                    isCenterGap && "ml-10",
-                    location.pathname === item.path
-                      ? "text-purple-600"
-                      : "text-slate-400"
-                  )}
-                >
-                  <item.icon className={cn("h-4 w-4", location.pathname === item.path && "fill-current")} />
-                  <span className="text-[9px] font-bold uppercase tracking-tight">{item.name}</span>
-                </Link>
-              );
-            })}
-
-            <Link
-              to="/dashboard/jobs"
-              className="absolute left-1/2 -translate-x-1/2 -top-4 h-12 w-12 rounded-2xl bg-linear-to-br from-purple-600 to-indigo-600 text-white shadow-xl shadow-purple-200 inline-flex items-center justify-center border-4 border-white"
-              aria-label="Apply"
-            >
-              <ClipboardList className="h-5 w-5" />
-            </Link>
-          </nav>
-        </div>
       </div>
     </div>
   );
