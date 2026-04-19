@@ -7,6 +7,9 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '@/src/store/authStore';
+import { useNavigate } from 'react-router-dom';
+import { useLeadCapture } from '@/src/hooks/useLeadCapture';
+import { getSubscriptionRouteForRole, hasActiveSubscription } from '@/src/lib/subscription';
 
 interface Conclave {
   id: string;
@@ -97,6 +100,8 @@ const MOCK_CONCLAVES: Conclave[] = [
 
 export default function Conclaves() {
   const { user } = useAuthStore();
+  const navigate = useNavigate();
+  const { captureConclaveRegistration } = useLeadCapture();
   const [conclaves, setConclaves] = useState<Conclave[]>(MOCK_CONCLAVES);
   const [filter, setFilter] = useState<'all' | 'upcoming' | 'registered' | 'completed'>('all');
   const [showQRModal, setShowQRModal] = useState(false);
@@ -113,6 +118,13 @@ export default function Conclaves() {
   });
 
   const handleRegister = async (conclave: Conclave) => {
+    if (!hasActiveSubscription(user as any)) {
+      toast.error('Event slot booking requires an active employer plan.');
+      navigate(getSubscriptionRouteForRole('employer'));
+      return;
+    }
+
+    captureConclaveRegistration(conclave.title);
     setSelectedConclave(conclave);
     setShowRegisterModal(true);
   };
@@ -182,10 +194,12 @@ export default function Conclaves() {
               onClick={(e) => e.stopPropagation()}
               className="glass-card w-full max-w-md p-8 rounded-4xl text-center"
             >
-              <div className="absolute top-0 left-0 right-0 h-1.5 bg-linear-to-r from-green-500 to-emerald-500 rounded-t-[32px]" />
+              <div className="absolute top-0 left-0 right-0 h-1.5 bg-linear-to-r from-green-500 to-emerald-500 rounded-t-4xl" />
               
               <button 
                 onClick={() => setShowQRModal(false)}
+                title="Close registration confirmation"
+                aria-label="Close registration confirmation"
                 className="absolute top-6 right-6 p-2 hover:bg-slate-100 rounded-full"
               >
                 <X className="h-5 w-5 text-slate-400" />
@@ -221,6 +235,8 @@ export default function Conclaves() {
                     navigator.clipboard.writeText(selectedConclave.registrationId || '');
                     toast.success('Registration ID copied!');
                   }}
+                  title="Copy registration ID"
+                  aria-label="Copy registration ID"
                   className="flex-1 py-3 bg-slate-100 text-slate-700 font-semibold rounded-xl hover:bg-slate-200 transition-colors flex items-center justify-center gap-2"
                 >
                   <Share2 className="h-4 w-4" />
@@ -228,6 +244,8 @@ export default function Conclaves() {
                 </button>
                 <button
                   onClick={() => toast.success('QR Code downloaded!')}
+                  title="Download QR code"
+                  aria-label="Download QR code"
                   className="flex-1 py-3 bg-purple-600 text-white font-semibold rounded-xl hover:bg-purple-700 transition-colors flex items-center justify-center gap-2"
                 >
                   <Download className="h-4 w-4" />
@@ -256,10 +274,12 @@ export default function Conclaves() {
               onClick={(e) => e.stopPropagation()}
               className="glass-card w-full max-w-lg p-8 rounded-4xl"
             >
-              <div className="absolute top-0 left-0 right-0 h-1.5 bg-linear-to-r from-purple-500 to-indigo-500 rounded-t-[32px]" />
+              <div className="absolute top-0 left-0 right-0 h-1.5 bg-linear-to-r from-purple-500 to-indigo-500 rounded-t-4xl" />
               
               <button 
                 onClick={() => setShowRegisterModal(false)}
+                title="Close event registration"
+                aria-label="Close event registration"
                 className="absolute top-6 right-6 p-2 hover:bg-slate-100 rounded-full"
               >
                 <X className="h-5 w-5 text-slate-400" />
@@ -302,6 +322,10 @@ export default function Conclaves() {
               </div>
 
               <div className="bg-purple-50 rounded-xl p-4 mb-6">
+                <div className="mb-3 flex items-center justify-between rounded-lg border border-purple-100 bg-white px-3 py-2">
+                  <span className="text-xs font-bold uppercase tracking-widest text-slate-500">Interview Slot Fee</span>
+                  <span className="text-sm font-bold text-purple-700">INR 499</span>
+                </div>
                 <h4 className="font-semibold text-slate-900 mb-2">Registration includes:</h4>
                 <ul className="space-y-1.5">
                   {selectedConclave.highlights.map((h, i) => (

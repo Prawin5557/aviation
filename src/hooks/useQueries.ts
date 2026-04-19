@@ -1,11 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiService } from '../services/api';
 import toast from 'react-hot-toast';
+import { logger } from '@/src/utils/logger';
 
-// Global error handler for queries
-const handleQueryError = (error: Error, context: string) => {
-  console.error(`Query error in ${context}:`, error);
-  toast.error(`Failed to load ${context}. Please try again.`);
+const handleMutationError = (error: Error, context: string) => {
+  logger.error(`Mutation error in ${context}`, { error: error.message });
+  toast.error(`Failed to ${context}. Please try again.`);
 };
 
 // Jobs Hooks
@@ -31,8 +31,7 @@ export const useJobActions = () => {
       toast.success('Job posted successfully');
     },
     onError: (error: Error) => {
-      toast.error('Failed to create job. Please try again.');
-      console.error('Create job error:', error);
+      handleMutationError(error, 'create job');
     },
   });
 
@@ -43,8 +42,7 @@ export const useJobActions = () => {
       toast.success('Job updated successfully');
     },
     onError: (error: Error) => {
-      toast.error('Failed to update job. Please try again.');
-      console.error('Update job error:', error);
+      handleMutationError(error, 'update job');
     },
   });
 
@@ -55,8 +53,7 @@ export const useJobActions = () => {
       toast.success('Job deleted successfully');
     },
     onError: (error: Error) => {
-      toast.error('Failed to delete job. Please try again.');
-      console.error('Delete job error:', error);
+      handleMutationError(error, 'delete job');
     },
   });
 
@@ -91,6 +88,7 @@ export const useApplicationActions = () => {
       queryClient.invalidateQueries({ queryKey: ['applications'] });
       toast.success('Application submitted successfully');
     },
+    onError: (error: Error) => handleMutationError(error, 'submit application'),
   });
 
   return {
@@ -109,6 +107,7 @@ export const useApplicationManagement = () => {
       queryClient.invalidateQueries({ queryKey: ['applications'] });
       toast.success('Application status updated');
     },
+    onError: (error: Error) => handleMutationError(error, 'update application status'),
   });
 
   return {
@@ -149,6 +148,7 @@ export const useUserActions = () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
       toast.success('User updated successfully');
     },
+    onError: (error: Error) => handleMutationError(error, 'update user'),
   });
 
   const deleteUserMutation = useMutation({
@@ -157,6 +157,7 @@ export const useUserActions = () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
       toast.success('User deleted successfully');
     },
+    onError: (error: Error) => handleMutationError(error, 'delete user'),
   });
 
   return {

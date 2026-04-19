@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
 import { authService } from '@/src/services/authService';
@@ -24,6 +24,15 @@ export default function GoogleLogin({
 }: GoogleLoginProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoaded, setIsGoogleLoaded] = useState(false);
+  const [initError, setInitError] = useState<string | null>(null);
+  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+  const onSuccessRef = useRef(onSuccess);
+  const onErrorRef = useRef(onError);
+
+  useEffect(() => {
+    onSuccessRef.current = onSuccess;
+    onErrorRef.current = onError;
+  }, [onSuccess, onError]);
 
   useEffect(() => {
     const scriptSrc = 'https://accounts.google.com/gsi/client';
@@ -33,9 +42,9 @@ export default function GoogleLogin({
       setIsLoading(true);
       try {
         const result = await authService.googleLogin(response.credential);
-        onSuccess(result);
+        onSuccessRef.current(result);
       } catch (error) {
-        if (onError) onError(error);
+        if (onErrorRef.current) onErrorRef.current(error);
       } finally {
         setIsLoading(false);
       }
@@ -46,6 +55,14 @@ export default function GoogleLogin({
         return;
       }
 
+      if (!googleClientId) {
+        setIsGoogleLoaded(false);
+        setInitError('Google Sign-In is not configured for this environment.');
+        return;
+      }
+
+      setInitError(null);
+
       const accountsId = window.google.accounts.id as any;
       if (accountsId.__initialized) {
         setIsGoogleLoaded(true);
@@ -53,7 +70,7 @@ export default function GoogleLogin({
       }
 
       accountsId.initialize({
-        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID || 'mock-google-client-id',
+        client_id: googleClientId,
         callback: handleGoogleResponse,
         auto_select: false,
         cancel_on_tap_outside: true,
@@ -72,7 +89,8 @@ export default function GoogleLogin({
       if (existingScript) {
         existingScript.addEventListener('load', initializeGoogleSignIn);
         existingScript.addEventListener('error', () => {
-          if (onError) onError(new Error('Failed to load Google services'));
+          setInitError('Failed to load Google services.');
+          if (onErrorRef.current) onErrorRef.current(new Error('Failed to load Google services'));
         });
         return;
       }
@@ -83,7 +101,8 @@ export default function GoogleLogin({
       script.defer = true;
       script.onload = initializeGoogleSignIn;
       script.onerror = () => {
-        if (onError) onError(new Error('Failed to load Google services'));
+        setInitError('Failed to load Google services.');
+        if (onErrorRef.current) onErrorRef.current(new Error('Failed to load Google services'));
       };
       document.head.appendChild(script);
     };
@@ -95,12 +114,16 @@ export default function GoogleLogin({
         existingScript.removeEventListener('load', initializeGoogleSignIn);
       }
     };
-  }, [onError, onSuccess]);
+  }, [googleClientId]);
 
   const handleGoogleSignIn = () => {
+    if (!googleClientId) {
+      return;
+    }
+
     if (!isGoogleLoaded || !window.google) {
-      if (onError) {
-        onError(new Error('Google Identity Services not loaded'));
+      if (onErrorRef.current) {
+        onErrorRef.current(new Error('Google Identity Services not loaded'));
       }
       return;
     }
@@ -118,7 +141,9 @@ export default function GoogleLogin({
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
       onClick={handleGoogleSignIn}
-      disabled={isLoading || !isGoogleLoaded}
+      disabled={isLoading || !isGoogleLoaded || !googleClientId}
+      aria-disabled={isLoading || !isGoogleLoaded || !googleClientId}
+      title={initError || undefined}
       className={`w-full flex items-center justify-center px-4 py-3 border border-slate-300 rounded-xl bg-white hover:bg-slate-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
     >
       {isLoading ? (

@@ -11,6 +11,7 @@ interface Plan {
   permissions: string[];
   razorpay_plan_id: string | null;
   type?: 'student' | 'employer';
+  isActive?: boolean;
 }
 
 interface PlanState {

@@ -80,6 +80,21 @@ const metricCards = [
 ];
 
 const COLORS = ['#8b5cf6', '#3b82f6', '#f59e0b'];
+const chartHeightClass = 'h-80';
+const pieHeightClass = 'h-[310px]';
+
+const subscriptionDotClass = (color: string) => {
+  switch (color) {
+    case '#8b5cf6':
+      return 'bg-violet-500';
+    case '#3b82f6':
+      return 'bg-blue-500';
+    case '#f59e0b':
+      return 'bg-amber-500';
+    default:
+      return 'bg-slate-400';
+  }
+};
 
 export default function AdminAnalytics() {
   return (
@@ -126,8 +141,8 @@ export default function AdminAnalytics() {
             </div>
           </div>
 
-          <div className="mt-8 h-[320px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className={`mt-8 ${chartHeightClass} w-full`}>
+            <ResponsiveContainer width="100%" height={320} minWidth={0} minHeight={200}>
               <LineChart data={chartData.revenue} margin={{ top: 0, right: 0, left: -12, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
                 <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
@@ -165,8 +180,8 @@ export default function AdminAnalytics() {
               <p className="text-slate-500 text-sm mt-1">Breakdown by plan type across the admin audience.</p>
             </div>
           </div>
-          <div className="h-[310px]">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className={pieHeightClass}>
+            <ResponsiveContainer width="100%" height={310} minWidth={0} minHeight={200}>
               <PieChart>
                 <Pie data={chartData.subscription} dataKey="value" innerRadius={50} outerRadius={90} paddingAngle={6}>
                   {chartData.subscription.map((entry, index) => (
@@ -180,7 +195,7 @@ export default function AdminAnalytics() {
               {chartData.subscription.map((item) => (
                 <div key={item.name} className="flex items-center justify-between rounded-3xl border border-slate-100 bg-white px-4 py-3 shadow-sm">
                   <div className="flex items-center gap-3">
-                    <span className="h-3 w-3 rounded-full" style={{ backgroundColor: item.color }} />
+                    <span className={`h-3 w-3 rounded-full ${subscriptionDotClass(item.color)}`} />
                     <span className="text-sm font-semibold text-slate-700">{item.name}</span>
                   </div>
                   <span className="text-sm font-semibold text-slate-900">{item.value}%</span>
@@ -201,8 +216,8 @@ export default function AdminAnalytics() {
             <span>Updated hourly</span>
           </div>
         </div>
-        <div className="mt-8 h-[320px] w-full">
-          <ResponsiveContainer width="100%" height="100%">
+        <div className={`mt-8 ${chartHeightClass} w-full`}>
+          <ResponsiveContainer width="100%" height={320} minWidth={0} minHeight={200}>
             <BarChart data={chartData.applications} margin={{ top: 0, right: 0, left: -10, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
               <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />

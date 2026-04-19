@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Edit2, Trash2, Check, X, RefreshCw, Search, Filter, BarChart3, TrendingUp, Users, DollarSign, Activity, MapPin, Settings2, Briefcase, Clock } from "lucide-react";
 import { apiService } from "@/src/services/api";
@@ -46,9 +46,7 @@ export default function AdminInternships() {
   const [creatingInternship, setCreatingInternship] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  useEffect(() => { fetchInternships(); }, []);
-
-  const fetchInternships = async () => {
+  const fetchInternships = useCallback(async () => {
     try {
       setLoading(true);
       const res = await apiService.getAdminInternships();
@@ -61,7 +59,11 @@ export default function AdminInternships() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    void fetchInternships();
+  }, [fetchInternships]);
 
   const filteredInternships = useMemo(() => {
     return internships.filter(internship => {
@@ -212,7 +214,7 @@ export default function AdminInternships() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <GlassCard className="p-8" hoverEffect={false}>
               <div className="flex items-center justify-between mb-8"><div><h2 className="text-xl font-display font-bold text-slate-900">Internship Views</h2><p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">Weekly trends</p></div></div>
-              <ResponsiveContainer width="100%" height={300}>
+              <ResponsiveContainer width="100%" height={300} minWidth={0}>
                 <AreaChart data={viewsData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" /><XAxis dataKey="month" stroke="#64748b" fontSize={12} /><YAxis stroke="#64748b" fontSize={12} /><Tooltip contentStyle={chartTooltipStyle} /><Area type="monotone" dataKey="views" stroke="#06b6d4" fill="url(#viewGradient)" strokeWidth={2} /><defs><linearGradient id="viewGradient" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#06b6d4" stopOpacity={0.3}/><stop offset="95%" stopColor="#06b6d4" stopOpacity={0.1}/></linearGradient></defs>
                 </AreaChart>
@@ -221,7 +223,7 @@ export default function AdminInternships() {
 
             <GlassCard className="p-8" hoverEffect={false}>
               <div className="flex items-center justify-between mb-8"><div><h2 className="text-xl font-display font-bold text-slate-900">By Department</h2><p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">Distribution</p></div></div>
-              <ResponsiveContainer width="100%" height={300}>
+              <ResponsiveContainer width="100%" height={300} minWidth={0}>
                 <RechartsPieChart>
                   <Pie data={stats?.internshipsByDepartment || []} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={5} dataKey="value">
                     {(stats?.internshipsByDepartment || []).map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
@@ -310,7 +312,7 @@ export default function AdminInternships() {
         <div className="space-y-8">
           <GlassCard className="p-8" hoverEffect={false}>
             <div className="flex items-center justify-between mb-8"><div><h2 className="text-xl font-display font-bold text-slate-900">Applications Received</h2><p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">Weekly trends</p></div></div>
-            <ResponsiveContainer width="100%" height={400}>
+            <ResponsiveContainer width="100%" height={400} minWidth={0}>
               <BarChart data={applicationsData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" /><XAxis dataKey="month" stroke="#64748b" fontSize={12} /><YAxis stroke="#64748b" fontSize={12} /><Tooltip contentStyle={barChartTooltipStyle} /><Bar dataKey="applications" fill="#f59e0b" radius={[4, 4, 0, 0]} />
               </BarChart>

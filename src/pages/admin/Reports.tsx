@@ -1,72 +1,30 @@
 import { useMemo, useState } from "react";
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
-import { BarChart3, TrendingUp, Users, DollarSign, Download, CalendarDays, ArrowUpRight, ArrowDownLeft, Share2, Layers } from "lucide-react";
+import { BarChart3, TrendingUp, Users, DollarSign, Download, CalendarDays, ArrowUpRight, Share2, Layers } from "lucide-react";
+import { useDashboardStats, useUsers } from "@/src/hooks/useQueries";
 
 const timelineOptions = ["Last 7 Days", "Last 30 Days", "Last 90 Days", "Last 12 Months"];
 
-const chartData = {
-  "Last 7 Days": [
-    { period: "Mon", revenue: 32000, users: 1350 },
-    { period: "Tue", revenue: 38500, users: 1600 },
-    { period: "Wed", revenue: 29500, users: 1480 },
-    { period: "Thu", revenue: 42500, users: 1760 },
-    { period: "Fri", revenue: 50500, users: 1920 },
-    { period: "Sat", revenue: 47000, users: 1850 },
-    { period: "Sun", revenue: 52000, users: 2020 },
-  ],
-  "Last 30 Days": [
-    { period: "Week 1", revenue: 120000, users: 5200 },
-    { period: "Week 2", revenue: 145000, users: 6100 },
-    { period: "Week 3", revenue: 162000, users: 6800 },
-    { period: "Week 4", revenue: 190000, users: 7400 },
-  ],
-  "Last 90 Days": [
-    { period: "Jan", revenue: 430000, users: 18000 },
-    { period: "Feb", revenue: 462000, users: 19400 },
-    { period: "Mar", revenue: 501000, users: 21000 },
-    { period: "Apr", revenue: 552000, users: 23000 },
-  ],
-  "Last 12 Months": [
-    { period: "Jan", revenue: 410000, users: 17100 },
-    { period: "Feb", revenue: 436000, users: 18300 },
-    { period: "Mar", revenue: 480000, users: 19700 },
-    { period: "Apr", revenue: 521000, users: 20500 },
-    { period: "May", revenue: 555000, users: 21500 },
-    { period: "Jun", revenue: 590000, users: 22900 },
-    { period: "Jul", revenue: 610000, users: 23800 },
-    { period: "Aug", revenue: 634000, users: 24500 },
-    { period: "Sep", revenue: 662000, users: 25200 },
-    { period: "Oct", revenue: 690000, users: 26400 },
-    { period: "Nov", revenue: 724000, users: 27800 },
-    { period: "Dec", revenue: 742000, users: 28400 },
-  ],
+const toNumber = (value: string | number | undefined) => {
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? value : 0;
+  }
+
+  if (!value) {
+    return 0;
+  }
+
+  const compact = value.replace(/,/g, "").trim();
+  const match = compact.match(/([0-9]+(?:\.[0-9]+)?)([KMB])?/i);
+  if (!match) {
+    return 0;
+  }
+
+  const numeric = Number(match[1]);
+  const suffix = (match[2] || "").toUpperCase();
+  const multiplier = suffix === "B" ? 1_000_000_000 : suffix === "M" ? 1_000_000 : suffix === "K" ? 1_000 : 1;
+  return numeric * multiplier;
 };
-
-const subscriptionMix = [
-  { name: "Prime", value: 42, fill: "#6366f1", dotClass: "bg-blue-600" },
-  { name: "Growth", value: 33, fill: "#e879f9", dotClass: "bg-fuchsia-500" },
-  { name: "Enterprise", value: 25, fill: "#f59e0b", dotClass: "bg-amber-500" },
-];
-
-const reportLog = [
-  { id: 1, title: "Monthly revenue analysis", type: "PDF", status: "Completed", updated: "2 hours ago" },
-  { id: 2, title: "User growth forecast", type: "XLSX", status: "Processing", updated: "6 hours ago" },
-  { id: 3, title: "Subscription trends", type: "CSV", status: "Completed", updated: "1 day ago" },
-  { id: 4, title: "Performance pulse", type: "PDF", status: "Queued", updated: "Just now" },
-];
-
-const premiumMetrics = [
-  { label: "Monthly revenue", value: "₹ 6.9M", change: "+18.2%", icon: DollarSign, accent: "bg-amber-100 text-amber-600" },
-  { label: "New admin users", value: "1.4k", change: "+12.5%", icon: Users, accent: "bg-blue-100 text-blue-600" },
-  { label: "Conversion rate", value: "7.6%", change: "+4.8%", icon: TrendingUp, accent: "bg-emerald-100 text-emerald-600" },
-  { label: "Report exports", value: "1.2k", change: "+9.4%", icon: BarChart3, accent: "bg-violet-100 text-violet-600" },
-];
-
-const insights = [
-  { label: "Top-performing program", value: "Aviation Upskill", delta: "+24%", icon: Share2 },
-  { label: "Highest retention", value: "Prime Subscribers", delta: "+13%", icon: Layers },
-  { label: "Fastest growing region", value: "South Asia", delta: "+21%", icon: ArrowUpRight },
-];
 
 function statusStyles(status: string) {
   switch (status) {
@@ -82,16 +40,94 @@ function statusStyles(status: string) {
 }
 
 type TrendPoint = { period: string; revenue: number; users: number };
-
-type TimelineKey = keyof typeof chartData;
+type TimelineKey = (typeof timelineOptions)[number];
 
 export default function Reports() {
+  const { data: stats } = useDashboardStats();
+  const { data: users } = useUsers();
   const [selectedPeriod, setSelectedPeriod] = useState<TimelineKey>("Last 30 Days");
-  const selectedPeriodKey = selectedPeriod as TimelineKey;
 
-  const trendData = useMemo<TrendPoint[]>(
-    () => chartData[selectedPeriodKey],
-    [selectedPeriodKey]
+  const trendData = useMemo<TrendPoint[]>(() => {
+    const source: Array<{ month: string; count: number }> = Array.isArray(stats?.jobTrends) ? stats.jobTrends : [];
+    if (!source.length) {
+      return [];
+    }
+
+    const windowSize = selectedPeriod === "Last 7 Days" ? 7 : selectedPeriod === "Last 30 Days" ? 4 : selectedPeriod === "Last 90 Days" ? 3 : 12;
+    const windowData = source.slice(-windowSize);
+    const totalCount = windowData.reduce((sum: number, item: { month: string; count: number }) => sum + Number(item.count || 0), 0);
+    const totalRevenue = toNumber(stats?.revenue);
+
+    return windowData.map((item: { month: string; count: number }, idx: number) => {
+      const usersCount = Number(item.count || 0);
+      const distributedRevenue = totalCount > 0 ? Math.round((usersCount / totalCount) * totalRevenue) : 0;
+      return {
+        period: item.month || `P${idx + 1}`,
+        users: usersCount,
+        revenue: distributedRevenue,
+      };
+    });
+  }, [selectedPeriod, stats]);
+
+  const subscriptionMix = useMemo(() => {
+    const roster = Array.isArray(users) ? users : [];
+    const subscriptionCounts = roster.reduce<Record<string, number>>((acc, user: any) => {
+      const tier = user.subscription || "Unassigned";
+      acc[tier] = (acc[tier] || 0) + 1;
+      return acc;
+    }, {});
+
+    const palette = [
+      { fill: "#6366f1", dotClass: "bg-blue-600" },
+      { fill: "#e879f9", dotClass: "bg-fuchsia-500" },
+      { fill: "#f59e0b", dotClass: "bg-amber-500" },
+      { fill: "#10b981", dotClass: "bg-emerald-500" },
+      { fill: "#64748b", dotClass: "bg-slate-500" },
+    ];
+
+    const total = Object.values(subscriptionCounts).reduce((sum, count) => sum + count, 0);
+    return Object.entries(subscriptionCounts).map(([name, count], index) => ({
+      name,
+      value: total > 0 ? Math.round((count / total) * 100) : 0,
+      fill: palette[index % palette.length].fill,
+      dotClass: palette[index % palette.length].dotClass,
+    }));
+  }, [users]);
+
+  const reportLog = useMemo(() => {
+    const activities = Array.isArray(stats?.userActivity) ? stats.userActivity : [];
+    return activities.slice(0, 6).map((entry: any, index: number) => {
+      const actionText = String(entry.action || "");
+      const lower = actionText.toLowerCase();
+      const type = lower.includes("export") ? "Export" : lower.includes("report") ? "Report" : "System";
+      const status = lower.includes("fail") ? "Queued" : lower.includes("pending") ? "Processing" : "Completed";
+      return {
+        id: entry.id || index,
+        title: actionText || "Activity event",
+        type,
+        status,
+        updated: entry.time || "Recently",
+      };
+    });
+  }, [stats]);
+
+  const premiumMetrics = useMemo(
+    () => [
+      { label: "Monthly revenue", value: stats?.revenue || "₹ 0", change: "Live", icon: DollarSign, accent: "bg-amber-100 text-amber-600" },
+      { label: "Admin users", value: String((users || []).filter((user: any) => user.role === "admin").length), change: "Live", icon: Users, accent: "bg-blue-100 text-blue-600" },
+      { label: "Conversion rate", value: `${stats?.conversionRate || 0}%`, change: "Live", icon: TrendingUp, accent: "bg-emerald-100 text-emerald-600" },
+      { label: "Report events", value: String(reportLog.length), change: "Live", icon: BarChart3, accent: "bg-violet-100 text-violet-600" },
+    ],
+    [reportLog.length, stats, users]
+  );
+
+  const insights = useMemo(
+    () => [
+      { label: "Top-performing channel", value: `${stats?.totalJobs || 0} active jobs`, delta: "Live", icon: Share2 },
+      { label: "Highest retention", value: `${stats?.activeUsers || 0} active users`, delta: "Live", icon: Layers },
+      { label: "Growth signal", value: `${stats?.newLeads || 0} new leads`, delta: "Live", icon: ArrowUpRight },
+    ],
+    [stats]
   );
 
   const totalRevenue = useMemo(
@@ -103,6 +139,18 @@ export default function Reports() {
     () => trendData.reduce((sum: number, item: TrendPoint) => sum + item.users, 0),
     [trendData]
   );
+
+  const revenueChange = useMemo(() => {
+    if (trendData.length < 2) {
+      return "0.0%";
+    }
+    const first = trendData[0].revenue;
+    const last = trendData[trendData.length - 1].revenue;
+    if (first <= 0) {
+      return "0.0%";
+    }
+    return `${(((last - first) / first) * 100).toFixed(1)}%`;
+  }, [trendData]);
 
   return (
     <div className="space-y-10 pb-10">
@@ -178,7 +226,7 @@ export default function Reports() {
                 </div>
 
                 <div className="h-80">
-                  <ResponsiveContainer width="100%" height="100%">
+                  <ResponsiveContainer width="100%" height={320} minWidth={0} minHeight={200}>
                     <AreaChart data={trendData} margin={{ top: 0, right: 8, left: 0, bottom: 0 }}>
                       <defs>
                         <linearGradient id="reportTrend" x1="0" y1="0" x2="0" y2="1">
@@ -211,7 +259,7 @@ export default function Reports() {
                   <div className="rounded-3xl bg-slate-50 p-4">
                     <div className="text-slate-400 text-xs uppercase tracking-[0.24em] font-bold">Revenue change</div>
                     <div className="mt-3 flex items-center gap-3 text-3xl font-semibold text-slate-900">
-                      18.2% <ArrowUpRight className="h-4 w-4 text-emerald-500" />
+                      {revenueChange} <ArrowUpRight className="h-4 w-4 text-emerald-500" />
                     </div>
                   </div>
                 </div>
@@ -219,11 +267,11 @@ export default function Reports() {
                 <div className="space-y-4">
                   <div className="rounded-3xl bg-slate-50 p-4">
                     <p className="text-xs uppercase tracking-[0.24em] text-slate-400 font-bold">User adoption</p>
-                    <div className="mt-2 text-2xl font-semibold text-slate-900">+12.5%</div>
+                    <div className="mt-2 text-2xl font-semibold text-slate-900">{totalUsers.toLocaleString()}</div>
                   </div>
                   <div className="rounded-3xl bg-slate-50 p-4">
                     <p className="text-xs uppercase tracking-[0.24em] text-slate-400 font-bold">Export volume</p>
-                    <div className="mt-2 text-2xl font-semibold text-slate-900">1,240</div>
+                    <div className="mt-2 text-2xl font-semibold text-slate-900">{reportLog.length}</div>
                   </div>
                 </div>
               </div>
@@ -241,7 +289,7 @@ export default function Reports() {
             </div>
 
             <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height={320} minWidth={0} minHeight={200}>
                 <PieChart>
                   <Pie data={subscriptionMix} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={60} outerRadius={90} paddingAngle={4}>
                     {subscriptionMix.map((entry, index) => (
@@ -323,18 +371,24 @@ export default function Reports() {
                 </tr>
               </thead>
               <tbody>
-                {reportLog.map((entry) => (
-                  <tr key={entry.id} className="bg-white/90 rounded-3xl shadow-sm">
-                    <td className="px-4 py-4 text-sm font-medium text-slate-900">{entry.title}</td>
-                    <td className="px-4 py-4 text-sm text-slate-600">{entry.type}</td>
-                    <td className="px-4 py-4">
-                      <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${statusStyles(entry.status)}`}>
-                        {entry.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-4 text-sm text-slate-500">{entry.updated}</td>
+                {reportLog.length > 0 ? (
+                  reportLog.map((entry: { id: string | number; title: string; type: string; status: string; updated: string }) => (
+                    <tr key={entry.id} className="bg-white/90 rounded-3xl shadow-sm">
+                      <td className="px-4 py-4 text-sm font-medium text-slate-900">{entry.title}</td>
+                      <td className="px-4 py-4 text-sm text-slate-600">{entry.type}</td>
+                      <td className="px-4 py-4">
+                        <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${statusStyles(entry.status)}`}>
+                          {entry.status}
+                        </span>
+                      </td>
+                      <td className="px-4 py-4 text-sm text-slate-500">{entry.updated}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr className="bg-white/90 rounded-3xl shadow-sm">
+                    <td className="px-4 py-6 text-sm text-slate-500" colSpan={4}>No report activity available yet.</td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>

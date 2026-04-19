@@ -13,8 +13,11 @@ import { useAuthStore } from "@/src/store/authStore";
 import { useApplications, useSavedJobs } from "@/src/hooks/useQueries";
 import { useQueryClient } from '@tanstack/react-query';
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
+import { getSubscriptionRouteForRole, hasActiveSubscription } from "@/src/lib/subscription";
 
 export default function Jobs() {
+  const navigate = useNavigate();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
@@ -43,8 +46,8 @@ export default function Jobs() {
       clearSavedJobs();
       return;
     }
-    setSavedJobs(savedJobs.map((job) => String(job.id)));
-  }, [savedJobs, user, setSavedJobs, clearSavedJobs]);
+    setSavedJobs(savedJobs.map((job: any) => String(job.id)));
+  }, [savedJobs, user]);
 
   const categories = [
     "All", 
@@ -132,7 +135,14 @@ export default function Jobs() {
     if (!selectedJob || !user) return;
     
     if (!isAuthenticated) {
-      toast.error("Please login to apply for jobs");
+      toast.error("Please complete registration and choose a plan to apply.");
+      navigate('/register');
+      return;
+    }
+
+    if (!hasActiveSubscription(user)) {
+      toast.error("Subscription required to apply. Please activate your plan.");
+      navigate(getSubscriptionRouteForRole(user?.role));
       return;
     }
 

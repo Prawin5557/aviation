@@ -7,7 +7,6 @@ import * as z from "zod";
 import { useAuthStore } from "../../store/authStore";
 import { authService } from "../../services/authService";
 import { paymentService } from "../../services/paymentService";
-import { ENV } from "../../config/env";
 import { Button } from "../../components/ui/Button";
 import { Input } from "../../components/ui/Input";
 import SEO from "../../components/common/SEO";
@@ -95,8 +94,6 @@ export default function Register() {
       toast.error('Payment process took too long. Please try again.');
     }, 5 * 60 * 1000);
 
-    const useMockData = ENV.USE_MOCK || ENV.DEMO_MODE;
-
     if (selectedPlan === "prime") {
       setLoading(true);
       try {
@@ -109,7 +106,7 @@ export default function Register() {
           companyName: accountData.companyName,
           hrName: accountData.hrName,
           companyDetails: accountData.companyDetails,
-        }, useMockData);
+        });
 
         clearTimeout(loadingTimeout);
         login(response.user);
@@ -130,7 +127,7 @@ export default function Register() {
     setLoading(true);
     try {
       await paymentService.loadRazorpay();
-      const order = await paymentService.createOrder(selectedPlan, amount, 'INR', useMockData);
+      const order = await paymentService.createOrder(selectedPlan, amount, 'INR');
       setLoading(false);
 
       await paymentService.initiatePayment(
@@ -147,8 +144,7 @@ export default function Register() {
             const result = await paymentService.processPaymentCompletion(
               selectedPlan,
               response,
-              'demo_user',
-              useMockData
+              accountData.email
             );
 
             if (result.success) {
@@ -161,7 +157,7 @@ export default function Register() {
                 companyName: accountData.companyName,
                 hrName: accountData.hrName,
                 companyDetails: accountData.companyDetails,
-              }, useMockData);
+              });
 
               setLoading(false);
               login(regResponse.user);
@@ -235,21 +231,21 @@ export default function Register() {
     <div className="min-h-screen pt-20 bg-transparent flex items-center justify-center px-4 pb-12">
       <SEO title="Register" description="Join the ARMZ Aviation community" />
       <div 
-        className="max-w-2xl w-full glass-card p-10 rounded-[40px] shadow-2xl border-white/50"
+        className="max-w-2xl w-full glass-card p-6 sm:p-10 rounded-3xl sm:rounded-[40px] shadow-2xl border-white/50"
       >
         {/* Progress Bar */}
-        <div className="flex items-center justify-between mb-12 px-4">
+        <div className="flex items-center justify-between mb-8 sm:mb-12 px-2 sm:px-4">
           {[1, 2, 3, 4].map((s) => (
             <div key={s} className="flex items-center">
               <div className={cn(
-                "h-10 w-10 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-500",
+                "h-8 w-8 sm:h-10 sm:w-10 rounded-full flex items-center justify-center font-bold text-xs sm:text-sm transition-all duration-500 shrink-0",
                 step >= s ? "bg-purple-600 text-white shadow-lg shadow-purple-200" : "bg-slate-100 text-slate-400"
               )}>
                 {step > s ? <ShieldCheck className="h-5 w-5" /> : s}
               </div>
               {s < 4 && (
                 <div className={cn(
-                  "h-1 w-12 sm:w-20 mx-2 rounded-full transition-all duration-500",
+                  "h-1 w-8 sm:w-20 mx-1 sm:mx-2 rounded-full transition-all duration-500",
                   step > s ? "bg-purple-600" : "bg-slate-100"
                 )} />
               )}
@@ -275,7 +271,7 @@ export default function Register() {
               <form onSubmit={handleSubmit(onAccountSubmit)} className="grid grid-cols-1 gap-6">
                 <div className="space-y-4">
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-4">I am a...</label>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <button
                       type="button"
                       onClick={() => setValue("role", "student")}
@@ -509,7 +505,7 @@ export default function Register() {
                 <ShieldCheck className="h-12 w-12" />
               </div>
               <div className="space-y-2">
-                <h1 className="text-4xl font-bold text-slate-900">Welcome Aboard!</h1>
+                <h1 className="text-3xl sm:text-4xl font-bold text-slate-900">Welcome Aboard!</h1>
                 <p className="text-slate-600 text-lg">Your account has been created and subscription is active.</p>
               </div>
               <div className="bg-purple-50 p-6 rounded-3xl inline-block">

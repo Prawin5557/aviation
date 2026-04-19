@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { 
   Briefcase, 
   Users, 
@@ -18,7 +18,9 @@ import {
   Zap,
   BarChart3,
   PlusCircle,
-  LogOut
+  LogOut,
+  Search,
+  Download
 } from "lucide-react";
 import { cn } from "@/src/lib/utils";
 import { Button } from "@/src/components/ui/Button";
@@ -45,23 +47,21 @@ const chartData = [
   { month: 'Jun', applications: 92, views: 280, hires: 25 },
 ];
 
-const activeJobs = [
-  { id: 1, title: "Senior Captain - A320", company: "Air India", applications: 24, views: 156, status: "Active", salary: "₹2,50,000/mo" },
-  { id: 2, title: "First Officer - B787", company: "Emirates", applications: 18, views: 142, status: "Active", salary: "₹1,80,000/mo" },
-  { id: 3, title: "Cabin Crew Lead", company: "Indigo", applications: 32, views: 201, status: "Hot", salary: "₹80,000/mo" },
-];
-
-import { useDashboardStats, useApplications } from "@/src/hooks/useQueries";
+import { useDashboardStats, useApplications, useJobs } from "@/src/hooks/useQueries";
 import { Skeleton } from "@/src/components/ui/Skeleton";
 
 export default function EmployerDashboard() {
+  const APPS_PAGE_SIZE = 6;
   const { data: stats, isLoading: isStatsLoading } = useDashboardStats();
   const { data: applicants = [], isLoading: isAppsLoading } = useApplications();
+  const { data: jobs = [], isLoading: isJobsLoading } = useJobs();
   const [activeChart, setActiveChart] = useState("applications");
+  const [applicationSearch, setApplicationSearch] = useState("");
+  const [currentAppsPage, setCurrentAppsPage] = useState(1);
   const { logout } = useAuthStore();
   const navigate = useNavigate();
 
-  const isLoading = isStatsLoading || isAppsLoading;
+  const isLoading = isStatsLoading || isAppsLoading || isJobsLoading;
 
   const handleLogout = () => {
     try {
@@ -89,6 +89,74 @@ export default function EmployerDashboard() {
     matchScore: Math.floor(Math.random() * 40 + 60)
   }));
 
+  const activeJobs = useMemo(
+    () =>
+      jobs
+        .filter((job: any) => String(job.status || "").toLowerCase() !== "closed")
+        .slice(0, 4)
+        .map((job: any) => ({
+          id: String(job.id),
+          title: job.title || "Untitled role",
+          company: job.company || "ARMZ Aviation",
+          applications: Number(job.applications || 0),
+          views: Number(job.views || 0),
+          status: job.status || "Active",
+          salary: job.salary || job.salaryRange || "Not specified",
+        })),
+    [jobs]
+  );
+
+  const filteredApplications = useMemo(() => {
+    const needle = applicationSearch.trim().toLowerCase();
+    if (!needle) return recentApplications;
+
+    return recentApplications.filter((app: any) =>
+      app.name.toLowerCase().includes(needle) ||
+      app.position.toLowerCase().includes(needle) ||
+      String(app.status || '').toLowerCase().includes(needle)
+    );
+  }, [recentApplications, applicationSearch]);
+
+  const appsPageCount = Math.max(1, Math.ceil(filteredApplications.length / APPS_PAGE_SIZE));
+  const pagedApplications = useMemo(() => {
+    const start = (currentAppsPage - 1) * APPS_PAGE_SIZE;
+    return filteredApplications.slice(start, start + APPS_PAGE_SIZE);
+  }, [filteredApplications, currentAppsPage]);
+
+  useEffect(() => {
+    if (currentAppsPage > appsPageCount && appsPageCount > 0) {
+      setCurrentAppsPage(appsPageCount);
+    }
+  }, [appsPageCount]);
+
+  const handleExportApplications = () => {
+    if (filteredApplications.length === 0) {
+      toast.error("No applications to export");
+      return;
+    }
+
+    const headers = ["Applicant", "Position", "Status", "Applied", "Match Score"];
+    const rows = filteredApplications.map((app: any) => [
+      app.name,
+      app.position,
+      app.status,
+      app.time,
+      `${app.matchScore}%`,
+    ]);
+    const csv = [headers, ...rows]
+      .map((row) => row.map((cell: string) => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+      .join('\n');
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `employer-applications-${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    window.URL.revokeObjectURL(url);
+    toast.success("Applications exported");
+  };
+
   return (
     <div className="space-y-6 sm:space-y-10 pb-20 px-4 sm:px-0 pt-4 sm:pt-0">
       {/* Header */}
@@ -101,7 +169,7 @@ export default function EmployerDashboard() {
           <h1 className="text-3xl sm:text-4xl font-display font-bold text-slate-900">Employer Dashboard</h1>
           <p className="text-slate-500 mt-2 text-sm">Manage your aviation recruitment process and track your hiring pipeline.</p>
         </div>
-        <Button className="px-6 py-3 bg-purple-600 text-white hover:bg-purple-700 rounded-xl font-bold flex items-center justify-center gap-2 w-full sm:w-fit">
+        <Button onClick={() => navigate("/employer/post-job")} className="px-6 py-3 bg-purple-600 text-white hover:bg-purple-700 rounded-xl font-bold flex items-center justify-center gap-2 w-full sm:w-fit">
           <PlusCircle className="h-4 w-4" />
           Post New Job
         </Button>
@@ -180,7 +248,7 @@ export default function EmployerDashboard() {
           </div>
           
           <div className="h-96 w-full">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height={384} minWidth={0} minHeight={200}>
               <AreaChart data={chartData}>
                 <defs>
                   <linearGradient id="colorGradient" x1="0" y1="0" x2="0" y2="1">
@@ -208,7 +276,7 @@ export default function EmployerDashboard() {
             </ResponsiveContainer>
           </div>
 
-          <div className="grid grid-cols-3 gap-4 mt-8 pt-8 border-t border-slate-200">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8 pt-8 border-t border-slate-200">
             <div className="text-center">
               <p className="text-sm font-bold text-slate-900">487</p>
               <p className="text-xs text-slate-600">Total Applications</p>
@@ -238,13 +306,13 @@ export default function EmployerDashboard() {
               Quick Actions
             </h4>
             <div className="space-y-3">
-              <button className="w-full px-4 py-2.5 bg-purple-100 text-purple-700 hover:bg-purple-200 rounded-lg text-sm font-bold transition-all hover:scale-105">
+              <button onClick={() => navigate("/employer/post-job")} className="w-full px-4 py-2.5 bg-purple-100 text-purple-700 hover:bg-purple-200 rounded-lg text-sm font-bold transition-all hover:scale-105">
                 Post New Job
               </button>
-              <button className="w-full px-4 py-2.5 bg-blue-100 text-blue-700 hover:bg-blue-200 rounded-lg text-sm font-bold transition-all hover:scale-105">
+              <button onClick={() => navigate("/employer/applicants")} className="w-full px-4 py-2.5 bg-blue-100 text-blue-700 hover:bg-blue-200 rounded-lg text-sm font-bold transition-all hover:scale-105">
                 Review Applications
               </button>
-              <button className="w-full px-4 py-2.5 bg-emerald-100 text-emerald-700 hover:bg-emerald-200 rounded-lg text-sm font-bold transition-all hover:scale-105">
+              <button onClick={() => navigate("/employer/interviews")} className="w-full px-4 py-2.5 bg-emerald-100 text-emerald-700 hover:bg-emerald-200 rounded-lg text-sm font-bold transition-all hover:scale-105">
                 Schedule Interviews
               </button>
               <button 
@@ -288,7 +356,7 @@ export default function EmployerDashboard() {
           <div className="glass-card p-6 rounded-2xl bg-linear-to-br from-purple-600 to-indigo-600 text-white border border-purple-500/50">
             <h4 className="font-bold mb-2">Grow Faster</h4>
             <p className="text-xs text-purple-100 mb-4">Upgrade to Pro for featured job placement and priority support.</p>
-            <Button className="w-full py-2 bg-white text-purple-600 hover:bg-purple-50 rounded-lg text-xs font-bold">
+            <Button onClick={() => navigate("/employer/subscription")} className="w-full py-2 bg-white text-purple-600 hover:bg-purple-50 rounded-lg text-xs font-bold">
               Upgrade Now
             </Button>
           </div>
@@ -307,13 +375,18 @@ export default function EmployerDashboard() {
             <Briefcase className="h-6 w-6 text-purple-600" />
             Active Job Postings
           </h3>
-          <Button className="px-4 py-2 bg-purple-600 text-white hover:bg-purple-700 rounded-lg text-sm font-bold mt-4 sm:mt-0">
+          <Button onClick={() => navigate("/employer/post-job")} className="px-4 py-2 bg-purple-600 text-white hover:bg-purple-700 rounded-lg text-sm font-bold mt-4 sm:mt-0">
             View All Jobs
           </Button>
         </div>
 
         <div className="grid gap-4">
-          {activeJobs.map((job, idx) => (
+          {isLoading ? (
+            Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="p-6 rounded-xl bg-slate-50 border border-slate-200 animate-pulse h-28" />
+            ))
+          ) : activeJobs.length > 0 ? (
+          activeJobs.map((job: any, idx: number) => (
             <motion.div
               key={job.id}
               initial={{ opacity: 0, y: 20 }}
@@ -347,14 +420,19 @@ export default function EmployerDashboard() {
                     <p className="text-2xl font-bold text-slate-900">{job.views}</p>
                   </div>
                   <div className="flex items-end">
-                    <Button className="px-4 py-2 bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 rounded-lg text-sm font-bold">
+                    <Button onClick={() => navigate("/employer/post-job")} className="px-4 py-2 bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 rounded-lg text-sm font-bold">
                       Manage
                     </Button>
                   </div>
                 </div>
               </div>
             </motion.div>
-          ))}
+          ))
+          ) : (
+            <div className="p-8 rounded-xl bg-slate-50 border border-slate-200 text-center">
+              <p className="text-sm text-slate-500">No active jobs found. Create a new posting to start receiving applications.</p>
+            </div>
+          )}
         </div>
       </motion.div>
 
@@ -370,21 +448,40 @@ export default function EmployerDashboard() {
             <Users className="h-6 w-6 text-blue-600" />
             Recent Applications
           </h3>
-          <Button className="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg text-sm font-bold mt-4 sm:mt-0">
-            View All
-          </Button>
+          <div className="flex items-center gap-2 mt-4 sm:mt-0">
+            <Button variant="outline" onClick={handleExportApplications} className="px-4 py-2 rounded-lg text-sm font-bold">
+              <Download className="h-4 w-4 mr-2" />Export
+            </Button>
+            <Button onClick={() => navigate("/employer/applicants")} className="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg text-sm font-bold">
+              View All Applications
+            </Button>
+          </div>
+        </div>
+
+        <div className="mb-4 relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+          <input
+            type="text"
+            value={applicationSearch}
+            onChange={(e) => {
+              setApplicationSearch(e.target.value);
+              setCurrentAppsPage(1);
+            }}
+            placeholder="Search applications"
+            className="w-full h-10 pl-10 pr-4 rounded-xl border border-slate-200 bg-white text-sm text-slate-700 placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-blue-500"
+          />
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-slate-200">
-                <th className="py-4 text-left font-semibold text-slate-600">Applicant</th>
-                <th className="py-4 text-left font-semibold text-slate-600">Position</th>
-                <th className="py-4 text-left font-semibold text-slate-600">Match Score</th>
-                <th className="py-4 text-left font-semibold text-slate-600">Status</th>
-                <th className="py-4 text-left font-semibold text-slate-600">Applied</th>
-                <th className="py-4 text-right font-semibold text-slate-600">Action</th>
+                <th className="py-4 pr-4 text-left font-semibold text-slate-600 whitespace-nowrap">Applicant</th>
+                <th className="py-4 pr-4 text-left font-semibold text-slate-600 whitespace-nowrap">Position</th>
+                <th className="py-4 pr-4 text-left font-semibold text-slate-600 whitespace-nowrap">Match Score</th>
+                <th className="py-4 pr-4 text-left font-semibold text-slate-600 whitespace-nowrap">Status</th>
+                <th className="py-4 pr-4 text-left font-semibold text-slate-600 whitespace-nowrap">Applied</th>
+                <th className="py-4 text-right font-semibold text-slate-600 whitespace-nowrap">Action</th>
               </tr>
             </thead>
             <tbody>
@@ -395,9 +492,9 @@ export default function EmployerDashboard() {
                   </tr>
                 ))
               ) : (
-                recentApplications.map((app) => (
+                pagedApplications.map((app: any) => (
                   <tr key={app.id} className="border-b border-slate-100 hover:bg-slate-50">
-                    <td className="py-4">
+                    <td className="py-4 pr-4 whitespace-nowrap">
                       <div className="flex items-center gap-3">
                         <div className="h-8 w-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-bold text-xs">
                           {app.name.charAt(0)}
@@ -405,8 +502,8 @@ export default function EmployerDashboard() {
                         <span className="font-semibold text-slate-900">{app.name}</span>
                       </div>
                     </td>
-                    <td className="py-4 text-slate-600">{app.position}</td>
-                    <td className="py-4">
+                    <td className="py-4 pr-4 text-slate-600 whitespace-nowrap">{app.position}</td>
+                    <td className="py-4 pr-4 whitespace-nowrap">
                       <div className="flex items-center gap-2">
                         <span className="font-bold text-slate-900">{app.matchScore}%</span>
                         <span className={cn(
@@ -417,7 +514,7 @@ export default function EmployerDashboard() {
                         </span>
                       </div>
                     </td>
-                    <td className="py-4">
+                    <td className="py-4 pr-4 whitespace-nowrap">
                       <span className={cn(
                         "px-3 py-1 rounded-full text-xs font-bold",
                         app.status === "Applied" ? "bg-blue-100 text-blue-700" :
@@ -428,9 +525,9 @@ export default function EmployerDashboard() {
                         {app.status}
                       </span>
                     </td>
-                    <td className="py-4 text-slate-600">{app.time}</td>
-                    <td className="py-4 text-right">
-                      <button className="text-purple-600 hover:text-purple-700 font-semibold text-xs">Review</button>
+                    <td className="py-4 pr-4 text-slate-600 whitespace-nowrap">{app.time}</td>
+                    <td className="py-4 text-right whitespace-nowrap">
+                      <button onClick={() => navigate("/employer/applicants")} className="text-purple-600 hover:text-purple-700 font-semibold text-xs">Review</button>
                     </td>
                   </tr>
                 ))
@@ -438,6 +535,34 @@ export default function EmployerDashboard() {
             </tbody>
           </table>
         </div>
+
+        {!isLoading && filteredApplications.length === 0 && (
+          <div className="text-center py-8">
+            <p className="text-sm text-slate-500">No applications found for your current search.</p>
+          </div>
+        )}
+
+        {!isLoading && filteredApplications.length > APPS_PAGE_SIZE && (
+          <div className="flex items-center justify-between mt-6">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentAppsPage((prev) => Math.max(1, prev - 1))}
+              disabled={currentAppsPage === 1}
+            >
+              Previous
+            </Button>
+            <span className="text-xs text-slate-500 font-medium">Page {currentAppsPage} of {appsPageCount}</span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentAppsPage((prev) => Math.min(appsPageCount, prev + 1))}
+              disabled={currentAppsPage === appsPageCount}
+            >
+              Next
+            </Button>
+          </div>
+        )}
       </motion.div>
     </div>
   );

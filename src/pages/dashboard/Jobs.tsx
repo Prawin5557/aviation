@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { Search, Filter, Briefcase, MapPin, ArrowRight, ChevronDown } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { cn } from "@/src/lib/utils";
 import JobCard from "@/src/components/common/JobCard";
 import { Job } from "@/src/types";
@@ -12,9 +12,12 @@ import { useJobStore } from "@/src/store/jobStore";
 import { useApplications, useJobs, useSavedJobs } from "@/src/hooks/useQueries";
 import { useQueryClient } from '@tanstack/react-query';
 import { motion } from "framer-motion";
+import toast from "react-hot-toast";
+import { getSubscriptionRouteForRole, hasActiveSubscription } from "@/src/lib/subscription";
 
 export default function Jobs() {
   const { user } = useAuthStore();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { data: jobs = [], isLoading: isJobsLoading } = useJobs();
   const { data: applications = [], isLoading: isAppsLoading } = useApplications(user?.id);
@@ -33,7 +36,7 @@ export default function Jobs() {
   const isLoading = isJobsLoading || isAppsLoading || isSavedLoading;
 
   const filteredJobs = useMemo(() => {
-    return jobs.filter((job) => {
+    return jobs.filter((job: any) => {
       const matchesSearch = job.title.toLowerCase().includes(search.toLowerCase()) || job.company.toLowerCase().includes(search.toLowerCase()) || job.category.toLowerCase().includes(search.toLowerCase());
       const matchesType = jobType === "All" || job.type === jobType;
       const matchesLocation = location === "All" || job.location === location || job.location.toLowerCase().includes(location.toLowerCase());
@@ -41,8 +44,8 @@ export default function Jobs() {
     });
   }, [jobs, search, jobType, location]);
 
-  const internshipCount = jobs.filter((job) => job.type === "Internship").length;
-  const jobCount = jobs.filter((job) => job.type !== "Internship").length;
+  const internshipCount = jobs.filter((job: any) => job.type === "Internship").length;
+  const jobCount = jobs.filter((job: any) => job.type !== "Internship").length;
 
   const handleQuickView = (job: Job) => {
     setSelectedJob(job);
@@ -55,8 +58,8 @@ export default function Jobs() {
       clearSavedJobs();
       return;
     }
-    setSavedJobs(savedJobs.map((job) => String(job.id)));
-  }, [savedJobs, user, setSavedJobs, clearSavedJobs]);
+    setSavedJobs(savedJobs.map((job: any) => String(job.id)));
+  }, [savedJobs, user]);
 
   const handleCloseQuickView = () => {
     setIsQuickViewOpen(false);
@@ -93,6 +96,12 @@ export default function Jobs() {
     e.preventDefault();
     e.stopPropagation();
     if (!selectedJob || !user) return;
+
+    if (!hasActiveSubscription(user)) {
+      toast.error("Subscription required to apply. Please activate your plan.");
+      navigate(getSubscriptionRouteForRole(user.role));
+      return;
+    }
 
     setIsQuickApplying(true);
     try {
@@ -237,7 +246,7 @@ export default function Jobs() {
                   <div key={index} className="glass-card p-8 animate-pulse rounded-4xl"></div>
                 ))
               ) : filteredJobs.length > 0 ? (
-                filteredJobs.map((job) => (
+                filteredJobs.map((job: any) => (
                   <JobCard
                     key={job.id}
                     job={job}

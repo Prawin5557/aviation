@@ -79,6 +79,23 @@ const fontFamilies = [
   { name: "Space", value: "Space Grotesk" },
 ];
 
+const fontPreviewClass: Record<string, string> = {
+  Inter: "font-sans",
+  "Playfair Display": "font-serif",
+  "JetBrains Mono": "font-mono",
+  Outfit: "font-display",
+  "Space Grotesk": "font-sans",
+};
+
+const colorSwatchClass: Record<string, string> = {
+  "#9333ea": "bg-purple-600",
+  "#2563eb": "bg-blue-600",
+  "#059669": "bg-emerald-600",
+  "#e11d48": "bg-rose-600",
+  "#475569": "bg-slate-600",
+  "#d97706": "bg-amber-600",
+};
+
 export default function ResumeBuilder() {
   const { 
     data, 
@@ -200,11 +217,11 @@ export default function ResumeBuilder() {
 
   return (
     <>
-      <div className="glass-card p-8 rounded-3xl mb-8 border border-slate-200 shadow-lg shadow-slate-100 bg-white/95">
-        <div className="flex flex-col lg:flex-row items-start justify-between gap-6">
+      <div className="glass-card p-5 sm:p-8 rounded-2xl sm:rounded-3xl mb-6 sm:mb-8 border border-slate-200 shadow-lg shadow-slate-100 bg-white/95">
+        <div className="flex flex-col lg:flex-row items-start justify-between gap-4 sm:gap-6">
           <div className="max-w-2xl">
             <p className="text-xs font-bold uppercase tracking-[0.3em] text-purple-600 mb-3">Resume Builder</p>
-            <h1 className="text-3xl lg:text-4xl font-bold text-slate-900 mb-3">Build a polished resume in minutes</h1>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900 mb-3">Build a polished resume in minutes</h1>
             <p className="text-sm text-slate-500 leading-7">A professional builder experience with smart guidance, clean sections, and export-ready formatting.</p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
@@ -217,7 +234,7 @@ export default function ResumeBuilder() {
       <div className="flex flex-col xl:flex-row gap-8 pb-20 print:block print:p-0">
         {/* Left Sidebar - Controls */}
         <div className="w-full xl:w-80 space-y-4 print:hidden">
-          <div className="rounded-3xl sticky top-28 border border-slate-200 bg-slate-50/80 shadow-sm p-6">
+          <div className="rounded-2xl sm:rounded-3xl sticky top-28 border border-slate-200 bg-slate-50/80 shadow-sm p-4 sm:p-6">
             <h3 className="text-xs font-bold text-slate-500 uppercase tracking-[0.2em] mb-6">Customization</h3>
             <div className="space-y-6">
               <div>
@@ -252,11 +269,11 @@ export default function ResumeBuilder() {
                     onClick={() => setFontFamily(f.value)}
                     className={cn(
                       "flex items-center justify-center p-2 rounded-xl border transition-all text-[10px] font-bold uppercase",
+                      fontPreviewClass[f.value] || "font-sans",
                       data.fontFamily === f.value 
                         ? "border-purple-600 bg-purple-50 text-purple-600" 
                         : "border-slate-100 bg-slate-50/50 text-slate-500 hover:border-purple-200"
                     )}
-                    style={{ fontFamily: f.value }}
                   >
                     {f.name}
                   </button>
@@ -273,9 +290,9 @@ export default function ResumeBuilder() {
                     onClick={() => setThemeColor(c.value)}
                     className={cn(
                       "w-8 h-8 rounded-full border-2 transition-all",
+                      colorSwatchClass[c.value] || "bg-slate-600",
                       data.themeColor === c.value ? "border-slate-900 scale-110" : "border-transparent hover:scale-105"
                     )}
-                    style={{ backgroundColor: c.value }}
                     title={c.name}
                   />
                 ))}
@@ -303,7 +320,7 @@ export default function ResumeBuilder() {
       {/* Main Content - Form Sections */}
       <div className="flex-1 space-y-4 print:hidden">
         {/* Resume Upload Section */}
-        <div className="glass-card p-8 rounded-4xl mb-8 border border-slate-200 bg-white shadow-sm">
+        <div className="glass-card p-5 sm:p-8 rounded-2xl sm:rounded-4xl mb-6 sm:mb-8 border border-slate-200 bg-white shadow-sm">
           <div className="grid gap-6 lg:grid-cols-[1fr_280px] items-center">
             <div>
               <h3 className="text-xl font-bold text-slate-900">Upload or start from scratch</h3>
@@ -333,7 +350,7 @@ export default function ResumeBuilder() {
               exit={{ height: 0, opacity: 0 }}
               className="overflow-hidden"
             >
-              <div className="glass-card p-8 rounded-3xl mb-4">
+              <div className="glass-card p-5 sm:p-8 rounded-2xl sm:rounded-3xl mb-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-4">Full Name</label>

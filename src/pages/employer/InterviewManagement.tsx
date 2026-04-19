@@ -67,31 +67,35 @@ export default function InterviewManagement() {
             <div className="flex items-center justify-between mb-6">
               <h3 className="font-bold text-slate-900">March 2024</h3>
               <div className="flex space-x-2">
-                <button className="p-1 hover:bg-slate-100 rounded-lg transition-colors">
+                <button title="Previous month" aria-label="Previous month" className="p-1 hover:bg-slate-100 rounded-lg transition-colors">
                   <ChevronRight className="h-4 w-4 rotate-180" />
                 </button>
-                <button className="p-1 hover:bg-slate-100 rounded-lg transition-colors">
+                <button title="Next month" aria-label="Next month" className="p-1 hover:bg-slate-100 rounded-lg transition-colors">
                   <ChevronRight className="h-4 w-4" />
                 </button>
               </div>
             </div>
-            <div className="grid grid-cols-7 gap-2 text-center mb-4">
-              {["S", "M", "T", "W", "T", "F", "S"].map(day => (
-                <span key={day} className="text-[10px] font-bold text-slate-400 uppercase">{day}</span>
-              ))}
-            </div>
-            <div className="grid grid-cols-7 gap-2 text-center">
-              {Array.from({ length: 31 }).map((_, i) => (
-                <button 
-                  key={i} 
-                  className={cn(
-                    "h-8 w-8 rounded-lg text-xs font-bold transition-all",
-                    i + 1 === 20 ? "bg-purple-600 text-white shadow-lg shadow-purple-200" : "hover:bg-purple-50 text-slate-600"
-                  )}
-                >
-                  {i + 1}
-                </button>
-              ))}
+            <div className="overflow-x-auto">
+              <div className="min-w-[18rem]">
+                <div className="grid grid-cols-7 gap-2 text-center mb-4">
+                  {["S", "M", "T", "W", "T", "F", "S"].map(day => (
+                    <span key={day} className="text-[10px] font-bold text-slate-400 uppercase">{day}</span>
+                  ))}
+                </div>
+                <div className="grid grid-cols-7 gap-2 text-center">
+                  {Array.from({ length: 31 }).map((_, i) => (
+                    <button 
+                      key={i} 
+                      className={cn(
+                        "h-8 w-8 rounded-lg text-xs font-bold transition-all",
+                        i + 1 === 20 ? "bg-purple-600 text-white shadow-lg shadow-purple-200" : "hover:bg-purple-50 text-slate-600"
+                      )}
+                    >
+                      {i + 1}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
 

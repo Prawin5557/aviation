@@ -103,7 +103,8 @@ export default function WhatsAppButton() {
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-8 right-8 z-40 p-4 bg-linear-to-r from-green-400 to-green-600 text-white rounded-full shadow-2xl hover:shadow-green-600/50 transition-all duration-300"
+        className="fixed right-4 sm:right-8 z-40 p-4 bg-linear-to-r from-green-400 to-green-600 text-white rounded-full shadow-2xl hover:shadow-green-600/50 transition-all duration-300"
+        style={{ bottom: "max(1rem, env(safe-area-inset-bottom))" }}
         title="Chat with us on WhatsApp"
       >
         <motion.div
@@ -134,7 +135,8 @@ export default function WhatsAppButton() {
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="fixed bottom-24 right-8 z-40 w-80 h-96 bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-200 flex flex-col"
+            className="fixed bottom-20 sm:bottom-24 left-4 right-4 sm:left-auto sm:right-8 z-40 w-auto sm:w-80 h-[70vh] sm:h-96 bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-200 flex flex-col"
+            style={{ bottom: "max(5rem, calc(env(safe-area-inset-bottom) + 4.5rem))" }}
           >
             {/* Header */}
             <div className="bg-linear-to-r from-green-400 to-green-600 text-white p-4 flex items-center justify-between">

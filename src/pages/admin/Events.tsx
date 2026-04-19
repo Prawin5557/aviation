@@ -225,27 +225,27 @@ export default function Events() {
               <table className="w-full text-left">
                 <thead>
                   <tr className="bg-slate-100 text-slate-500 text-xs uppercase tracking-[0.24em]">
-                    <th className="px-6 py-4">Title</th>
-                    <th className="px-6 py-4">Type</th>
-                    <th className="px-6 py-4">Date</th>
-                    <th className="px-6 py-4">Attendees</th>
-                    <th className="px-6 py-4">Status</th>
-                    <th className="px-6 py-4 text-right">Actions</th>
+                    <th className="px-4 sm:px-6 py-4 whitespace-nowrap">Title</th>
+                    <th className="px-4 sm:px-6 py-4 whitespace-nowrap">Type</th>
+                    <th className="px-4 sm:px-6 py-4 whitespace-nowrap">Date</th>
+                    <th className="px-4 sm:px-6 py-4 whitespace-nowrap">Attendees</th>
+                    <th className="px-4 sm:px-6 py-4 whitespace-nowrap">Status</th>
+                    <th className="px-4 sm:px-6 py-4 text-right whitespace-nowrap">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/10 bg-white">
                   {filteredEvents.map((item) => (
                     <tr key={item.id} className="transition-colors hover:bg-slate-50">
-                      <td className="px-6 py-4 font-semibold text-slate-900">{item.title}</td>
-                      <td className="px-6 py-4 text-slate-600">{item.type}</td>
-                      <td className="px-6 py-4 text-slate-600">{item.date}</td>
-                      <td className="px-6 py-4 text-slate-600">{item.attendees}</td>
-                      <td className="px-6 py-4">
+                      <td className="px-4 sm:px-6 py-4 font-semibold text-slate-900 whitespace-nowrap">{item.title}</td>
+                      <td className="px-4 sm:px-6 py-4 text-slate-600 whitespace-nowrap">{item.type}</td>
+                      <td className="px-4 sm:px-6 py-4 text-slate-600 whitespace-nowrap">{item.date}</td>
+                      <td className="px-4 sm:px-6 py-4 text-slate-600 whitespace-nowrap">{item.attendees}</td>
+                      <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
                         <span className={`inline-flex items-center rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.24em] ${statusVariants[item.status as keyof typeof statusVariants] ?? statusVariants.Completed}`}>
                           {item.status}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-right">
+                      <td className="px-4 sm:px-6 py-4 text-right whitespace-nowrap">
                         <div className="inline-flex items-center gap-2">
                           <button
                             type="button"

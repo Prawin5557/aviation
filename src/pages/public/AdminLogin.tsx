@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useNavigate, Link } from "react-router-dom";
-import { Shield, Lock, Mail, ArrowRight, Loader2, Plane, Sparkles, Zap } from "lucide-react";
+import { Shield, Lock, Mail, ArrowRight, Loader2, Plane, Sparkles } from "lucide-react";
 import { useAuthStore } from "@/src/store/authStore";
 import { apiService } from "@/src/services/api";
 import { Button } from "@/src/components/ui/Button";
@@ -44,14 +44,16 @@ export default function AdminLogin() {
     }
   };
 
-  const handleDemoAdminLogin = async () => {
+  const handleDemoLogin = async () => {
     setLoading(true);
     try {
-      const response = await apiService.adminLogin('demo@admin.com');
+      const response = await apiService.adminLogin('admin@gmail.com', 'admin123');
       login(response.data);
-      navigate("/admin");
+      toast.success('Demo admin account loaded');
+      navigate('/admin');
     } catch (err: any) {
-      toast.error(err.message || "Demo admin login failed");
+      setError(err.message || "Demo login failed");
+      toast.error('Demo account unavailable');
     } finally {
       setLoading(false);
     }
@@ -159,21 +161,26 @@ export default function AdminLogin() {
               )}
             </button>
 
-            {/* Demo Admin Button */}
-            <button
-              type="button"
-              onClick={handleDemoAdminLogin}
-              disabled={isLoading}
-              className="w-full bg-amber-50 hover:bg-amber-100 disabled:bg-gray-200 text-amber-700 py-3 rounded-2xl font-bold text-base border-2 border-amber-300 shadow-md transition-all active:scale-[0.98] flex items-center justify-center gap-2 uppercase tracking-wider"
-              title="Demo Admin Login"
-            >
-              <Zap className="h-5 w-5" />
-              <span>Admin Demo</span>
-            </button>
           </form>
 
+          {/* Demo Button */}
+          <div className="mt-6 pt-6 border-t border-slate-200/50 space-y-4">
+            <div className="bg-amber-50/60 border border-amber-200 rounded-2xl p-4">
+              <p className="text-[10px] font-bold text-amber-700 uppercase tracking-widest mb-3">🎯 Demo Access</p>
+              <button
+                type="button"
+                onClick={handleDemoLogin}
+                disabled={isLoading}
+                className="w-full h-11 btn-amber-gradient text-white font-bold rounded-xl transition-all duration-300 disabled:opacity-50 text-sm"
+              >
+                {isLoading ? 'Loading...' : 'Try Demo Admin Account'}
+              </button>
+              <p className="text-xs text-amber-600 mt-2 font-medium">admin@gmail.com / admin123</p>
+            </div>
+          </div>
+
           {/* Divider */}
-          <div className="mt-8 pt-6 border-t border-slate-200/50">
+          <div className="mt-6 pt-6 border-t border-slate-200/50">
             <Link 
               to="/" 
               className="text-slate-600 hover:text-purple-600 transition-colors text-sm font-semibold flex items-center justify-center gap-2 group"

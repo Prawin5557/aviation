@@ -43,11 +43,24 @@ export default function ApplicantManagement() {
     }
   };
 
-  const filteredApplicants = applicants.filter(a => {
+  const filteredApplicants = applicants.filter((a: any) => {
     const matchesFilter = filter === "All" || a.status === filter;
     const matchesSearch = (a.name || a.job_details?.title || "").toLowerCase().includes(searchQuery.toLowerCase());
     return matchesFilter && matchesSearch;
   });
+
+  const scoreWidthClass = (scoreValue: number) => {
+    if (scoreValue <= 10) return "w-1/12";
+    if (scoreValue <= 20) return "w-2/12";
+    if (scoreValue <= 30) return "w-3/12";
+    if (scoreValue <= 40) return "w-4/12";
+    if (scoreValue <= 50) return "w-5/12";
+    if (scoreValue <= 60) return "w-6/12";
+    if (scoreValue <= 70) return "w-7/12";
+    if (scoreValue <= 80) return "w-8/12";
+    if (scoreValue <= 90) return "w-9/12";
+    return "w-full";
+  };
 
   return (
     <div className="space-y-8 pb-20">
@@ -99,11 +112,11 @@ export default function ApplicantManagement() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-50/50 border-b border-slate-100">
-                <th className="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Candidate</th>
-                <th className="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Role & Exp</th>
-                <th className="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">AI Match</th>
-                <th className="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Status</th>
-                <th className="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-right">Actions</th>
+                <th className="px-4 sm:px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-widest whitespace-nowrap">Candidate</th>
+                <th className="px-4 sm:px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-widest whitespace-nowrap">Role & Exp</th>
+                <th className="px-4 sm:px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center whitespace-nowrap">AI Match</th>
+                <th className="px-4 sm:px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-widest whitespace-nowrap">Status</th>
+                <th className="px-4 sm:px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-right whitespace-nowrap">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -117,9 +130,9 @@ export default function ApplicantManagement() {
                     <td className="px-8 py-6"></td>
                   </tr>
                 ))
-              ) : filteredApplicants.map((applicant) => (
+              ) : filteredApplicants.map((applicant: any) => (
                 <tr key={applicant.id} className="hover:bg-slate-50/30 transition-colors group">
-                  <td className="px-8 py-6">
+                  <td className="px-4 sm:px-8 py-6 whitespace-nowrap">
                     <div className="flex items-center space-x-4">
                       <div className="h-12 w-12 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-bold">
                         {applicant.name?.[0] || applicant.job_details?.title?.[0] || "A"}
@@ -130,13 +143,13 @@ export default function ApplicantManagement() {
                       </div>
                     </div>
                   </td>
-                  <td className="px-8 py-6">
+                  <td className="px-4 sm:px-8 py-6 whitespace-nowrap">
                     <div>
                       <h4 className="text-sm font-bold text-slate-700">{applicant.job_details?.title || "Aviation Role"}</h4>
                       <p className="text-xs text-slate-500">{applicant.experience || "5+"} Years Exp</p>
                     </div>
                   </td>
-                  <td className="px-8 py-6">
+                  <td className="px-4 sm:px-8 py-6 whitespace-nowrap">
                     <div className="flex flex-col items-center">
                       <span className={cn(
                         "text-sm font-bold",
@@ -145,17 +158,17 @@ export default function ApplicantManagement() {
                         {applicant.score || 85}%
                       </span>
                       <div className="w-16 h-1 bg-slate-100 rounded-full mt-1 overflow-hidden">
-                        <div 
+                        <div
                           className={cn(
                             "h-full rounded-full",
+                            scoreWidthClass(applicant.score || 85),
                             (applicant.score || 85) >= 80 ? "bg-green-500" : (applicant.score || 85) >= 60 ? "bg-orange-500" : "bg-red-500"
                           )}
-                          style={{ width: `${applicant.score || 85}%` }}
                         />
                       </div>
                     </div>
                   </td>
-                  <td className="px-8 py-6">
+                  <td className="px-4 sm:px-8 py-6 whitespace-nowrap">
                     <span className={cn(
                       "text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest",
                       applicant.status === "Hired" ? "bg-emerald-100 text-emerald-700" :
@@ -167,7 +180,7 @@ export default function ApplicantManagement() {
                       {applicant.status}
                     </span>
                   </td>
-                  <td className="px-8 py-6 text-right">
+                  <td className="px-4 sm:px-8 py-6 text-right whitespace-nowrap">
                     <div className="flex items-center justify-end space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
                       {applicant.status !== "Hired" && (
                         <button 
@@ -206,4 +219,3 @@ export default function ApplicantManagement() {
     </div>
   );
 }
-

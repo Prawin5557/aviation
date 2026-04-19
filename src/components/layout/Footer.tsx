@@ -134,7 +134,7 @@ export default function Footer() {
         <div className="h-px bg-slate-200 w-full mb-10" />
 
         {/* Links Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-12 mb-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 md:gap-12 mb-12">
           {/* Company */}
           <div className="space-y-6">
             <h4 className="text-slate-400 font-bold text-xs uppercase tracking-widest">Company</h4>

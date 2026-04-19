@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Edit2, Trash2, Check, X, RefreshCw, Search, Filter, BarChart3, TrendingUp, Users, DollarSign, Activity, Eye, MapPin, Settings2, Briefcase, Clock } from "lucide-react";
 import { apiService } from "@/src/services/api";
@@ -47,9 +47,7 @@ export default function AdminJobs() {
   const [creatingJob, setCreatingJob] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  useEffect(() => { fetchJobs(); }, []);
-
-  const fetchJobs = async () => {
+  const fetchJobs = useCallback(async () => {
     try {
       setLoading(true);
       const res = await apiService.getAdminJobs();
@@ -62,7 +60,11 @@ export default function AdminJobs() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    void fetchJobs();
+  }, [fetchJobs]);
 
   const filteredJobs = useMemo(() => {
     return jobs.filter(job => {
@@ -187,7 +189,7 @@ export default function AdminJobs() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <GlassCard className="p-8" hoverEffect={false}>
               <div className="flex items-center justify-between mb-8"><div><h2 className="text-xl font-display font-bold text-slate-900">Job Views</h2><p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">Weekly trends</p></div></div>
-              <ResponsiveContainer width="100%" height={300}>
+              <ResponsiveContainer width="100%" height={300} minWidth={0}>
                 <AreaChart data={viewsData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" /><XAxis dataKey="month" stroke="#64748b" fontSize={12} /><YAxis stroke="#64748b" fontSize={12} /><Tooltip contentStyle={{ backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '8px' }} /><Area type="monotone" dataKey="views" stroke="#3b82f6" fill="url(#viewsGradient)" strokeWidth={2} /><defs><linearGradient id="viewsGradient" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/><stop offset="95%" stopColor="#3b82f6" stopOpacity={0.1}/></linearGradient></defs>
                 </AreaChart>
@@ -196,7 +198,7 @@ export default function AdminJobs() {
 
             <GlassCard className="p-8" hoverEffect={false}>
               <div className="flex items-center justify-between mb-8"><div><h2 className="text-xl font-display font-bold text-slate-900">Jobs by Category</h2><p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">Distribution</p></div></div>
-              <ResponsiveContainer width="100%" height={300}>
+              <ResponsiveContainer width="100%" height={300} minWidth={0}>
                 <RechartsPieChart>
                   <Pie data={stats?.jobsByCategory || []} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={5} dataKey="value">
                     {(stats?.jobsByCategory || []).map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
@@ -277,7 +279,7 @@ export default function AdminJobs() {
         <div className="space-y-8">
           <GlassCard className="p-8" hoverEffect={false}>
             <div className="flex items-center justify-between mb-8"><div><h2 className="text-xl font-display font-bold text-slate-900">Applications</h2><p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">Weekly received</p></div></div>
-            <ResponsiveContainer width="100%" height={400}>
+            <ResponsiveContainer width="100%" height={400} minWidth={0}>
               <BarChart data={applicationsData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" /><XAxis dataKey="month" stroke="#64748b" fontSize={12} /><YAxis stroke="#64748b" fontSize={12} /><Tooltip contentStyle={{ backgroundColor: 'white', border: '1px solid #e2e8f0' }} /><Bar dataKey="applications" fill="#06b6d4" radius={[4, 4, 0, 0]} />
               </BarChart>

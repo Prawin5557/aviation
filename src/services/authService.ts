@@ -1,6 +1,9 @@
 import apiClient from './apiClient';
 import toast from 'react-hot-toast';
+import { logger } from '@/src/utils/logger';
 import { ENV } from '@/src/config/env';
+
+const DEMO_USER_STORAGE_KEY = 'frontend_demo_user';
 
 export interface User {
   id: string;
@@ -50,144 +53,46 @@ export interface PasswordResetData {
   newPassword: string;
 }
 
-// Demo users for frontend-only testing
-const DEMO_USERS = [
-  {
-    id: 'demo_student_1',
-    email: 'student@demo.com',
-    password: 'password123',
-    name: 'Demo Student',
-    role: 'student' as const,
-  },
-  {
-    id: 'demo_employer_1',
-    email: 'employer@demo.com',
-    password: 'password123',
-    name: 'Demo Employer',
-    role: 'employer' as const,
-  },
-];
-
 class AuthService {
-  // Helper to generate mock token
-  private generateMockToken(): string {
-    return `mock_token_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-  }
-
-  // Helper to create user object
-  private createUserObject(data: any): User {
-    return {
-      id: data.id || `user_${Date.now()}`,
-      name: data.name || 'Demo User',
-      email: data.email || 'demo@example.com',
-      phone: data.phone,
-      role: data.role || 'student',
-      subscription: data.subscription,
-      isVerified: data.isVerified !== false,
-      profileComplete: data.profileComplete ?? false,
-      createdAt: data.createdAt || new Date().toISOString(),
-      updatedAt: data.updatedAt || new Date().toISOString(),
-    };
-  }
-
-  // Login with email/password
   async login(
     credentials: LoginCredentials,
-    requestedRole?: 'student' | 'employer',
-    useMockData = false
+    requestedRole?: 'student' | 'employer'
   ): Promise<AuthResponse> {
-    try {
-      const shouldUseMock = useMockData || ENV.USE_MOCK || ENV.DEMO_MODE;
-
-      if (!shouldUseMock) {
-        try {
-          const response = await apiClient.post('/auth/login', credentials);
-          const { user, token, refreshToken } = response.data;
-
-          const normalizedUser = {
-            ...user,
-            role: user.role || requestedRole || credentials.requestedRole || 'student',
-          };
-
-          localStorage.setItem('auth_token', token);
-          localStorage.setItem('refresh_token', refreshToken);
-          toast.success(`Welcome back, ${normalizedUser.name}!`);
-          return { user: normalizedUser, token, refreshToken };
-        } catch (error: any) {
-          if (error.isNetworkError || !error.response) {
-            console.warn('Backend login unavailable, using mock:', error.message);
-            toast(
-              'Backend unavailable, continuing login in demo mode.',
-              { icon: '⚠️', duration: 5000 }
-            );
-          } else {
-            const message = error.response?.data?.message || 'Login failed';
-            toast.error(message);
-            throw error;
-          }
-        }
-      }
-
-      try {
-        const response = await apiClient.post('/auth/login', credentials);
-        const { user, token, refreshToken } = response.data;
-
-        const normalizedUser = {
-          ...user,
-          role: user.role || requestedRole || credentials.requestedRole || 'student',
-        };
-
-        localStorage.setItem('auth_token', token);
-        localStorage.setItem('refresh_token', refreshToken);
-        toast.success(`Welcome back, ${normalizedUser.name}!`);
-        return { user: normalizedUser, token, refreshToken };
-      } catch (backendError: any) {
-        console.warn('Backend login unavailable, using mock:', backendError.message);
-        toast(
-          'Backend unavailable, continuing login in demo mode.',
-          { icon: '⚠️', duration: 5000 }
-        );
-      }
-
-      // Check demo users
-      const demoUser = DEMO_USERS.find(
-        u => u.email.toLowerCase() === credentials.email.toLowerCase()
-      );
-
-      if (demoUser && demoUser.password === credentials.password) {
-        const token = this.generateMockToken();
-        const refreshToken = this.generateMockToken();
-
-        localStorage.setItem('auth_token', token);
-        localStorage.setItem('refresh_token', refreshToken);
-
-        const user = this.createUserObject({
-          ...demoUser,
-          isVerified: true,
-        });
-        localStorage.setItem('user_data', JSON.stringify(user));
-
-        toast.success(`Welcome back, ${user.name}! (Demo Mode)`);
-        return { user, token, refreshToken };
-      }
-
-      // For any other email/password, create mock user
-      const token = this.generateMockToken();
-      const refreshToken = this.generateMockToken();
-
-      const user = this.createUserObject({
+    if (ENV.FRONTEND_ONLY) {
+      const role = requestedRole || credentials.requestedRole || 'student';
+      const demoUser: User = {
+        id: `demo-${role}-user`,
+        name: credentials.email.split('@')[0] || 'Demo User',
         email: credentials.email,
-        name: credentials.email.split('@')[0],
-        role: requestedRole || credentials.requestedRole || 'student',
+        role,
         isVerified: true,
-      });
+        profileComplete: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      const token = 'frontend-demo-token';
+      const refreshToken = 'frontend-demo-refresh-token';
+      localStorage.setItem('auth_token', token);
+      localStorage.setItem('refresh_token', refreshToken);
+      localStorage.setItem(DEMO_USER_STORAGE_KEY, JSON.stringify(demoUser));
+      toast.success(`Welcome back, ${demoUser.name}!`);
+      return { user: demoUser, token, refreshToken };
+    }
+
+    try {
+      const response = await apiClient.post('/auth/login', credentials);
+      const { user, token, refreshToken } = response.data;
+
+      const normalizedUser = {
+        ...user,
+        role: user.role || requestedRole || credentials.requestedRole || 'student',
+      };
 
       localStorage.setItem('auth_token', token);
       localStorage.setItem('refresh_token', refreshToken);
-      localStorage.setItem('user_data', JSON.stringify(user));
-
-      toast.success(`Welcome, ${user.name}! (Demo Mode)`);
-      return { user, token, refreshToken };
+      toast.success(`Welcome back, ${normalizedUser.name}!`);
+      return { user: normalizedUser, token, refreshToken };
     } catch (error: any) {
       const message = error.response?.data?.message || 'Login failed';
       toast.error(message);
@@ -195,65 +100,27 @@ class AuthService {
     }
   }
 
-  // Register new user
-  async register(data: RegisterData, useMockData = false): Promise<{ user: User; requiresVerification: boolean; token?: string }> {
-    try {
-      const shouldUseMock = useMockData || ENV.USE_MOCK || ENV.DEMO_MODE;
-
-      if (!shouldUseMock) {
-        try {
-          const response = await apiClient.post('/auth/register', data);
-          toast.success('Account created successfully!');
-          return response.data;
-        } catch (error: any) {
-          if (error.isNetworkError || !error.response) {
-            console.warn('Backend registration unavailable, using mock data:', error.message);
-            toast(
-              'Backend unavailable, continuing registration in demo mode.',
-              { icon: '⚠️', duration: 5000 }
-            );
-          } else {
-            const message = error.response?.data?.message || 'Registration failed';
-            toast.error(message);
-            throw error;
-          }
-        }
-      }
-
-      try {
-        const response = await apiClient.post('/auth/register', data);
-        toast.success('Account created successfully!');
-        return response.data;
-      } catch (backendError: any) {
-        console.warn('Backend registration unavailable, using mock data:', backendError.message);
-        toast(
-          'Backend unavailable, continuing registration in demo mode.',
-          { icon: '⚠️', duration: 5000 }
-        );
-      }
-
-      const mockUser: User = {
-        id: `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+  async register(data: RegisterData): Promise<{ user: User; requiresVerification: boolean; token?: string }> {
+    if (ENV.FRONTEND_ONLY) {
+      const demoUser: User = {
+        id: `demo-${data.role}-user`,
         name: data.name,
         email: data.email,
-        phone: data.phone,
         role: data.role,
         isVerified: true,
-        profileComplete: false,
+        profileComplete: true,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
+      localStorage.setItem(DEMO_USER_STORAGE_KEY, JSON.stringify(demoUser));
+      toast.success('Account created successfully!');
+      return { user: demoUser, requiresVerification: false, token: 'frontend-demo-token' };
+    }
 
-      const mockToken = `demo_token_${Date.now()}`;
-      localStorage.setItem('auth_token', mockToken);
-      localStorage.setItem('user_data', JSON.stringify(mockUser));
-
-      toast.success('Account created successfully (Demo Mode)!');
-      return {
-        user: mockUser,
-        requiresVerification: false,
-        token: mockToken,
-      };
+    try {
+      const response = await apiClient.post('/auth/register', data);
+      toast.success('Account created successfully!');
+      return response.data;
     } catch (error: any) {
       const message = error.response?.data?.message || 'Registration failed';
       toast.error(message);
@@ -261,32 +128,17 @@ class AuthService {
     }
   }
 
-  // Send OTP for verification
-  async sendOTP(email?: string, phone?: string, type: 'email' | 'phone' | 'password_reset' = 'email', useMockData = false): Promise<void> {
-    try {
-      const shouldUseMock = useMockData || ENV.USE_MOCK || ENV.DEMO_MODE;
-
-      if (!shouldUseMock) {
-        await apiClient.post('/auth/send-otp', { email, phone, type });
-        const target = email || phone;
-        toast.success(`OTP sent to ${target}`);
-        return;
-      }
-
-      try {
-        await apiClient.post('/auth/send-otp', { email, phone, type });
-        const target = email || phone;
-        toast.success(`OTP sent to ${target}`);
-        return;
-      } catch (backendError: any) {
-        console.warn('Backend OTP send unavailable, using mock:', backendError.message);
-      }
-
+  async sendOTP(email?: string, phone?: string, type: 'email' | 'phone' | 'password_reset' = 'email'): Promise<void> {
+    if (ENV.FRONTEND_ONLY) {
       const target = email || phone || 'your account';
-      const mockOtp = Math.floor(100000 + Math.random() * 900000).toString();
-      localStorage.setItem(`otp_${email || phone}`, mockOtp);
-      localStorage.setItem(`otp_timestamp`, Date.now().toString());
-      toast.success(`OTP sent to ${target} (Demo Mode - Check console)`);
+      toast.success(`OTP sent to ${target}`);
+      return;
+    }
+
+    try {
+      await apiClient.post('/auth/send-otp', { email, phone, type });
+      const target = email || phone || 'your account';
+      toast.success(`OTP sent to ${target}`);
     } catch (error: any) {
       const message = error.response?.data?.message || 'Failed to send OTP';
       toast.error(message);
@@ -294,51 +146,24 @@ class AuthService {
     }
   }
 
-  // Verify OTP
-  async verifyOTP(data: OTPData, useMockData = false): Promise<any> {
-    try {
-      const shouldUseMock = useMockData || ENV.USE_MOCK || ENV.DEMO_MODE;
-
-      if (!shouldUseMock) {
-        const response = await apiClient.post('/auth/verify-otp', data);
-        const { token, refreshToken } = response.data;
-        localStorage.setItem('auth_token', token);
-        localStorage.setItem('refresh_token', refreshToken);
-        toast.success('OTP verified successfully!');
-        return response.data;
-      }
-
-      try {
-        const response = await apiClient.post('/auth/verify-otp', data);
-        const { token, refreshToken } = response.data;
-        localStorage.setItem('auth_token', token);
-        localStorage.setItem('refresh_token', refreshToken);
-        toast.success('OTP verified successfully!');
-        return response.data;
-      } catch (backendError: any) {
-        console.warn('Backend OTP verification unavailable, using mock:', backendError.message);
-      }
-
-      const token = this.generateMockToken();
-      const refreshToken = this.generateMockToken();
-
-      if (data.type === 'password_reset') {
-        toast.success('OTP Verified! (Demo Mode)');
-        return { token };
-      }
-
-      const user = this.createUserObject({
-        email: data.email,
-        name: data.email?.split('@')[0] || 'Demo User',
-        isVerified: true,
-      });
-
+  async verifyOTP(data: OTPData): Promise<any> {
+    if (ENV.FRONTEND_ONLY) {
+      const token = 'frontend-demo-token';
+      const refreshToken = 'frontend-demo-refresh-token';
       localStorage.setItem('auth_token', token);
       localStorage.setItem('refresh_token', refreshToken);
-      localStorage.setItem('user_data', JSON.stringify(user));
+      toast.success('OTP verified successfully!');
+      return { token, refreshToken };
+    }
 
-      toast.success('OTP verified! (Demo Mode)');
-      return { user, token, refreshToken };
+    try {
+      const response = await apiClient.post('/auth/verify-otp', data);
+      const { token, refreshToken } = response.data;
+      localStorage.setItem('auth_token', token);
+      localStorage.setItem('refresh_token', refreshToken);
+
+      toast.success('OTP verified successfully!');
+      return response.data;
     } catch (error: any) {
       const message = error.response?.data?.message || 'OTP verification failed';
       toast.error(message);
@@ -348,6 +173,26 @@ class AuthService {
 
   // Google OAuth login
   async googleLogin(idToken: string): Promise<AuthResponse> {
+    if (ENV.FRONTEND_ONLY) {
+      const demoUser: User = {
+        id: 'demo-google-user',
+        name: 'Demo Google User',
+        email: 'demo.user@example.com',
+        role: 'student',
+        isVerified: true,
+        profileComplete: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      const token = 'frontend-demo-token';
+      const refreshToken = 'frontend-demo-refresh-token';
+      localStorage.setItem('auth_token', token);
+      localStorage.setItem('refresh_token', refreshToken);
+      localStorage.setItem(DEMO_USER_STORAGE_KEY, JSON.stringify(demoUser));
+      toast.success(`Welcome, ${demoUser.name}!`);
+      return { user: demoUser, token, refreshToken };
+    }
+
     try {
       const response = await apiClient.post('/auth/google', { idToken });
       const { user, token, refreshToken } = response.data;
@@ -365,26 +210,15 @@ class AuthService {
     }
   }
 
-  // Request password reset
-  async requestPasswordReset(email: string, useMockData = false): Promise<void> {
+  async requestPasswordReset(email: string): Promise<void> {
+    if (ENV.FRONTEND_ONLY) {
+      toast.success('Password reset instructions sent to your email');
+      return;
+    }
+
     try {
-      const shouldUseMock = useMockData || ENV.USE_MOCK || ENV.DEMO_MODE;
-
-      if (!shouldUseMock) {
-        await apiClient.post('/auth/forgot-password', { email });
-        toast.success('Password reset instructions sent to your email');
-        return;
-      }
-
-      try {
-        await apiClient.post('/auth/forgot-password', { email });
-        toast.success('Password reset instructions sent to your email');
-        return;
-      } catch (backendError: any) {
-        console.warn('Backend password reset request unavailable, using mock:', backendError.message);
-      }
-
-      toast.success(`Password reset instructions sent to ${email} (Demo Mode)`);
+      await apiClient.post('/auth/forgot-password', { email });
+      toast.success('Password reset instructions sent to your email');
     } catch (error: any) {
       const message = error.response?.data?.message || 'Failed to send reset email';
       toast.error(message);
@@ -392,26 +226,15 @@ class AuthService {
     }
   }
 
-  // Reset password with OTP
-  async resetPassword(data: PasswordResetData, useMockData = false): Promise<void> {
+  async resetPassword(data: PasswordResetData): Promise<void> {
+    if (ENV.FRONTEND_ONLY) {
+      toast.success('Password reset successful! Please login with your new password.');
+      return;
+    }
+
     try {
-      const shouldUseMock = useMockData || ENV.USE_MOCK || ENV.DEMO_MODE;
-
-      if (!shouldUseMock) {
-        await apiClient.post('/auth/reset-password', data);
-        toast.success('Password reset successful! Please login with your new password.');
-        return;
-      }
-
-      try {
-        await apiClient.post('/auth/reset-password', data);
-        toast.success('Password reset successful! Please login with your new password.');
-        return;
-      } catch (backendError: any) {
-        console.warn('Backend password reset unavailable, using mock:', backendError.message);
-      }
-
-      toast.success('Password reset successful! (Demo Mode)');
+      await apiClient.post('/auth/reset-password', data);
+      toast.success('Password reset successful! Please login with your new password.');
     } catch (error: any) {
       const message = error.response?.data?.message || 'Password reset failed';
       toast.error(message);
@@ -421,6 +244,12 @@ class AuthService {
 
   // Refresh access token
   async refreshToken(): Promise<string> {
+    if (ENV.FRONTEND_ONLY) {
+      const token = 'frontend-demo-token';
+      localStorage.setItem('auth_token', token);
+      return token;
+    }
+
     try {
       const refreshToken = localStorage.getItem('refresh_token');
       if (!refreshToken) throw new Error('No refresh token');
@@ -431,7 +260,7 @@ class AuthService {
       localStorage.setItem('auth_token', token);
       return token;
     } catch (error) {
-      // Clear tokens and redirect to login
+      logger.warn('Refresh token failed, clearing session');
       localStorage.removeItem('auth_token');
       localStorage.removeItem('refresh_token');
       window.location.href = '/login';
@@ -439,22 +268,50 @@ class AuthService {
     }
   }
 
-  // Logout
   async logout(): Promise<void> {
+    if (ENV.FRONTEND_ONLY) {
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('refresh_token');
+      localStorage.removeItem(DEMO_USER_STORAGE_KEY);
+      localStorage.removeItem('auth-storage');
+      toast.success('Logged out successfully');
+      return;
+    }
+
     try {
       await apiClient.post('/auth/logout');
     } catch (error) {
-      console.error('Logout error:', error);
+      logger.warn('Logout API request failed', { error });
     } finally {
-      // Clear local storage
       localStorage.removeItem('auth_token');
       localStorage.removeItem('refresh_token');
+      localStorage.removeItem('auth-storage');
       toast.success('Logged out successfully');
     }
   }
 
   // Get current user profile
   async getProfile(): Promise<User> {
+    if (ENV.FRONTEND_ONLY) {
+      const stored = localStorage.getItem(DEMO_USER_STORAGE_KEY);
+      if (stored) {
+        return JSON.parse(stored) as User;
+      }
+
+      const fallbackUser: User = {
+        id: 'demo-student-user',
+        name: 'Demo User',
+        email: 'demo.user@example.com',
+        role: 'student',
+        isVerified: true,
+        profileComplete: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      localStorage.setItem(DEMO_USER_STORAGE_KEY, JSON.stringify(fallbackUser));
+      return fallbackUser;
+    }
+
     try {
       const response = await apiClient.get('/auth/profile');
       return response.data.user;
@@ -467,6 +324,14 @@ class AuthService {
 
   // Update user profile
   async updateProfile(data: Partial<User>): Promise<User> {
+    if (ENV.FRONTEND_ONLY) {
+      const current = await this.getProfile();
+      const updated = { ...current, ...data, updatedAt: new Date().toISOString() };
+      localStorage.setItem(DEMO_USER_STORAGE_KEY, JSON.stringify(updated));
+      toast.success('Profile updated successfully');
+      return updated;
+    }
+
     try {
       const response = await apiClient.put('/auth/profile', data);
       toast.success('Profile updated successfully');
@@ -478,13 +343,11 @@ class AuthService {
     }
   }
 
-  // Check if user is authenticated
   isAuthenticated(): boolean {
     const token = localStorage.getItem('auth_token');
     return !!token;
   }
 
-  // Get stored token
   getToken(): string | null {
     return localStorage.getItem('auth_token');
   }

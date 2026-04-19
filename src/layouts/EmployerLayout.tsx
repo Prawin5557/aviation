@@ -18,6 +18,11 @@ import {
 import { cn } from "@/src/lib/utils";
 import { useAuthStore } from "@/src/store/authStore";
 import toast from "react-hot-toast";
+import UserMenuDropdown from "@/src/components/common/UserMenuDropdown";
+
+const minHeightViewportClass = "min-h-dvh";
+const pageBackgroundClass = "bg-brand-50";
+const contentMaxWidthClass = "max-w-400";
 
 export default function EmployerLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -34,14 +39,14 @@ export default function EmployerLayout() {
     { icon: CreditCard, label: "Subscription", path: "/employer/subscription" },
   ];
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     toast.success("Logged out successfully");
     navigate("/login");
   };
 
   return (
-    <div className="min-h-screen bg-[#fdf2ff] flex">
+    <div className={`${minHeightViewportClass} ${pageBackgroundClass} flex`}>
       {/* Sidebar */}
       <aside className={cn(
         "fixed inset-y-0 left-0 z-50 w-72 bg-white/70 backdrop-blur-xl border-r border-slate-200 transition-transform duration-300 lg:translate-x-0 lg:static lg:inset-0",
@@ -90,11 +95,12 @@ export default function EmployerLayout() {
 
       {/* Main Content */}
       <main className="grow flex flex-col min-w-0">
-        <header className="h-20 bg-white/50 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-8 sticky top-0 z-40">
+        <header className="h-20 bg-white/50 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-4 lg:px-8 sticky top-0 z-40">
           <div className="flex items-center space-x-4">
             <button
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="lg:hidden p-2 text-slate-500 hover:bg-slate-100 rounded-xl"
+              aria-label={isSidebarOpen ? "Close sidebar" : "Open sidebar"}
+              className="lg:hidden h-11 w-11 inline-flex items-center justify-center text-slate-500 hover:bg-slate-100 rounded-xl"
             >
               {isSidebarOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
@@ -109,28 +115,28 @@ export default function EmployerLayout() {
           </div>
 
           <div className="flex items-center space-x-4">
-            <button className="p-2.5 text-slate-400 hover:text-purple-600 bg-white border border-slate-200 rounded-xl transition-all relative">
+            <button aria-label="View notifications" className="h-11 w-11 inline-flex items-center justify-center text-slate-500 hover:text-purple-600 bg-white border border-slate-200 rounded-xl transition-all relative">
               <Bell className="h-5 w-5" />
               <span className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full border-2 border-white" />
             </button>
-            <div className="flex items-center space-x-3 pl-4 border-l border-slate-200">
-              <div className="text-right hidden sm:block">
-                <p className="text-xs font-bold text-slate-900">{user?.name}</p>
-                <p className="text-[10px] font-bold text-purple-600 uppercase tracking-widest">Employer</p>
-              </div>
-              <div className="h-10 w-10 rounded-xl bg-purple-600 flex items-center justify-center text-white font-bold">
-                {user?.name?.charAt(0)}
-              </div>
+            <div className="pl-4 border-l border-slate-200">
+              <UserMenuDropdown
+                name={user?.name || "Employer"}
+                subtitle="Employer"
+                initial={user?.name?.charAt(0) || "E"}
+                onLogout={handleLogout}
+              />
             </div>
           </div>
         </header>
 
-        <div className="p-8 grow">
+        <div className="p-4 lg:p-8 grow">
           <motion.div
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.98 }}
             transition={{ duration: 0.3, ease: "easeOut" }}
+            className={`w-full ${contentMaxWidthClass} mx-auto`}
           >
             <Outlet />
           </motion.div>

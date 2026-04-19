@@ -68,14 +68,34 @@ interface PlanDistribution {
 }
 
 export default function Subscriptions() {
+  const PAGE_SIZE = 8;
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [stats, setStats] = useState<SubscriptionStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState<"all" | "active" | "expired" | "cancelled" | "pending">("all");
+  const [sortBy, setSortBy] = useState<"userName" | "planName" | "status" | "amount" | "renewalDate">("renewalDate");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
+  const [selectedSubscriptionIds, setSelectedSubscriptionIds] = useState<string[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
   const [activeTab, setActiveTab] = useState<"overview" | "subscriptions" | "analytics">("overview");
   const [showNewSubscriptionModal, setShowNewSubscriptionModal] = useState(false);
   const [editingSubscription, setEditingSubscription] = useState<Subscription | null>(null);
+
+  const planDotClass = (color: string) => {
+    switch (color.toLowerCase()) {
+      case "#8b5cf6":
+        return "bg-violet-500";
+      case "#3b82f6":
+        return "bg-blue-500";
+      case "#10b981":
+        return "bg-emerald-500";
+      case "#f59e0b":
+        return "bg-amber-500";
+      default:
+        return "bg-slate-400";
+    }
+  };
 
   useEffect(() => {
     fetchSubscriptions();
@@ -108,6 +128,50 @@ export default function Subscriptions() {
     });
   }, [subscriptions, searchTerm, filterStatus]);
 
+  const sortedSubscriptions = useMemo(() => {
+    const list = [...filteredSubscriptions];
+    list.sort((a, b) => {
+      let left: number | string = '';
+      let right: number | string = '';
+
+      if (sortBy === 'amount') {
+        left = Number(a.amount || 0);
+        right = Number(b.amount || 0);
+      } else if (sortBy === 'renewalDate') {
+        left = new Date(a.renewalDate || a.endDate || 0).getTime();
+        right = new Date(b.renewalDate || b.endDate || 0).getTime();
+      } else {
+        left = String((a as any)[sortBy] || '').toLowerCase();
+        right = String((b as any)[sortBy] || '').toLowerCase();
+      }
+
+      if (left < right) return sortDirection === 'asc' ? -1 : 1;
+      if (left > right) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+    return list;
+  }, [filteredSubscriptions, sortBy, sortDirection]);
+
+  const pageCount = Math.max(1, Math.ceil(sortedSubscriptions.length / PAGE_SIZE));
+  const pagedSubscriptions = useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return sortedSubscriptions.slice(start, start + PAGE_SIZE);
+  }, [sortedSubscriptions, currentPage]);
+
+  const currentPageSubscriptionIds = pagedSubscriptions.map((item) => item.id);
+  const areAllCurrentPageSelected =
+    currentPageSubscriptionIds.length > 0 && currentPageSubscriptionIds.every((id) => selectedSubscriptionIds.includes(id));
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, filterStatus, sortBy, sortDirection]);
+
+  useEffect(() => {
+    if (currentPage > pageCount) {
+      setCurrentPage(pageCount);
+    }
+  }, [currentPage, pageCount]);
+
   const handleStatusChange = async (subscriptionId: string, newStatus: Subscription['status']) => {
     try {
       await apiService.updateSubscriptionStatus(subscriptionId, newStatus);
@@ -132,6 +196,85 @@ export default function Subscriptions() {
     }
   };
 
+  const toggleSortDirection = () => {
+    setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+  };
+
+  const toggleSelectSubscription = (subscriptionId: string) => {
+    setSelectedSubscriptionIds((prev) =>
+      prev.includes(subscriptionId) ? prev.filter((id) => id !== subscriptionId) : [...prev, subscriptionId]
+    );
+  };
+
+  const toggleSelectCurrentPage = () => {
+    if (areAllCurrentPageSelected) {
+      setSelectedSubscriptionIds((prev) => prev.filter((id) => !currentPageSubscriptionIds.includes(id)));
+      return;
+    }
+    setSelectedSubscriptionIds((prev) => Array.from(new Set([...prev, ...currentPageSubscriptionIds])));
+  };
+
+  const handleBulkStatusChange = async (status: Subscription['status']) => {
+    const selected = subscriptions.filter((item) => selectedSubscriptionIds.includes(item.id));
+    if (selected.length === 0) {
+      toast.error('No subscriptions selected');
+      return;
+    }
+
+    try {
+      await Promise.all(selected.map((item) => apiService.updateSubscriptionStatus(item.id, status)));
+      toast.success(`Updated ${selected.length} subscriptions`);
+      setSelectedSubscriptionIds([]);
+      fetchSubscriptions();
+    } catch {
+      toast.error('Failed bulk status update');
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    const selected = subscriptions.filter((item) => selectedSubscriptionIds.includes(item.id));
+    if (selected.length === 0) {
+      toast.error('No subscriptions selected');
+      return;
+    }
+
+    if (!confirm(`Delete ${selected.length} selected subscriptions?`)) return;
+
+    try {
+      await Promise.all(selected.map((item) => apiService.deleteSubscription(item.id)));
+      toast.success(`Deleted ${selected.length} subscriptions`);
+      setSelectedSubscriptionIds([]);
+      fetchSubscriptions();
+    } catch {
+      toast.error('Failed bulk delete');
+    }
+  };
+
+  const handleExportSubscriptions = () => {
+    const headers = ['User', 'Email', 'Plan', 'Status', 'Amount', 'Renewal Date', 'Payment Method', 'Created At'];
+    const rows = sortedSubscriptions.map((item) => [
+      item.userName,
+      item.userEmail,
+      item.planName,
+      item.status,
+      item.amountFormatted,
+      item.renewalDate,
+      item.paymentMethod,
+      item.createdAt,
+    ]);
+    const csv = [headers, ...rows]
+      .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+      .join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `subscriptions-${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    window.URL.revokeObjectURL(url);
+    toast.success('Subscriptions exported');
+  };
+
   const getStatusColor = (status: Subscription['status']) => {
     switch (status) {
       case 'active': return 'bg-emerald-50 text-emerald-700 border-emerald-200';
@@ -152,12 +295,23 @@ export default function Subscriptions() {
     }
   };
 
-  const planDistribution: PlanDistribution[] = [
-    { name: 'Starter', value: 45, color: '#64748b' },
-    { name: 'Professional', value: 30, color: '#8b5cf6' },
-    { name: 'Elite', value: 20, color: '#06b6d4' },
-    { name: 'Placement', value: 5, color: '#10b981' }
-  ];
+  const planDistribution: PlanDistribution[] = useMemo(() => {
+    if (stats && Array.isArray((stats as any).planDistribution)) {
+      return (stats as any).planDistribution;
+    }
+
+    const counts = subscriptions.reduce<Record<string, number>>((acc, sub) => {
+      acc[sub.planName] = (acc[sub.planName] || 0) + 1;
+      return acc;
+    }, {});
+
+    const palette = ['#64748b', '#8b5cf6', '#06b6d4', '#10b981', '#f59e0b', '#ef4444'];
+    return Object.entries(counts).map(([name, value], idx) => ({
+      name,
+      value,
+      color: palette[idx % palette.length],
+    }));
+  }, [stats, subscriptions]);
 
   const getPlanDotClass = (planName: string) => {
     switch (planName) {
@@ -174,23 +328,35 @@ export default function Subscriptions() {
     }
   };
 
-  const revenueData = [
-    { month: 'Jan', revenue: 12500 },
-    { month: 'Feb', revenue: 15200 },
-    { month: 'Mar', revenue: 18900 },
-    { month: 'Apr', revenue: 22100 },
-    { month: 'May', revenue: 25800 },
-    { month: 'Jun', revenue: 28900 }
-  ];
+  const revenueData = useMemo(() => {
+    const monthly = new Map<string, number>();
 
-  const subscriptionGrowthData = [
-    { month: 'Jan', subscriptions: 120 },
-    { month: 'Feb', subscriptions: 145 },
-    { month: 'Mar', subscriptions: 168 },
-    { month: 'Apr', subscriptions: 192 },
-    { month: 'May', subscriptions: 215 },
-    { month: 'Jun', subscriptions: 238 }
-  ];
+    subscriptions.forEach((sub) => {
+      const d = new Date(sub.createdAt || sub.startDate);
+      if (Number.isNaN(d.getTime())) return;
+      const month = d.toLocaleDateString('en-IN', { month: 'short' });
+      monthly.set(month, (monthly.get(month) || 0) + Number(sub.amount || 0));
+    });
+
+    return Array.from(monthly.entries()).map(([month, revenue]) => ({ month, revenue }));
+  }, [subscriptions]);
+
+  const subscriptionGrowthData = useMemo(() => {
+    const monthly = new Map<string, number>();
+
+    subscriptions.forEach((sub) => {
+      const d = new Date(sub.createdAt || sub.startDate);
+      if (Number.isNaN(d.getTime())) return;
+      const month = d.toLocaleDateString('en-IN', { month: 'short' });
+      monthly.set(month, (monthly.get(month) || 0) + 1);
+    });
+
+    let running = 0;
+    return Array.from(monthly.entries()).map(([month, count]) => {
+      running += count;
+      return { month, subscriptions: running };
+    });
+  }, [subscriptions]);
 
   if (loading) {
     return (
@@ -225,6 +391,15 @@ export default function Subscriptions() {
           <p className="text-slate-500 text-sm font-medium mt-1">Monitor and manage user subscriptions</p>
         </div>
         <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleExportSubscriptions}
+            className="rounded-xl"
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Export
+          </Button>
           <Button
             variant="outline"
             size="sm"
@@ -345,7 +520,7 @@ export default function Subscriptions() {
                   <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">Monthly recurring revenue</p>
                 </div>
               </div>
-              <ResponsiveContainer width="100%" height={300}>
+              <ResponsiveContainer width="100%" height={300} minWidth={0}>
                 <AreaChart data={revenueData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
                   <XAxis dataKey="month" stroke="#64748b" fontSize={12} />
@@ -383,7 +558,7 @@ export default function Subscriptions() {
                   <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">Subscription breakdown</p>
                 </div>
               </div>
-              <ResponsiveContainer width="100%" height={300}>
+              <ResponsiveContainer width="100%" height={300} minWidth={0}>
                 <RechartsPieChart>
                   <Pie
                     data={planDistribution}
@@ -411,10 +586,7 @@ export default function Subscriptions() {
               <div className="flex flex-wrap justify-center gap-4 mt-4">
                 {planDistribution.map((plan) => (
                   <div key={plan.name} className="flex items-center gap-2">
-                    <div
-                      className="w-3 h-3 rounded-full"
-                      style={{ backgroundColor: plan.color }}
-                    />
+                    <div className={`w-3 h-3 rounded-full ${planDotClass(plan.color)}`} />
                     <span className="text-sm text-slate-600">{plan.name}</span>
                   </div>
                 ))}
@@ -443,27 +615,68 @@ export default function Subscriptions() {
               <div className="flex items-center gap-3">
                 <Filter className="h-4 w-4 text-slate-400" />
                 <select
-                  aria-label="Filter subscriptions by status"
+                  aria-label="Filter by status"
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value as any)}
                   className="bg-white border-slate-200 text-slate-600 text-sm rounded-xl px-4 py-2 outline-none focus:ring-2 focus:ring-purple-600"
                 >
-                  <option value="all">All Status</option>
+                  <option value="all">All Statuses</option>
                   <option value="active">Active</option>
                   <option value="expired">Expired</option>
                   <option value="cancelled">Cancelled</option>
                   <option value="pending">Pending</option>
                 </select>
+                <select
+                  aria-label="Sort subscriptions"
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as any)}
+                  className="bg-white border-slate-200 text-slate-600 text-sm rounded-xl px-4 py-2 outline-none focus:ring-2 focus:ring-purple-600"
+                >
+                  <option value="renewalDate">Sort: Renewal Date</option>
+                  <option value="userName">Sort: User</option>
+                  <option value="planName">Sort: Plan</option>
+                  <option value="status">Sort: Status</option>
+                  <option value="amount">Sort: Amount</option>
+                </select>
+                <Button variant="outline" size="sm" className="rounded-xl" onClick={toggleSortDirection}>
+                  {sortDirection === 'asc' ? 'Asc' : 'Desc'}
+                </Button>
               </div>
             </div>
           </GlassCard>
 
+          {selectedSubscriptionIds.length > 0 && (
+            <GlassCard className="p-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <p className="text-sm text-slate-600 font-medium">{selectedSubscriptionIds.length} selected</p>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" size="sm" className="rounded-xl" onClick={() => handleBulkStatusChange('active')}>Set Active</Button>
+                  <Button variant="outline" size="sm" className="rounded-xl" onClick={() => handleBulkStatusChange('cancelled')}>Set Cancelled</Button>
+                  <Button variant="outline" size="sm" className="rounded-xl text-rose-600 hover:text-rose-700" onClick={handleBulkDelete}>Delete Selected</Button>
+                </div>
+              </div>
+            </GlassCard>
+          )}
+
           {/* Subscriptions Table */}
           <GlassCard className="overflow-hidden">
+            <div className="flex items-center justify-between px-6 py-3 border-b border-slate-100 bg-slate-50/60">
+              <label className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-500">
+                <input
+                  type="checkbox"
+                  checked={areAllCurrentPageSelected}
+                  onChange={toggleSelectCurrentPage}
+                  className="h-4 w-4 rounded border-slate-300 text-purple-600 focus:ring-purple-500"
+                />
+                Select Page
+              </label>
+              <span className="text-xs text-slate-500">Showing {pagedSubscriptions.length} of {sortedSubscriptions.length}</span>
+            </div>
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-slate-50">
                   <tr>
+                    <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-widest">Select</th>
                     <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-widest">User</th>
                     <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-widest">Plan</th>
                     <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-widest">Status</th>
@@ -473,13 +686,22 @@ export default function Subscriptions() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {filteredSubscriptions.map((subscription) => (
+                  {pagedSubscriptions.map((subscription) => (
                     <motion.tr
                       key={subscription.id}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       className="hover:bg-slate-50"
                     >
+                      <td className="px-6 py-4">
+                        <input
+                          type="checkbox"
+                          checked={selectedSubscriptionIds.includes(subscription.id)}
+                          onChange={() => toggleSelectSubscription(subscription.id)}
+                          className="h-4 w-4 rounded border-slate-300 text-purple-600 focus:ring-purple-500"
+                          aria-label={`Select ${subscription.userName}`}
+                        />
+                      </td>
                       <td className="px-6 py-4">
                         <div>
                           <p className="text-sm font-medium text-slate-900">{subscription.userName}</p>
@@ -537,10 +759,34 @@ export default function Subscriptions() {
                 </tbody>
               </table>
             </div>
-            {filteredSubscriptions.length === 0 && (
+            {sortedSubscriptions.length === 0 && (
               <div className="text-center py-12">
                 <Users className="h-12 w-12 text-slate-300 mx-auto mb-4" />
                 <p className="text-slate-500">No subscriptions found</p>
+              </div>
+            )}
+
+            {sortedSubscriptions.length > PAGE_SIZE && (
+              <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-xl"
+                  onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                >
+                  Previous
+                </Button>
+                <span className="text-sm text-slate-600 font-medium">Page {currentPage} of {pageCount}</span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-xl"
+                  onClick={() => setCurrentPage((prev) => Math.min(pageCount, prev + 1))}
+                  disabled={currentPage === pageCount}
+                >
+                  Next
+                </Button>
               </div>
             )}
           </GlassCard>
@@ -557,7 +803,7 @@ export default function Subscriptions() {
                 <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">Monthly subscription trends</p>
               </div>
             </div>
-            <ResponsiveContainer width="100%" height={400}>
+            <ResponsiveContainer width="100%" height={400} minWidth={0}>
               <LineChart data={subscriptionGrowthData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
                 <XAxis dataKey="month" stroke="#64748b" fontSize={12} />

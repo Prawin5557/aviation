@@ -1,24 +1,39 @@
 import React, { useEffect } from "react";
+import { ENV } from "@/src/config/env";
 
 interface SEOProps {
   title: string;
   description?: string;
+  image?: string;
 }
 
-export default function SEO({ title, description }: SEOProps) {
+const upsertMeta = (selector: string, attribute: 'name' | 'property', key: string, content: string) => {
+  const existing = document.head.querySelector(selector);
+  if (existing) {
+    existing.setAttribute('content', content);
+    return;
+  }
+
+  const tag = document.createElement('meta');
+  tag.setAttribute(attribute, key);
+  tag.setAttribute('content', content);
+  document.head.appendChild(tag);
+};
+
+export default function SEO({ title, description, image }: SEOProps) {
   useEffect(() => {
-    document.title = `${title} | ARMZ Aviation`;
-    
-    const metaDescription = document.querySelector('meta[name="description"]');
-    if (metaDescription) {
-      metaDescription.setAttribute("content", description || "Premium Aviation Job Portal");
-    } else {
-      const meta = document.createElement("meta");
-      meta.name = "description";
-      meta.content = description || "Premium Aviation Job Portal";
-      document.head.appendChild(meta);
-    }
-  }, [title, description]);
+    const safeDescription = description || 'Premium Aviation Job Portal';
+    const safeImage = image || '/og-image.png';
+    const fullTitle = `${title} | ${ENV.APP_NAME}`;
+
+    document.title = fullTitle;
+
+    upsertMeta('meta[name="description"]', 'name', 'description', safeDescription);
+    upsertMeta('meta[property="og:title"]', 'property', 'og:title', fullTitle);
+    upsertMeta('meta[property="og:description"]', 'property', 'og:description', safeDescription);
+    upsertMeta('meta[property="og:image"]', 'property', 'og:image', safeImage);
+    upsertMeta('meta[property="og:type"]', 'property', 'og:type', 'website');
+  }, [title, description, image]);
 
   return null;
 }

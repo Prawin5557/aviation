@@ -2,13 +2,13 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { MapPin, Briefcase, Clock, DollarSign, Building2, ArrowUpRight, Bookmark, Loader2, CheckCircle2, X, Sparkles, Target } from "lucide-react";
 import { Job } from "@/src/types";
-import { Button } from "@/src/components/ui/Button";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { apiService } from "@/src/services/api";
 import { useAuthStore } from "@/src/store/authStore";
 import { useJobStore } from "@/src/store/jobStore";
 import toast from "react-hot-toast";
 import { cn } from "@/src/lib/utils";
+import { getSubscriptionRouteForRole, hasActiveSubscription } from "@/src/lib/subscription";
 
 interface JobCardProps {
   job: Job;
@@ -18,6 +18,7 @@ interface JobCardProps {
 
 const JobCard: React.FC<JobCardProps> = ({ job, onQuickView, hasApplied: hasAppliedProp }) => {
   const { user, isAuthenticated } = useAuthStore();
+  const navigate = useNavigate();
   const { saveJob, removeJob, isJobSaved } = useJobStore();
   const [isApplying, setIsApplying] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -45,7 +46,14 @@ const JobCard: React.FC<JobCardProps> = ({ job, onQuickView, hasApplied: hasAppl
     e.stopPropagation();
     
     if (!isAuthenticated) {
-      toast.error("Please login to apply for jobs");
+      toast.error("Please complete registration and choose a plan to apply.");
+      navigate('/register');
+      return;
+    }
+
+    if (!hasActiveSubscription(user)) {
+      toast.error("Subscription required to apply. Please activate your plan.");
+      navigate(getSubscriptionRouteForRole(user?.role));
       return;
     }
 

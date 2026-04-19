@@ -1,16 +1,19 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useAuthStore } from "../../store/authStore";
 import { authService } from "../../services/authService";
 import { Button } from "../../components/ui/Button";
 import { Input } from "../../components/ui/Input";
-import { Plane, Lock, Mail, Loader2, AlertCircle, ArrowRight, Zap } from "lucide-react";
+import { Plane, Lock, Mail, Loader2, AlertCircle, ArrowRight } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import toast from "react-hot-toast";
 import SEO from "../../components/common/SEO";
 import GoogleLogin from "../../components/auth/GoogleLogin";
 import ForgetPassword from "../../components/auth/ForgetPassword";
+
+const demoGradientRightClass = "bg-linear-to-r";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -67,7 +70,7 @@ export default function Login() {
     }
   };
 
-  const handleGoogleSuccess = (response: any) => {
+  const handleGoogleSuccess = useCallback((response: any) => {
     const userData = response.user;
     login(userData);
 
@@ -78,51 +81,39 @@ export default function Login() {
     } else {
       navigate(from);
     }
-  };
+  }, [from, login, navigate]);
 
-  const handleGoogleError = (error: any) => {
+  const handleGoogleError = useCallback((error: any) => {
+    const message = error instanceof Error ? error.message : String(error || '');
+    if (message.includes('Missing VITE_GOOGLE_CLIENT_ID')) {
+      return;
+    }
     console.error('Google login error:', error);
     setError('Google login failed. Please try again.');
-  };
+  }, [setError]);
 
   const handleForgetPasswordSuccess = () => {
     setShowForgetPassword(false);
     setError(null);
   };
 
-  const demoLogins = {
-    student: { email: 'student@demo.com', password: 'password123' },
-    employer: { email: 'employer@demo.com', password: 'password123' }
-  };
-
   const handleDemoLogin = async (role: 'student' | 'employer') => {
     setLoading(true);
     setError(null);
     try {
-      const demoCredentials = demoLogins[role];
+      const demoEmail = role === 'student' ? 'demo.student@example.com' : 'demo.employer@example.com';
       const response = await authService.login(
-        {
-          email: demoCredentials.email,
-          password: demoCredentials.password,
-        },
-        role,
-        true // Force mock data
+        { email: demoEmail, password: 'demo123' },
+        role
       );
-
       const userData = { ...response.user };
       login(userData);
-
-      if (userData.role === 'admin') {
-        navigate('/admin');
-      } else if (userData.role === 'employer') {
-        navigate('/employer');
-      } else {
-        navigate(from);
-      }
+      toast.success(`Welcome ${role === 'student' ? 'Student' : 'Employer'}!`);
+      navigate(role === 'employer' ? '/employer' : from);
     } catch (err: any) {
-      console.error("Demo login error:", err);
-      const message = err.response?.data?.message || "Demo login failed. Please try again.";
-      setError(message);
+      console.error('Demo login error:', err);
+      setError(`Demo ${role} login failed`);
+      toast.error(`Demo ${role} login unavailable`);
     } finally {
       setLoading(false);
     }
@@ -145,7 +136,7 @@ export default function Login() {
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
       <SEO title="Login" description="Access your aviation career portal" />
-      <div className="max-w-md w-full glass-card p-8 rounded-3xl shadow-2xl border-white/50">
+      <div className="max-w-md w-full glass-card p-6 sm:p-8 rounded-3xl shadow-2xl border-white/50">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center bg-purple-600 p-3 rounded-2xl mb-4 -rotate-45">
             <Plane className="h-8 w-8 text-white" />
@@ -167,29 +158,6 @@ export default function Login() {
             onError={handleGoogleError}
             text="Continue with Google"
           />
-          
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={() => handleDemoLogin('student')}
-              disabled={isLoading}
-              className="flex items-center justify-center gap-2 px-4 py-3 bg-amber-50 hover:bg-amber-100 disabled:bg-gray-200 border border-amber-300 rounded-xl font-semibold text-sm text-amber-700 transition-all"
-              title="Demo Student Login"
-            >
-              <Zap className="h-4 w-4" />
-              <span>Student Demo</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => handleDemoLogin('employer')}
-              disabled={isLoading}
-              className="flex items-center justify-center gap-2 px-4 py-3 bg-blue-50 hover:bg-blue-100 disabled:bg-gray-200 border border-blue-300 rounded-xl font-semibold text-sm text-blue-700 transition-all"
-              title="Demo Employer Login"
-            >
-              <Zap className="h-4 w-4" />
-              <span>Employer Demo</span>
-            </button>
-          </div>
         </div>
 
         <div className="relative mb-6">
@@ -275,7 +243,30 @@ export default function Login() {
           </div>
         </form>
 
-        <p className="text-center mt-8 text-sm text-slate-600">
+        {/* Demo Section */}
+        <div className="mt-8 pt-6 border-t border-slate-200/50 space-y-3">
+          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest text-center mb-3">🎯 Quick Demo Access</p>
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => handleDemoLogin('student')}
+              disabled={isLoading}
+              className={`h-10 ${demoGradientRightClass} from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold rounded-xl transition-all duration-300 disabled:opacity-50 text-xs`}
+            >
+              {isLoading ? '...' : '👨‍🎓 Demo Student'}
+            </button>
+            <button
+              type="button"
+              onClick={() => handleDemoLogin('employer')}
+              disabled={isLoading}
+              className={`h-10 ${demoGradientRightClass} from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-bold rounded-xl transition-all duration-300 disabled:opacity-50 text-xs`}
+            >
+              {isLoading ? '...' : '🏢 Demo Employer'}
+            </button>
+          </div>
+        </div>
+
+        <p className="text-center mt-6 text-sm text-slate-600">
           Don't have an account?{" "}
           <Link to="/register" className="text-purple-600 font-bold hover:underline">
             Register Now

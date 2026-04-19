@@ -107,11 +107,17 @@ export default function Notifications() {
     }
   };
 
+  const getPriorityBorderClass = (priority: string) => {
+    switch (priority) {
+      case 'high': return 'border-red-500';
+      case 'medium': return 'border-yellow-500';
+      default: return 'border-slate-500';
+    }
+  };
+
   const filteredNotifications = filterType === 'all' 
     ? notifications 
     : notifications.filter(n => n.type === filterType);
-
-  const unreadNotifications = filteredNotifications.filter(n => !n.read);
 
   const timeAgo = (timestamp: string) => {
     const date = new Date(timestamp);
@@ -208,7 +214,7 @@ export default function Notifications() {
                   exit={{ opacity: 0, x: -100 }}
                   className={`glass-card p-6 rounded-2xl border-l-4 transition-all hover:shadow-lg ${
                     !n.read 
-                      ? `border-${n.priority === 'high' ? 'red' : n.priority === 'medium' ? 'yellow' : 'slate'}-500 bg-white/40` 
+                      ? `${getPriorityBorderClass(n.priority)} bg-white/40`
                       : 'border-slate-200 bg-white/20'
                   }`}
                 >

@@ -73,6 +73,8 @@ export default function AdminLeads() {
         <div className="flex gap-3">
           <button
             onClick={() => fetchLeads()}
+            title="Refresh leads"
+            aria-label="Refresh leads"
             className="p-3 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors"
           >
             <RefreshCw className={`h-5 w-5 text-slate-600 ${isLoading ? 'animate-spin' : ''}`} />
@@ -103,7 +105,7 @@ export default function AdminLeads() {
             transition={{ duration: 0.4, delay: idx * 0.05 }}
             className="glass-card p-5 rounded-2xl"
           >
-            <div className={`inline-flex p-2.5 rounded-xl bg-gradient-to-br ${stat.color} text-white mb-3`}>
+            <div className={`inline-flex p-2.5 rounded-xl bg-linear-to-br ${stat.color} text-white mb-3`}>
               <stat.icon className="h-4 w-4" />
             </div>
             <div className="text-2xl font-bold text-slate-900">{stat.value}</div>
@@ -157,13 +159,13 @@ export default function AdminLeads() {
           <table className="w-full">
             <thead>
               <tr className="bg-slate-50/50 border-b border-slate-100">
-                <th className="text-left py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Lead</th>
-                <th className="text-left py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Contact</th>
-                <th className="text-left py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Interest</th>
-                <th className="text-left py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Source</th>
-                <th className="text-left py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
-                <th className="text-left py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Created</th>
-                <th className="text-right py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Actions</th>
+                <th className="text-left py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap">Lead</th>
+                <th className="text-left py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap">Contact</th>
+                <th className="text-left py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap">Interest</th>
+                <th className="text-left py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap">Source</th>
+                <th className="text-left py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap">Status</th>
+                <th className="text-left py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap">Created</th>
+                <th className="text-right py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -175,9 +177,9 @@ export default function AdminLeads() {
                   transition={{ duration: 0.3, delay: idx * 0.05 }}
                   className="hover:bg-slate-50/50 transition-colors"
                 >
-                  <td className="py-4 px-6">
+                  <td className="py-4 px-6 whitespace-nowrap">
                     <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-sm">
+                      <div className="h-10 w-10 rounded-full bg-linear-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-sm">
                         {lead.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
                       </div>
                       <div>
@@ -185,7 +187,7 @@ export default function AdminLeads() {
                       </div>
                     </div>
                   </td>
-                  <td className="py-4 px-6">
+                  <td className="py-4 px-6 whitespace-nowrap">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2 text-sm text-slate-600">
                         <Mail className="h-3.5 w-3.5 text-slate-400" />
@@ -197,15 +199,15 @@ export default function AdminLeads() {
                       </div>
                     </div>
                   </td>
-                  <td className="py-4 px-6">
+                  <td className="py-4 px-6 whitespace-nowrap">
                     <span className="text-sm text-slate-700">{lead.interest}</span>
                   </td>
-                  <td className="py-4 px-6">
+                  <td className="py-4 px-6 whitespace-nowrap">
                     <span className="text-xs font-medium text-slate-500 bg-slate-100 px-2 py-1 rounded-full">
                       {getSourceLabel(lead.source)}
                     </span>
                   </td>
-                  <td className="py-4 px-6">
+                  <td className="py-4 px-6 whitespace-nowrap">
                     <select
                       aria-label="Change lead status"
                       value={lead.status}
@@ -217,7 +219,7 @@ export default function AdminLeads() {
                       ))}
                     </select>
                   </td>
-                  <td className="py-4 px-6">
+                  <td className="py-4 px-6 whitespace-nowrap">
                     <div className="flex items-center gap-2 text-sm text-slate-500">
                       <Calendar className="h-3.5 w-3.5" />
                       {new Date(lead.createdAt).toLocaleDateString('en-IN', { 
@@ -227,7 +229,7 @@ export default function AdminLeads() {
                       })}
                     </div>
                   </td>
-                  <td className="py-4 px-6">
+                  <td className="py-4 px-6 whitespace-nowrap">
                     <div className="flex items-center justify-end gap-2">
                       <button
                         onClick={() => {
@@ -287,7 +289,7 @@ export default function AdminLeads() {
             className="glass-card w-full max-w-lg p-8 rounded-4xl"
           >
             <div className="flex items-center gap-4 mb-6">
-              <div className="h-16 w-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-xl">
+              <div className="h-16 w-16 rounded-full bg-linear-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-xl">
                 {selectedLead.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
               </div>
               <div>
@@ -355,4 +357,3 @@ export default function AdminLeads() {
     </div>
   );
 }
-

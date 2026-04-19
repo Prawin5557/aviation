@@ -4,6 +4,8 @@ import { useState } from "react";
 import { cn } from "@/src/lib/utils";
 import { useAuthStore } from "@/src/store/authStore";
 import toast from "react-hot-toast";
+import ThemeToggle from "@/src/components/common/ThemeToggle";
+import { ROUTE_PATHS } from "@/src/routes/paths";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -13,13 +15,13 @@ export default function Navbar() {
   const { user, isAuthenticated, logout } = useAuthStore();
 
   const navLinks = [
-    { name: "HOME", path: "/", hasDropdown: false },
-    { name: "ABOUT US", path: "/about", hasDropdown: false },
-    { name: "JOBS", path: "/jobs", hasDropdown: false },
-    { name: "COLLABORATION", path: "/collaboration", hasDropdown: false },
-    { name: "EVENTS", path: "/events", hasDropdown: false },
-    { name: "BLOG", path: "/blog", hasDropdown: false },
-    { name: "CONTACT", path: "/contact", hasDropdown: false },
+    { name: "HOME", path: ROUTE_PATHS.home, hasDropdown: false },
+    { name: "ABOUT US", path: ROUTE_PATHS.about, hasDropdown: false },
+    { name: "JOBS", path: ROUTE_PATHS.jobs, hasDropdown: false },
+    { name: "COLLABORATION", path: ROUTE_PATHS.collaboration, hasDropdown: false },
+    { name: "EVENTS", path: ROUTE_PATHS.events, hasDropdown: false },
+    { name: "BLOG", path: ROUTE_PATHS.blog, hasDropdown: false },
+    { name: "CONTACT", path: ROUTE_PATHS.contact, hasDropdown: false },
   ];
 
   const handleNavClick = (path: string) => {
@@ -37,8 +39,7 @@ export default function Navbar() {
 
   const handleLogout = async () => {
     try {
-      logout();
-      toast.success("Logged out successfully");
+      await logout();
       navigate("/");
       setIsProfileOpen(false);
     } catch (error) {
@@ -56,9 +57,9 @@ export default function Navbar() {
               <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center mr-3">
                 <div className="w-2 h-2 bg-white rounded-full" />
               </div>
-              <span className="text-2xl font-bold text-slate-900 tracking-tight">ARMZ</span>
-              <span className="text-2xl font-light text-slate-400 mx-1">|</span>
-              <span className="text-2xl font-bold text-slate-900 tracking-tight">AVIATION</span>
+              <span className="text-lg sm:text-2xl font-bold text-slate-900 tracking-tight">ARMZ</span>
+              <span className="text-lg sm:text-2xl font-light text-slate-400 mx-1">|</span>
+              <span className="text-lg sm:text-2xl font-bold text-slate-900 tracking-tight">AVIATION</span>
             </Link>
           </div>
 
@@ -82,11 +83,13 @@ export default function Navbar() {
             ))}
 
             <div className="flex items-center space-x-4 ml-4">
+              <ThemeToggle />
               {isAuthenticated ? (
                 <div className="relative">
                   <button 
                     onClick={() => setIsProfileOpen(!isProfileOpen)}
-                    className="flex items-center space-x-3 p-1.5 pr-4 rounded-full bg-slate-50 border border-slate-200 hover:border-purple-200 transition-all"
+                    aria-label="Open user menu"
+                    className="min-h-11 flex items-center space-x-3 p-1.5 pr-4 rounded-full bg-slate-50 border border-slate-200 hover:border-purple-200 transition-all"
                   >
                     <div className="h-8 w-8 rounded-full bg-purple-600 flex items-center justify-center text-white text-xs font-bold overflow-hidden">
                       {user?.photoURL ? (
@@ -110,7 +113,7 @@ export default function Navbar() {
                         <span className="text-xs font-bold uppercase tracking-widest">Dashboard</span>
                       </Link>
                       <Link 
-                        to="/dashboard/profile"
+                        to={user?.role === 'admin' ? '/admin/settings' : user?.role === 'employer' ? '/employer/profile' : '/dashboard/profile'}
                         onClick={() => setIsProfileOpen(false)}
                         className="flex items-center space-x-3 p-3 rounded-xl hover:bg-slate-50 text-slate-600 hover:text-indigo-600 transition-colors"
                       >
@@ -149,7 +152,8 @@ export default function Navbar() {
           <div className="xl:hidden flex items-center">
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="text-slate-600 hover:text-purple-600"
+              aria-label={isOpen ? "Close mobile menu" : "Open mobile menu"}
+              className="h-11 w-11 inline-flex items-center justify-center rounded-xl text-slate-600 hover:text-purple-600 hover:bg-slate-100"
             >
               {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>

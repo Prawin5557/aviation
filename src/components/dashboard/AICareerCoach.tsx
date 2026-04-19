@@ -8,8 +8,13 @@ import { Link } from "react-router-dom";
 import { Button } from "@/src/components/ui/Button";
 import { GlassCard } from "@/src/components/common/GlassCard";
 import { cn } from "@/src/lib/utils";
+import { ENV } from "@/src/config/env";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
+const ai = new GoogleGenAI({ apiKey: ENV.PUBLIC_GEMINI_API_KEY || "" });
+const blurClass = "backdrop-blur-xs";
+const maxWidthClass = "max-w-50";
+const gradientClass = "bg-linear-to-br";
+const minHeightClass = "min-h-25";
 
 export default function AICareerCoach() {
   const [advice, setAdvice] = useState<string | null>(null);
@@ -67,12 +72,12 @@ export default function AICareerCoach() {
         className="relative overflow-hidden group border-slate-100 bg-slate-50/50"
         hoverEffect={false}
       >
-        <div className="absolute inset-0 bg-white/60 backdrop-blur-[4px] z-10 flex flex-col items-center justify-center text-center p-6">
+        <div className={`absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/60 p-6 text-center ${blurClass}`}>
           <div className="h-14 w-14 bg-white rounded-2xl shadow-premium flex items-center justify-center mb-4 text-slate-400 group-hover:text-purple-600 transition-all duration-500 group-hover:scale-110">
             <Lock className="h-6 w-6" />
           </div>
           <h3 className="font-display font-bold text-slate-900 mb-2">AI Career Coach</h3>
-          <p className="text-sm text-slate-500 mb-6 max-w-[200px]">Unlock personalized AI career coaching with a Professional plan.</p>
+          <p className={`mb-6 ${maxWidthClass} text-sm text-slate-500`}>Unlock personalized AI career coaching with a Professional plan.</p>
           <Link to="/dashboard/subscription">
             <Button variant="primary" size="sm" className="rounded-full px-8">
               Upgrade Now
@@ -104,7 +109,7 @@ export default function AICareerCoach() {
 
   return (
     <GlassCard 
-      className="border-purple-100 bg-gradient-to-br from-white/90 to-purple-50/40"
+      className={`border-purple-100 ${gradientClass} from-white/90 to-purple-50/40`}
     >
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-3">
@@ -123,7 +128,7 @@ export default function AICareerCoach() {
         </button>
       </div>
 
-      <div className="relative min-h-[100px] flex items-center">
+      <div className={`relative flex ${minHeightClass} items-center`}>
         {isLoading ? (
           <div className="w-full flex flex-col items-center justify-center py-4 space-y-3">
             <Loader2 className="h-8 w-8 text-purple-400 animate-spin" />

@@ -120,28 +120,24 @@ export default function Settings() {
   };
 
   const handleDeleteAccount = () => {
-    toast.error("Account deletion is disabled in demo mode.");
+    toast.error("Account deletion is currently unavailable. Please contact support.");
   };
 
   const ToggleSwitch = ({ enabled, onChange, ariaLabel }: { enabled: boolean; onChange: () => void; ariaLabel?: string }) => (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={enabled ? "true" : "false"}
-      aria-label={ariaLabel || "Toggle"}
-      onClick={onChange}
-      className={cn(
-        "relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2",
-        enabled ? "bg-purple-600" : "bg-slate-200"
-      )}
-    >
-      <span
-        className={cn(
-          "inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 shadow-sm",
-          enabled ? "translate-x-6" : "translate-x-1"
-        )}
+    <label className="relative inline-flex h-6 w-11 cursor-pointer items-center">
+      <input
+        type="checkbox"
+        checked={enabled}
+        onChange={onChange}
+        aria-label={ariaLabel || 'Toggle'}
+        className="peer sr-only"
       />
-    </button>
+      <span className="h-6 w-11 rounded-full bg-slate-200 transition-colors duration-200 peer-checked:bg-purple-600 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-purple-500 peer-focus:ring-offset-2" />
+      <span className={cn(
+        "pointer-events-none absolute left-1 inline-block h-4 w-4 rounded-full bg-white shadow-sm transition-transform duration-200",
+        enabled ? "translate-x-5" : "translate-x-0"
+      )} />
+    </label>
   );
 
   const tabs = [

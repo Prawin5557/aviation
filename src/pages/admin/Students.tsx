@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Edit2, Trash2, Check, X, RefreshCw, Search, Filter, BarChart3, TrendingUp, Users, Activity, Eye, MapPin, Settings2, UserCheck, UserX, Mail, Phone, Calendar, BookOpen, Award, Zap } from "lucide-react";
+import { Plus, Edit2, Trash2, Check, X, RefreshCw, Search, Filter, BarChart3, TrendingUp, Users, Activity, Eye, MapPin, Settings2, UserCheck, UserX, Mail, Phone, Calendar, BookOpen, Award, Zap, Download } from "lucide-react";
 import { apiService } from "@/src/services/api";
 import { Button } from "@/src/components/ui/Button";
 import { GlassCard } from "@/src/components/common/GlassCard";
@@ -38,49 +38,100 @@ interface StudentStats {
 }
 
 export default function AdminStudents() {
+  const PAGE_SIZE = 8;
   const [students, setStudents] = useState<Student[]>([]);
   const [stats, setStats] = useState<StudentStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"overview" | "students" | "analytics">("overview");
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState<"all" | "active" | "inactive" | "pending">("all");
+  const [sortBy, setSortBy] = useState<"firstName" | "lastName" | "status" | "courses" | "profileCompletion" | "enrollmentDate">("enrollmentDate");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
+  const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
   const [creatingStudent, setCreatingStudent] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  useEffect(() => { fetchStudents(); }, []);
+  const statusDotClass = (color: string) => {
+    switch (color.toLowerCase()) {
+      case "#10b981":
+        return "bg-emerald-500";
+      case "#f59e0b":
+        return "bg-amber-500";
+      case "#ef4444":
+        return "bg-rose-500";
+      default:
+        return "bg-slate-400";
+    }
+  };
 
-  const fetchStudents = async () => {
+  const mapStudent = (item: any): Student => ({
+    id: String(item.id),
+    firstName: item.firstName || item.first_name || item.name?.split(" ")[0] || "",
+    lastName: item.lastName || item.last_name || item.name?.split(" ").slice(1).join(" ") || "",
+    email: item.email || "",
+    phone: item.phone || "",
+    institution: item.institution || item.college || "",
+    major: item.major || item.department || "",
+    enrollmentDate: item.enrollmentDate || item.enrolledAt || item.createdAt || new Date().toISOString(),
+    status: (item.status || "Pending") as Student["status"],
+    courses: Number(item.courses || item.courseCount || 0),
+    assessments: Number(item.assessments || item.assessmentCount || 0),
+    profileCompletion: Number(item.profileCompletion || item.profile_completion || 0),
+    location: item.location || "",
+    gpa: item.gpa || "",
+    photoURL: item.photoURL || item.avatar || "",
+  });
+
+  const buildStats = (data: Student[]): StudentStats => {
+    const totalStudents = data.length;
+    const activeStudents = data.filter((s) => s.status === "Active").length;
+    const pendingStudents = data.filter((s) => s.status === "Pending").length;
+    const averageProfileCompletion = totalStudents
+      ? Math.round(data.reduce((sum, s) => sum + (s.profileCompletion || 0), 0) / totalStudents)
+      : 0;
+    const totalCourses = data.reduce((sum, s) => sum + (s.courses || 0), 0);
+    const completedCourses = Math.round(totalCourses * 0.55);
+
+    const studentsByStatus = [
+      { status: "Active", count: activeStudents, color: "#10b981" },
+      { status: "Inactive", count: data.filter((s) => s.status === "Inactive").length, color: "#ef4444" },
+      { status: "Pending", count: pendingStudents, color: "#f59e0b" },
+    ];
+
+    const monthly = new Map<string, number>();
+    data.forEach((s) => {
+      const d = new Date(s.enrollmentDate);
+      const label = Number.isNaN(d.getTime())
+        ? "Unknown"
+        : d.toLocaleDateString("en-IN", { month: "short", year: "2-digit" });
+      monthly.set(label, (monthly.get(label) || 0) + 1);
+    });
+
+    const enrollmentTrend = Array.from(monthly.entries())
+      .slice(-5)
+      .map(([month, students]) => ({ month, students }));
+
+    return {
+      totalStudents,
+      activeStudents,
+      pendingStudents,
+      averageProfileCompletion,
+      totalCourses,
+      completedCourses,
+      studentsByStatus,
+      enrollmentTrend,
+    };
+  };
+
+  const fetchStudents = useCallback(async () => {
     try {
       setLoading(true);
-      // Mock data - replace with actual API call
-      const mockStudents: Student[] = [
-        { id: '1', firstName: 'Aarav', lastName: 'Patel', email: 'aarav@example.com', institution: 'MIT', major: 'Computer Science', enrollmentDate: new Date().toISOString(), status: 'Active', courses: 5, assessments: 12, profileCompletion: 95, phone: '+1-555-0101', gpa: '3.9' },
-        { id: '2', firstName: 'Priya', lastName: 'Singh', email: 'priya@example.com', institution: 'Stanford', major: 'Business', enrollmentDate: new Date().toISOString(), status: 'Active', courses: 3, assessments: 8, profileCompletion: 88, phone: '+1-555-0102', gpa: '3.8' },
-        { id: '3', firstName: 'Rahul', lastName: 'Kumar', email: 'rahul@example.com', institution: 'Harvard', major: 'Engineering', enrollmentDate: new Date().toISOString(), status: 'Active', courses: 4, assessments: 15, profileCompletion: 92, phone: '+1-555-0103', gpa: '3.7' },
-      ];
-      const mockStats: StudentStats = {
-        totalStudents: 1250,
-        activeStudents: 892,
-        pendingStudents: 158,
-        averageProfileCompletion: 87,
-        totalCourses: 3450,
-        completedCourses: 1820,
-        studentsByStatus: [
-          { status: 'Active', count: 892, color: '#10b981' },
-          { status: 'Inactive', count: 200, color: '#ef4444' },
-          { status: 'Pending', count: 158, color: '#f59e0b' },
-        ],
-        enrollmentTrend: [
-          { month: 'Week 1', students: 150 },
-          { month: 'Week 2', students: 220 },
-          { month: 'Week 3', students: 190 },
-          { month: 'Week 4', students: 280 },
-          { month: 'Week 5', students: 320 },
-        ],
-      };
-      setStudents(mockStudents);
-      setStats(mockStats);
+      const response = await apiService.getStudents();
+      const mapped = (response.data || []).map(mapStudent);
+      setStudents(mapped);
+      setStats(buildStats(mapped));
       toast.success('Student data refreshed');
     } catch (error) {
       console.error("Failed to fetch students:", error);
@@ -88,7 +139,11 @@ export default function AdminStudents() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    void fetchStudents();
+  }, [fetchStudents]);
 
   const filteredStudents = useMemo(() => {
     return students.filter(student => {
@@ -97,6 +152,50 @@ export default function AdminStudents() {
       return matchesSearch && matchesStatus;
     });
   }, [students, searchTerm, filterStatus]);
+
+  const sortedStudents = useMemo(() => {
+    const list = [...filteredStudents];
+    list.sort((a, b) => {
+      let left: number | string = "";
+      let right: number | string = "";
+
+      if (sortBy === "courses" || sortBy === "profileCompletion") {
+        left = Number(a[sortBy] || 0);
+        right = Number(b[sortBy] || 0);
+      } else if (sortBy === "enrollmentDate") {
+        left = new Date(a.enrollmentDate || 0).getTime();
+        right = new Date(b.enrollmentDate || 0).getTime();
+      } else {
+        left = String(a[sortBy] || "").toLowerCase();
+        right = String(b[sortBy] || "").toLowerCase();
+      }
+
+      if (left < right) return sortDirection === "asc" ? -1 : 1;
+      if (left > right) return sortDirection === "asc" ? 1 : -1;
+      return 0;
+    });
+    return list;
+  }, [filteredStudents, sortBy, sortDirection]);
+
+  const pageCount = Math.max(1, Math.ceil(sortedStudents.length / PAGE_SIZE));
+  const pagedStudents = useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return sortedStudents.slice(start, start + PAGE_SIZE);
+  }, [sortedStudents, currentPage]);
+
+  const currentPageStudentIds = pagedStudents.map((student) => student.id);
+  const areAllCurrentPageSelected =
+    currentPageStudentIds.length > 0 && currentPageStudentIds.every((id) => selectedStudentIds.includes(id));
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, filterStatus, sortBy, sortDirection]);
+
+  useEffect(() => {
+    if (currentPage > pageCount) {
+      setCurrentPage(pageCount);
+    }
+  }, [currentPage, pageCount]);
 
   const handleEdit = (student: Student) => {
     setEditingStudent({ ...student });
@@ -118,10 +217,10 @@ export default function AdminStudents() {
     }
     try {
       if (creatingStudent) {
-        // await apiService.createStudent(editingStudent);
+        await apiService.createStudent(editingStudent);
         toast.success("Student added successfully!");
       } else {
-        // await apiService.updateStudent(editingStudent.id, editingStudent);
+        await apiService.updateStudent(editingStudent.id, editingStudent);
         toast.success(`${editingStudent.firstName} updated!`);
       }
       setIsModalOpen(false);
@@ -135,7 +234,7 @@ export default function AdminStudents() {
   const handleDelete = async (studentId: string) => {
     if (!confirm("Delete this student account?")) return;
     try {
-      // await apiService.deleteStudent(studentId);
+      await apiService.deleteStudent(studentId);
       toast.success("Student deleted");
       fetchStudents();
     } catch (error) {
@@ -146,7 +245,7 @@ export default function AdminStudents() {
   const handleStatusToggle = async (studentId: string, status: string) => {
     try {
       const newStatus = status === "Active" ? "Inactive" : "Active";
-      // await apiService.updateStudent(studentId, { status: newStatus });
+      await apiService.updateStudent(studentId, { status: newStatus });
       toast.success(`Student ${newStatus}`);
       fetchStudents();
     } catch (error) {
@@ -154,13 +253,105 @@ export default function AdminStudents() {
     }
   };
 
+  const toggleSortDirection = () => {
+    setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
+  };
+
+  const toggleSelectStudent = (studentId: string) => {
+    setSelectedStudentIds((prev) =>
+      prev.includes(studentId) ? prev.filter((id) => id !== studentId) : [...prev, studentId]
+    );
+  };
+
+  const toggleSelectCurrentPage = () => {
+    if (areAllCurrentPageSelected) {
+      setSelectedStudentIds((prev) => prev.filter((id) => !currentPageStudentIds.includes(id)));
+      return;
+    }
+    setSelectedStudentIds((prev) => Array.from(new Set([...prev, ...currentPageStudentIds])));
+  };
+
+  const handleBulkStatusChange = async (status: Student["status"]) => {
+    const selected = students.filter((student) => selectedStudentIds.includes(student.id));
+    if (selected.length === 0) {
+      toast.error("No students selected");
+      return;
+    }
+
+    try {
+      await Promise.all(selected.map((student) => apiService.updateStudent(student.id, { status })));
+      toast.success(`Updated ${selected.length} students`);
+      setSelectedStudentIds([]);
+      fetchStudents();
+    } catch {
+      toast.error("Failed bulk status update");
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    const selected = students.filter((student) => selectedStudentIds.includes(student.id));
+    if (selected.length === 0) {
+      toast.error("No students selected");
+      return;
+    }
+
+    if (!confirm(`Delete ${selected.length} selected students?`)) return;
+
+    try {
+      await Promise.all(selected.map((student) => apiService.deleteStudent(student.id)));
+      toast.success(`Deleted ${selected.length} students`);
+      setSelectedStudentIds([]);
+      fetchStudents();
+    } catch {
+      toast.error("Failed bulk delete");
+    }
+  };
+
+  const handleExportStudents = () => {
+    const headers = ["First Name", "Last Name", "Email", "Status", "Courses", "Profile Completion", "Institution", "Enrollment Date"];
+    const rows = sortedStudents.map((student) => [
+      student.firstName,
+      student.lastName,
+      student.email,
+      student.status,
+      String(student.courses || 0),
+      `${student.profileCompletion || 0}%`,
+      student.institution || "",
+      student.enrollmentDate,
+    ]);
+
+    const csv = [headers, ...rows]
+      .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(","))
+      .join("\n");
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `students-${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    window.URL.revokeObjectURL(url);
+    toast.success("Students exported");
+  };
+
   const enrollmentData = stats?.enrollmentTrend || [];
-  const completionData = [
-    { range: '0-25%', count: 45, color: '#ef4444' },
-    { range: '25-50%', count: 120, color: '#f59e0b' },
-    { range: '50-75%', count: 380, color: '#3b82f6' },
-    { range: '75-100%', count: 705, color: '#10b981' },
-  ];
+  const completionData = useMemo(() => {
+    const ranges = [
+      { range: "0-25%", min: 0, max: 25, color: "#ef4444" },
+      { range: "25-50%", min: 25, max: 50, color: "#f59e0b" },
+      { range: "50-75%", min: 50, max: 75, color: "#3b82f6" },
+      { range: "75-100%", min: 75, max: 101, color: "#10b981" },
+    ];
+
+    return ranges.map((bucket) => ({
+      range: bucket.range,
+      color: bucket.color,
+      count: students.filter((student) => {
+        const completion = Number(student.profileCompletion || 0);
+        return completion >= bucket.min && completion < bucket.max;
+      }).length,
+    }));
+  }, [students]);
 
   if (loading) {
     return (
@@ -179,6 +370,7 @@ export default function AdminStudents() {
         <div><h1 className="text-3xl font-display font-bold text-slate-900 tracking-tight">Student Management</h1><p className="text-slate-500 text-sm font-medium mt-1">Manage students and track progress</p></div>
         <div className="flex items-center gap-3">
           <Button variant="outline" size="sm" onClick={fetchStudents} className="rounded-xl"><RefreshCw className="h-4 w-4 mr-2" />Refresh</Button>
+          <Button variant="outline" size="sm" onClick={handleExportStudents} className="rounded-xl"><Download className="h-4 w-4 mr-2" />Export</Button>
           <Button size="sm" className="rounded-xl" onClick={handleCreate}><Plus className="h-4 w-4 mr-2" />Add Student</Button>
         </div>
       </div>
@@ -218,7 +410,7 @@ export default function AdminStudents() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <GlassCard className="p-8" hoverEffect={false}>
               <div className="flex items-center justify-between mb-8"><div><h2 className="text-xl font-display font-bold text-slate-900">Enrollment Trend</h2><p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">Weekly signups</p></div></div>
-              <ResponsiveContainer width="100%" height={300}>
+              <ResponsiveContainer width="100%" height={300} minWidth={0}>
                 <AreaChart data={enrollmentData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" /><XAxis dataKey="month" stroke="#64748b" fontSize={12} /><YAxis stroke="#64748b" fontSize={12} /><Tooltip contentStyle={{ backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '8px' }} /><Area type="monotone" dataKey="students" stroke="#3b82f6" fill="url(#enrollGradient)" strokeWidth={2} /><defs><linearGradient id="enrollGradient" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/><stop offset="95%" stopColor="#3b82f6" stopOpacity={0.1}/></linearGradient></defs>
                 </AreaChart>
@@ -227,7 +419,7 @@ export default function AdminStudents() {
 
             <GlassCard className="p-8" hoverEffect={false}>
               <div className="flex items-center justify-between mb-8"><div><h2 className="text-xl font-display font-bold text-slate-900">Student Status</h2><p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">Distribution</p></div></div>
-              <ResponsiveContainer width="100%" height={300}>
+              <ResponsiveContainer width="100%" height={300} minWidth={0}>
                 <RechartsPieChart>
                   <Pie data={stats?.studentsByStatus || []} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={5} dataKey="count">
                     {(stats?.studentsByStatus || []).map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
@@ -241,7 +433,7 @@ export default function AdminStudents() {
                     key={stat.status} 
                     className="flex items-center gap-2"
                   >
-                    <div className="w-3 h-3 rounded-full" data-color={stat.color} />
+                    <div className={`w-3 h-3 rounded-full ${statusDotClass(stat.color)}`} />
                     <span className="text-sm text-slate-600">{stat.status}</span>
                   </div>
                 ))}
@@ -260,20 +452,65 @@ export default function AdminStudents() {
               </div>
               <div className="flex items-center gap-3">
                 <Filter className="h-4 w-4 text-slate-400" />
-                <select aria-label="Filter students by status" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value as any)} className="bg-white border-slate-200 text-slate-600 text-sm rounded-xl px-4 py-2 outline-none focus:ring-2 focus:ring-purple-600">
-                  <option value="all">All Status</option><option value="active">Active</option><option value="inactive">Inactive</option><option value="pending">Pending</option>
+                <select aria-label="Filter by status" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value as any)} className="bg-white border-slate-200 text-slate-600 text-sm rounded-xl px-4 py-2 outline-none focus:ring-2 focus:ring-purple-600">
+                  <option value="all">All Statuses</option><option value="active">Active</option><option value="inactive">Inactive</option><option value="pending">Pending</option>
                 </select>
+                <select aria-label="Sort students" value={sortBy} onChange={(e) => setSortBy(e.target.value as any)} className="bg-white border-slate-200 text-slate-600 text-sm rounded-xl px-4 py-2 outline-none focus:ring-2 focus:ring-purple-600">
+                  <option value="enrollmentDate">Sort: Enrollment Date</option>
+                  <option value="firstName">Sort: First Name</option>
+                  <option value="lastName">Sort: Last Name</option>
+                  <option value="status">Sort: Status</option>
+                  <option value="courses">Sort: Courses</option>
+                  <option value="profileCompletion">Sort: Completion</option>
+                </select>
+                <Button variant="outline" size="sm" className="rounded-xl" onClick={toggleSortDirection}>
+                  {sortDirection === "asc" ? "Asc" : "Desc"}
+                </Button>
               </div>
             </div>
           </GlassCard>
 
+          {selectedStudentIds.length > 0 && (
+            <GlassCard className="p-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <p className="text-sm text-slate-600 font-medium">{selectedStudentIds.length} selected</p>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" size="sm" className="rounded-xl" onClick={() => handleBulkStatusChange("Active")}>Set Active</Button>
+                  <Button variant="outline" size="sm" className="rounded-xl" onClick={() => handleBulkStatusChange("Pending")}>Set Pending</Button>
+                  <Button variant="outline" size="sm" className="rounded-xl" onClick={() => handleBulkStatusChange("Inactive")}>Set Inactive</Button>
+                  <Button variant="outline" size="sm" className="rounded-xl text-rose-600 hover:text-rose-700" onClick={handleBulkDelete}>Delete Selected</Button>
+                </div>
+              </div>
+            </GlassCard>
+          )}
+
+          <div className="flex items-center justify-between px-2">
+            <label className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-500">
+              <input
+                type="checkbox"
+                checked={areAllCurrentPageSelected}
+                onChange={toggleSelectCurrentPage}
+                className="h-4 w-4 rounded border-slate-300 text-purple-600 focus:ring-purple-500"
+              />
+              Select Page
+            </label>
+            <span className="text-xs text-slate-500">Showing {pagedStudents.length} of {sortedStudents.length}</span>
+          </div>
+
           <div className="space-y-3">
-            {filteredStudents.map((student) => (
+            {pagedStudents.map((student) => (
               <motion.div key={student.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
                 <GlassCard className="p-6 hover:shadow-lg transition-shadow">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-4 mb-3">
+                        <input
+                          type="checkbox"
+                          checked={selectedStudentIds.includes(student.id)}
+                          onChange={() => toggleSelectStudent(student.id)}
+                          className="h-4 w-4 rounded border-slate-300 text-purple-600 focus:ring-purple-500"
+                          aria-label={`Select ${student.firstName} ${student.lastName}`}
+                        />
                         <div className="p-3 rounded-2xl bg-blue-50 text-blue-600"><Users size={24} /></div>
                         <div>
                           <h3 className="text-lg font-display font-bold text-slate-900">{student.firstName} {student.lastName}</h3>
@@ -293,7 +530,16 @@ export default function AdminStudents() {
                     </div>
                     <div className="flex items-center gap-2 ml-4">
                       <Button variant="ghost" size="icon" className="rounded-xl hover:bg-blue-50 hover:text-blue-600 h-8 w-8" onClick={() => handleEdit(student)}><Edit2 size={16} /></Button>
-                      <Button variant="ghost" size="icon" className="rounded-xl hover:bg-purple-50 hover:text-purple-600 h-8 w-8" onClick={() => handleStatusToggle(student.id, student.status)}>{student.status === "Active" ? "Deactivate" : "Activate"}</Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="rounded-xl hover:bg-purple-50 hover:text-purple-600 h-8 w-8"
+                        onClick={() => handleStatusToggle(student.id, student.status)}
+                        aria-label={student.status === "Active" ? "Deactivate student" : "Activate student"}
+                        title={student.status === "Active" ? "Deactivate" : "Activate"}
+                      >
+                        {student.status === "Active" ? <UserX size={16} /> : <UserCheck size={16} />}
+                      </Button>
                       <Button variant="ghost" size="icon" className="rounded-xl hover:bg-rose-50 hover:text-rose-600 h-8 w-8" onClick={() => handleDelete(student.id)}><Trash2 size={16} /></Button>
                     </div>
                   </div>
@@ -302,7 +548,33 @@ export default function AdminStudents() {
             ))}
           </div>
 
-          {filteredStudents.length === 0 && (
+          {sortedStudents.length > PAGE_SIZE && (
+            <GlassCard className="p-4">
+              <div className="flex items-center justify-between">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-xl"
+                  onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                >
+                  Previous
+                </Button>
+                <span className="text-sm text-slate-600 font-medium">Page {currentPage} of {pageCount}</span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-xl"
+                  onClick={() => setCurrentPage((prev) => Math.min(pageCount, prev + 1))}
+                  disabled={currentPage === pageCount}
+                >
+                  Next
+                </Button>
+              </div>
+            </GlassCard>
+          )}
+
+          {sortedStudents.length === 0 && (
             <GlassCard className="p-12 text-center">
               <Users className="h-12 w-12 text-slate-300 mx-auto mb-4" />
               <p className="text-slate-500">No students found</p>
@@ -315,7 +587,7 @@ export default function AdminStudents() {
         <div className="space-y-8">
           <GlassCard className="p-8" hoverEffect={false}>
             <div className="flex items-center justify-between mb-8"><div><h2 className="text-xl font-display font-bold text-slate-900">Profile Completion</h2><p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">Student distribution</p></div></div>
-            <ResponsiveContainer width="100%" height={400}>
+            <ResponsiveContainer width="100%" height={400} minWidth={0}>
               <BarChart data={completionData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" /><XAxis dataKey="range" stroke="#64748b" fontSize={12} /><YAxis stroke="#64748b" fontSize={12} /><Tooltip contentStyle={{ backgroundColor: 'white', border: '1px solid #e2e8f0' }} /><Bar dataKey="count" fill="#06b6d4" radius={[4, 4, 0, 0]} />
               </BarChart>

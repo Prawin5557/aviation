@@ -379,13 +379,13 @@ export default function Payments() {
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="bg-white/30 border-b border-white/10">
-                  <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Transaction ID</th>
-                  <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Student</th>
-                  <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Plan</th>
-                  <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Amount</th>
-                  <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Date</th>
-                  <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">Status</th>
-                  <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-right">Action</th>
+                  <th className="px-4 sm:px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest whitespace-nowrap">Transaction ID</th>
+                  <th className="px-4 sm:px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest whitespace-nowrap">Student</th>
+                  <th className="px-4 sm:px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest whitespace-nowrap">Plan</th>
+                  <th className="px-4 sm:px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest whitespace-nowrap">Amount</th>
+                  <th className="px-4 sm:px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest whitespace-nowrap">Date</th>
+                  <th className="px-4 sm:px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center whitespace-nowrap">Status</th>
+                  <th className="px-4 sm:px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-right whitespace-nowrap">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/10">
@@ -397,17 +397,17 @@ export default function Payments() {
                       animate={{ opacity: 1 }}
                       className="hover:bg-white/20 transition-colors"
                     >
-                      <td className="px-6 py-4 font-mono text-xs text-slate-500">{txn.id}</td>
-                      <td className="px-6 py-4">
+                      <td className="px-4 sm:px-6 py-4 font-mono text-xs text-slate-500 whitespace-nowrap">{txn.id}</td>
+                      <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
                         <div>
                           <p className="font-bold text-slate-900">{txn.userName}</p>
                           <p className="text-xs text-slate-400">{txn.userEmail}</p>
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-slate-900 font-semibold">{txn.planName}</td>
-                      <td className="px-6 py-4 text-slate-900 font-bold">{txn.amountFormatted}</td>
-                      <td className="px-6 py-4 text-slate-500 text-xs">{txn.transactionDate}</td>
-                      <td className="px-6 py-4 text-center">
+                      <td className="px-4 sm:px-6 py-4 text-slate-900 font-semibold whitespace-nowrap">{txn.planName}</td>
+                      <td className="px-4 sm:px-6 py-4 text-slate-900 font-bold whitespace-nowrap">{txn.amountFormatted}</td>
+                      <td className="px-4 sm:px-6 py-4 text-slate-500 text-xs whitespace-nowrap">{txn.transactionDate}</td>
+                      <td className="px-4 sm:px-6 py-4 text-center whitespace-nowrap">
                         <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${
                           txn.status === 'Success' 
                             ? 'bg-green-100/50 text-green-700 border border-green-200/50' 
@@ -416,7 +416,7 @@ export default function Payments() {
                           {txn.status}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-right">
+                      <td className="px-4 sm:px-6 py-4 text-right whitespace-nowrap">
                         <button
                           onClick={() => downloadInvoice(txn)}
                           className="text-purple-600 hover:text-purple-700 font-semibold text-xs flex items-center gap-1 ml-auto"

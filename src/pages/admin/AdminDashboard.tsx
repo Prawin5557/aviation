@@ -85,11 +85,82 @@ export default function AdminDashboard() {
     { label: "Review Reports", icon: BarChart3, color: "text-slate-600", bg: "bg-slate-50" },
   ];
 
+  const trendData = stats?.jobTrends || [];
+
+  const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+
+  const formatDelta = (current: number, previous: number) => {
+    if (!Number.isFinite(current) || !Number.isFinite(previous) || previous === 0) {
+      return "0%";
+    }
+    const delta = ((current - previous) / previous) * 100;
+    const rounded = Math.abs(delta).toFixed(1);
+    return `${delta >= 0 ? "+" : "-"}${rounded}%`;
+  };
+
+  const trendSummary = useMemo(() => {
+    if (trendData.length < 2) {
+      return { jobs: "0%" };
+    }
+
+    const last = Number(trendData[trendData.length - 1]?.count || 0);
+    const prev = Number(trendData[trendData.length - 2]?.count || 0);
+    return { jobs: formatDelta(last, prev) };
+  }, [trendData]);
+
+  const activeRate = useMemo(() => {
+    const totalUsers = Array.isArray(users) ? users.length : 0;
+    const activeUsersCount = Number(stats?.activeUsers || 0);
+    if (totalUsers <= 0) {
+      return "0%";
+    }
+    return `${Math.round((activeUsersCount / totalUsers) * 100)}%`;
+  }, [stats, users]);
+
+  const leadGrowth = useMemo(() => {
+    const leadCount = Array.isArray(leads) ? leads.length : 0;
+    const newLeadsCount = Number(stats?.newLeads || 0);
+    if (leadCount <= 0) {
+      return "0%";
+    }
+    return `${Math.round((newLeadsCount / leadCount) * 100)}%`;
+  }, [leads, stats]);
+
+  const systemHealth = useMemo(() => {
+    const score = Number(stats?.platformScore || 0);
+    const applicants = Number(stats?.totalApplications || 0);
+    const jobs = Number(stats?.totalJobs || 0);
+    const activeUsersCount = Number(stats?.activeUsers || 0);
+
+    const serverLoad = clamp(Math.round(((activeUsersCount + applicants) / Math.max(activeUsersCount + applicants + 1200, 1)) * 100), 10, 95);
+    const databaseUsage = clamp(Math.round(((jobs + applicants) / Math.max(jobs + applicants + 600, 1)) * 100), 12, 92);
+    const latencyMs = Math.max(60, Math.round(220 - score));
+    const latencyProgress = clamp(Math.round(100 - latencyMs / 4), 20, 95);
+
+    const status = score >= 80 ? "Stable" : score >= 60 ? "Watch" : "Degraded";
+    const statusClass =
+      status === "Stable"
+        ? "bg-emerald-50 text-emerald-700"
+        : status === "Watch"
+        ? "bg-amber-50 text-amber-700"
+        : "bg-rose-50 text-rose-700";
+
+    return {
+      status,
+      statusClass,
+      metrics: [
+        { label: "Server Load", value: `${serverLoad}%`, progress: serverLoad },
+        { label: "Database", value: `${databaseUsage}%`, progress: databaseUsage },
+        { label: "API Latency", value: `${latencyMs}ms`, progress: latencyProgress },
+      ],
+    };
+  }, [stats]);
+
   const statsCards = [
     {
       label: "Active Users",
       value: stats?.activeUsers ?? 0,
-      trend: "+12%",
+      trend: activeRate,
       icon: Users,
       color: "bg-blue-50 text-blue-600",
       badge: "High engagement",
@@ -97,7 +168,7 @@ export default function AdminDashboard() {
     {
       label: "Open Jobs",
       value: stats?.totalJobs ?? 0,
-      trend: "+8%",
+      trend: trendSummary.jobs,
       icon: Briefcase,
       color: "bg-purple-50 text-purple-600",
       badge: "Hiring momentum",
@@ -105,28 +176,19 @@ export default function AdminDashboard() {
     {
       label: "New Leads",
       value: stats?.newLeads ?? 0,
-      trend: "+26%",
+      trend: leadGrowth,
       icon: Globe,
       color: "bg-emerald-50 text-emerald-600",
       badge: "Lead capture",
     },
     {
       label: "Conversion Rate",
-      value: `${stats?.conversionRate ?? 18.9}%`,
-      trend: "+2.3%",
+      value: `${stats?.conversionRate ?? 0}%`,
+      trend: `${stats?.platformScore ?? 0}/100`,
       icon: Star,
       color: "bg-amber-50 text-amber-600",
       badge: "Platform efficiency",
     },
-  ];
-
-  const trendData = stats?.jobTrends || [
-    { month: "Jan", count: 360 },
-    { month: "Feb", count: 470 },
-    { month: "Mar", count: 520 },
-    { month: "Apr", count: 590 },
-    { month: "May", count: 720 },
-    { month: "Jun", count: 820 },
   ];
 
   const topLeads = filteredLeads.slice(0, 4);
@@ -173,7 +235,7 @@ export default function AdminDashboard() {
           <select
             value={dateRange}
             onChange={(event) => setDateRange(event.target.value as any)}
-            className="min-w-[180px] rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-purple-500 focus:ring-2 focus:ring-purple-100"
+            className="min-w-45 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-purple-500 focus:ring-2 focus:ring-purple-100"
             aria-label="Select date range"
           >
             {rangeOptions.map((option) => (
@@ -189,7 +251,8 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
         {statsCards.map((card) => {
           const Icon = card.icon;
-          const isPositive = card.trend.includes("+");
+          const trendText = String(card.trend);
+          const isPositive = !trendText.startsWith("-") && trendText !== "0%" && trendText !== "0/100";
           return (
             <motion.div
               key={card.label}
@@ -229,8 +292,8 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          <div className="mt-8 h-[320px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="mt-8 h-80 w-full">
+            <ResponsiveContainer width="100%" height={320} minWidth={0} minHeight={200}>
               <AreaChart data={trendData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
                 <defs>
                   <linearGradient id="trendGradient" x1="0" y1="0" x2="0" y2="1">
@@ -308,14 +371,10 @@ export default function AdminDashboard() {
                 <h2 className="text-xl font-display font-bold text-slate-900">System Health</h2>
                 <p className="text-slate-500 text-sm mt-1">Server load, uptime and stability metrics.</p>
               </div>
-              <div className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">Stable</div>
+              <div className={`rounded-full px-3 py-1 text-xs font-semibold ${systemHealth.statusClass}`}>{systemHealth.status}</div>
             </div>
             <div className="space-y-5">
-              {[
-                { label: "Server Load", value: "24%", progress: 24 },
-                { label: "Database", value: "68%", progress: 68 },
-                { label: "API Latency", value: "126ms", progress: 42 },
-              ].map((metric) => (
+              {systemHealth.metrics.map((metric) => (
                 <div key={metric.label} className="space-y-2">
                   <div className="flex items-center justify-between text-sm font-semibold text-slate-700">
                     <span>{metric.label}</span>
@@ -349,11 +408,11 @@ export default function AdminDashboard() {
             <table className="w-full text-left text-sm">
               <thead className="bg-slate-50/70 text-slate-400 uppercase text-[10px] font-bold tracking-widest">
                 <tr>
-                  <th className="px-8 py-5">Lead</th>
-                  <th className="px-8 py-5">Interest</th>
-                  <th className="px-8 py-5">Contact</th>
-                  <th className="px-8 py-5">Status</th>
-                  <th className="px-8 py-5 text-right">Actions</th>
+                  <th className="px-4 sm:px-8 py-5 whitespace-nowrap">Lead</th>
+                  <th className="px-4 sm:px-8 py-5 whitespace-nowrap">Interest</th>
+                  <th className="px-4 sm:px-8 py-5 whitespace-nowrap">Contact</th>
+                  <th className="px-4 sm:px-8 py-5 whitespace-nowrap">Status</th>
+                  <th className="px-4 sm:px-8 py-5 text-right whitespace-nowrap">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -376,20 +435,20 @@ export default function AdminDashboard() {
                       transition={{ delay: index * 0.05 }}
                       className="group hover:bg-slate-50/70 transition-colors"
                     >
-                      <td className="px-8 py-5">
+                      <td className="px-4 sm:px-8 py-5 whitespace-nowrap">
                         <p className="font-semibold text-slate-900">{lead.name}</p>
                         <p className="text-xs text-slate-400 mt-1">{lead.email}</p>
                       </td>
-                      <td className="px-8 py-5"><span className="text-xs font-semibold uppercase tracking-[0.16em] text-indigo-600 bg-indigo-50 px-2 py-1 rounded-full">{lead.interest}</span></td>
-                      <td className="px-8 py-5 text-slate-500">{lead.phone || "—"}</td>
-                      <td className="px-8 py-5">
+                      <td className="px-4 sm:px-8 py-5 whitespace-nowrap"><span className="text-xs font-semibold uppercase tracking-[0.16em] text-indigo-600 bg-indigo-50 px-2 py-1 rounded-full">{lead.interest}</span></td>
+                      <td className="px-4 sm:px-8 py-5 text-slate-500 whitespace-nowrap">{lead.phone || "-"}</td>
+                      <td className="px-4 sm:px-8 py-5 whitespace-nowrap">
                         <span className={`inline-flex items-center rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] ${
                           lead.status === "Qualified" ? "bg-emerald-50 text-emerald-700" : lead.status === "Contacted" ? "bg-blue-50 text-blue-700" : "bg-amber-50 text-amber-700"
                         }`}>
                           {lead.status}
                         </span>
                       </td>
-                      <td className="px-8 py-5 text-right">
+                      <td className="px-4 sm:px-8 py-5 text-right whitespace-nowrap">
                         <button className="rounded-2xl border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-600 transition hover:border-purple-300 hover:text-purple-700">Details</button>
                       </td>
                     </motion.tr>
@@ -416,10 +475,10 @@ export default function AdminDashboard() {
             <table className="w-full text-left text-sm">
               <thead className="bg-slate-50/70 text-slate-400 uppercase text-[10px] font-bold tracking-widest">
                 <tr>
-                  <th className="px-8 py-5">Member</th>
-                  <th className="px-8 py-5">Role</th>
-                  <th className="px-8 py-5">Status</th>
-                  <th className="px-8 py-5">Joined</th>
+                  <th className="px-4 sm:px-8 py-5 whitespace-nowrap">Member</th>
+                  <th className="px-4 sm:px-8 py-5 whitespace-nowrap">Role</th>
+                  <th className="px-4 sm:px-8 py-5 whitespace-nowrap">Status</th>
+                  <th className="px-4 sm:px-8 py-5 whitespace-nowrap">Joined</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -441,9 +500,9 @@ export default function AdminDashboard() {
                       transition={{ delay: index * 0.05 }}
                       className="group hover:bg-slate-50/70 transition-colors"
                     >
-                      <td className="px-8 py-5">
+                      <td className="px-4 sm:px-8 py-5 whitespace-nowrap">
                         <div className="flex items-center gap-4">
-                          <div className="h-10 w-10 rounded-2xl bg-gradient-to-br from-purple-100 to-indigo-100 flex items-center justify-center text-sm font-semibold text-purple-700">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-linear-to-br from-purple-100 to-indigo-100 text-sm font-semibold text-purple-700">
                             {user.first_name?.[0] || "U"}
                           </div>
                           <div>
@@ -452,17 +511,17 @@ export default function AdminDashboard() {
                           </div>
                         </div>
                       </td>
-                      <td className="px-8 py-5">
+                      <td className="px-4 sm:px-8 py-5 whitespace-nowrap">
                         <span className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-600 bg-slate-100 px-2 py-1 rounded-full">{user.role || "Student"}</span>
                       </td>
-                      <td className="px-8 py-5">
+                      <td className="px-4 sm:px-8 py-5 whitespace-nowrap">
                         <span className={`inline-flex items-center rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] ${
                           user.status === "Active" ? "bg-emerald-50 text-emerald-700" : user.status === "Pending" ? "bg-amber-50 text-amber-700" : "bg-slate-100 text-slate-600"
                         }`}>
                           {user.status || "Active"}
                         </span>
                       </td>
-                      <td className="px-8 py-5 text-slate-500 font-semibold">{user.joined || "New"}</td>
+                      <td className="px-4 sm:px-8 py-5 text-slate-500 font-semibold whitespace-nowrap">{user.joined || "New"}</td>
                     </motion.tr>
                   ))
                 ) : (
@@ -524,4 +583,3 @@ export default function AdminDashboard() {
     </div>
   );
 }
-

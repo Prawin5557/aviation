@@ -8,6 +8,7 @@ import SEO from "@/src/components/common/SEO";
 import { useLeadCapture } from "@/src/hooks/useLeadCapture";
 import { cn } from "@/src/lib/utils";
 import { motion } from "framer-motion";
+import { contactService } from "@/src/services/contactService";
 
 const contactSchema = z.object({
   fullName: z.string().min(2, "Name must be at least 2 characters"),
@@ -34,22 +35,20 @@ export default function Contact() {
   });
 
   const onSubmit = async (data: ContactFormValues) => {
-    setIsSubmitting(true);
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    // Capture lead from contact form
-    captureContactLead();
-    
-    console.log("Contact form submitted:", data);
-    toast.success("Message sent successfully! We'll get back to you soon.");
-    setIsSubmitted(true);
-    setIsSubmitting(false);
-    reset();
-    
-    // Reset success state after 5 seconds
-    setTimeout(() => setIsSubmitted(false), 5000);
+    try {
+      setIsSubmitting(true);
+      await contactService.submitContact(data);
+      captureContactLead();
+      toast.success("Message sent successfully! We'll get back to you soon.");
+      setIsSubmitted(true);
+      reset();
+      setTimeout(() => setIsSubmitted(false), 5000);
+    } catch (error: any) {
+      const message = error?.response?.data?.message || error?.message || "Failed to send message. Please try again.";
+      toast.error(message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -96,12 +95,12 @@ export default function Contact() {
               </div>
 
               {/* Map Embed */}
-              <div className="glass-card overflow-hidden !rounded-3xl h-64">
+              <div className="glass-card overflow-hidden rounded-3xl! h-64">
                 <iframe
                   src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3507.1234567890!2d77.0266!3d28.4595!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjjCsDI3JzM0LjIiTiA3N8KwMDEnMzUuOCJF!5e0!3m2!1sen!2sin!4v1234567890"
                   width="100%"
                   height="100%"
-                  style={{ border: 0 }}
+                  className="border-0"
                   allowFullScreen
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
@@ -111,7 +110,7 @@ export default function Contact() {
             </div>
 
             {/* Contact Form */}
-            <div className="glass-card p-6 lg:p-8 !rounded-[40px]">
+            <div className="glass-card p-6 lg:p-8 rounded-[40px]!">
               {isSubmitted ? (
                 <div className="h-full flex flex-col items-center justify-center text-center space-y-6 py-12">
                   <div className="h-20 w-20 bg-green-100 rounded-full flex items-center justify-center">

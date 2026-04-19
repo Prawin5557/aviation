@@ -69,6 +69,7 @@ const StudentAssessments = lazy(() => import("@/src/pages/dashboard/Assessments"
 const AdminDashboard = lazy(() => import("@/src/pages/admin/AdminDashboard"));
 const AdminStudents = lazy(() => import("@/src/pages/admin/Students"));
 const AdminJobs = lazy(() => import("@/src/pages/admin/Jobs"));
+const AdminInternships = lazy(() => import("@/src/pages/admin/Internships"));
 const AdminPlans = lazy(() => import("@/src/pages/admin/Plans"));
 const AdminPayments = lazy(() => import("@/src/pages/admin/Payments"));
 const AdminCampaigns = lazy(() => import("@/src/pages/admin/Campaigns"));
@@ -85,6 +86,9 @@ import { AnimatePresence, motion } from "motion/react";
 import LeadCaptureModal from "@/src/components/common/LeadCaptureModal";
 import WhatsAppButton from "@/src/components/common/WhatsAppButton";
 import PaymentFlow from "@/src/components/common/PaymentFlow";
+import { useAnalytics } from "@/src/hooks/useAnalytics";
+import { useAuthStore } from "@/src/store/authStore";
+import { useUIStore } from "@/src/store/uiStore";
 
 export const PaymentContext = React.createContext<{
   isPaymentOpen: boolean;
@@ -94,6 +98,7 @@ export const PaymentContext = React.createContext<{
 
 function AnimatedRoutes() {
   const location = useLocation();
+  useAnalytics();
   
   return (
     <AnimatePresence mode="wait">
@@ -134,11 +139,13 @@ function AnimatedRoutes() {
           <Route path="jobs" element={<StudentJobs />} />
           <Route path="interviews" element={<StudentInterviews />} />
           <Route path="subscription" element={<StudentSubscriptions />} />
+          <Route path="subscriptions" element={<StudentSubscriptions />} />
           <Route path="notifications" element={<StudentNotifications />} />
           <Route path="webinars" element={<StudentWebinars />} />
           <Route path="settings" element={<StudentSettings />} />
           <Route path="applications" element={<StudentApplications />} />
           <Route path="courses" element={<StudentCourses />} />
+          <Route path="courses/:id" element={<StudentCourses />} />
           <Route path="assessments" element={<StudentAssessments />} />
           <Route path="*" element={<NotFound />} />
         </Route>
@@ -174,6 +181,7 @@ function AnimatedRoutes() {
           <Route index element={<AdminDashboard />} />
           <Route path="students" element={<AdminStudents />} />
           <Route path="jobs" element={<AdminJobs />} />
+          <Route path="internships" element={<AdminInternships />} />
           <Route path="plans" element={<AdminPlans />} />
           <Route path="payments" element={<AdminPayments />} />
           <Route path="campaigns" element={<AdminCampaigns />} />
@@ -203,9 +211,19 @@ function ScrollToTop() {
 }
 
 export default function App() {
+  const initializeAuth = useAuthStore((state) => state.initializeAuth);
+  const theme = useUIStore((state) => state.theme);
   const [paymentState, setPaymentState] = useState<{ isOpen: boolean; planId?: string; planName?: string }>({
     isOpen: false,
   });
+
+  useEffect(() => {
+    void initializeAuth();
+  }, [initializeAuth]);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', theme === 'dark');
+  }, [theme]);
 
   const openPayment = (planId: string, planName: string) => {
     setPaymentState({ isOpen: true, planId, planName });

@@ -95,9 +95,9 @@ describe('PaymentFlow Component', () => {
     expect(screen.queryByText('Secure Payment')).not.toBeInTheDocument();
   });
 
-  it('shows demo mode notice', async () => {
+  it('shows checkout notice', async () => {
     render(<PaymentFlow isOpen={true} onClose={() => {}} planId="premium" />);
 
-    await waitFor(() => expect(screen.getByText(/Demo Mode:/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/Secure Checkout:/)).toBeInTheDocument());
   });
 });

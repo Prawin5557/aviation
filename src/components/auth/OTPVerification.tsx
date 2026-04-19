@@ -4,6 +4,7 @@ import { Mail, Phone, ArrowRight, Loader2, RefreshCw } from 'lucide-react';
 import { Button } from '@/src/components/ui/Button';
 import { Input } from '@/src/components/ui/Input';
 import toast from 'react-hot-toast';
+import { authService } from '@/src/services/authService';
 
 interface OTPVerificationProps {
   email?: string;
@@ -28,22 +29,11 @@ export default function OTPVerification({
   const [isLoading, setIsLoading] = useState(false);
   const [isResending, setIsResending] = useState(false);
   const [countdown, setCountdown] = useState(0);
-  const [generatedOtp, setGeneratedOtp] = useState('');
-  const [showMockOtp, setShowMockOtp] = useState(false);
 
   const target = email || phone || '';
   const isEmail = type === 'email' || !!email;
 
-  const createMockOtp = () => {
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
-    setGeneratedOtp(code);
-    setShowMockOtp(true);
-    toast.success('Mock OTP generated. Enter the code shown below.');
-    return code;
-  };
-
-  useEffect(() => {
-    createMockOtp();
+  const startCountdown = () => {
     setCountdown(60);
     const timer = setInterval(() => {
       setCountdown((prev) => {
@@ -56,31 +46,61 @@ export default function OTPVerification({
     }, 1000);
 
     return () => clearInterval(timer);
-  }, []);
-
-  const handleSendOTP = () => {
-    setIsResending(true);
-    createMockOtp();
-    setCountdown(60);
-    setTimeout(() => setIsResending(false), 500);
   };
 
-  const handleVerifyOTP = () => {
+  const sendOtp = async () => {
+    await authService.sendOTP(email, phone, type);
+    startCountdown();
+  };
+
+  useEffect(() => {
+    let cleanup: (() => void) | undefined;
+
+    const run = async () => {
+      try {
+        await authService.sendOTP(email, phone, type);
+        cleanup = startCountdown();
+      } catch (error) {
+        toast.error('Failed to send OTP. Please try again.');
+      }
+    };
+
+    void run();
+    return () => cleanup?.();
+  }, [email, phone, type]);
+
+  const handleSendOTP = async () => {
+    setIsResending(true);
+    try {
+      await sendOtp();
+    } catch (error) {
+      toast.error('Failed to resend OTP. Please try again.');
+    } finally {
+      setIsResending(false);
+    }
+  };
+
+  const handleVerifyOTP = async () => {
     if (!otp || otp.length !== 6) {
       toast.error('Please enter a valid 6-digit OTP');
       return;
     }
 
     setIsLoading(true);
-    setTimeout(() => {
-      if (otp === generatedOtp) {
-        toast.success('OTP verified successfully');
-        onSuccess({});
-      } else {
-        toast.error('OTP verification failed. Please try again.');
-      }
+    try {
+      const result = await authService.verifyOTP({
+        email,
+        phone,
+        otp,
+        type,
+      });
+
+      onSuccess(result);
+    } catch (error) {
+      toast.error('OTP verification failed. Please try again.');
+    } finally {
       setIsLoading(false);
-    }, 500);
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -118,14 +138,6 @@ export default function OTPVerification({
           {description || `We've sent a 6-digit code to ${target}`}
         </p>
       </div>
-
-      {showMockOtp && generatedOtp && (
-        <div className="mb-6 p-4 bg-indigo-50 border border-indigo-100 rounded-3xl text-center">
-          <p className="text-sm text-indigo-700 mb-2">Mock verification code</p>
-          <p className="text-3xl font-bold tracking-[0.45em] text-indigo-900">{generatedOtp}</p>
-          <p className="text-xs text-slate-500 mt-2">Use this code to verify your account in frontend-only mock mode.</p>
-        </div>
-      )}
 
       {/* OTP Input */}
       <div className="space-y-4">

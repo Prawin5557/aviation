@@ -5,6 +5,7 @@ import {
   LayoutDashboard, 
   Users, 
   Briefcase, 
+  ClipboardCheck,
   GraduationCap, 
   CreditCard, 
   BarChart3, 
@@ -14,13 +15,12 @@ import {
   Bell,
   Search,
   Plane,
-  ClipboardCheck,
   Megaphone,
   School,
   Video,
   ShieldCheck,
+  DollarSign,
   ChevronLeft,
-  Menu,
   X
 } from "lucide-react";
 import { useAuthStore } from "@/src/store/authStore";
@@ -29,6 +29,7 @@ import { cn } from "@/src/lib/utils";
 import { Button } from "@/src/components/ui/Button";
 import { Input } from "@/src/components/ui/Input";
 import { Tooltip } from "@/src/components/ui/Tooltip";
+import UserMenuDropdown from "@/src/components/common/UserMenuDropdown";
 
 export default function AdminLayout() {
   const location = useLocation();
@@ -40,12 +41,16 @@ export default function AdminLayout() {
   const menuItems = [
     { name: "Overview", path: "/admin", icon: LayoutDashboard, desc: "System performance & stats" },
     { name: "Students", path: "/admin/students", icon: Users, desc: "Manage member directory" },
-    { name: "Jobs & Internships", path: "/admin/jobs", icon: Briefcase, desc: "Post & moderate listings" },
+    { name: "Jobs", path: "/admin/jobs", icon: Briefcase, desc: "Post & moderate listings" },
+    { name: "Internships", path: "/admin/internships", icon: ClipboardCheck, desc: "Manage internship programs" },
     { name: "Plan Management", path: "/admin/plans", icon: Settings2, desc: "Configure pricing tiers" },
     { name: "Subscriptions", path: "/admin/subscriptions", icon: CreditCard, desc: "Track revenue & billing" },
+    { name: "Payments", path: "/admin/payments", icon: DollarSign, desc: "Transactions and invoicing" },
     { name: "Campaigns", path: "/admin/campaigns", icon: Megaphone, desc: "Marketing & notifications" },
     { name: "Colleges", path: "/admin/colleges", icon: School, desc: "Partner institutions" },
     { name: "Events & Webinars", path: "/admin/events", icon: Video, desc: "Live sessions & meetings" },
+    { name: "Leads", path: "/admin/leads", icon: Users, desc: "Lead funnel and conversion" },
+    { name: "Courses", path: "/admin/courses", icon: GraduationCap, desc: "Manage learning tracks" },
     { name: "Reports", path: "/admin/reports", icon: BarChart3, desc: "Analytics & data export" },
     { name: "Settings", path: "/admin/settings", icon: Settings, desc: "Portal configurations" },
   ];
@@ -54,13 +59,13 @@ export default function AdminLayout() {
     menuItems.splice(1, 0, { name: "Admin Management", path: "/admin/management", icon: ShieldCheck, desc: "Staff roles & security" });
   }
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     navigate("/");
   };
 
   return (
-    <div className="flex h-screen bg-transparent overflow-hidden text-slate-600">
+    <div className="flex min-h-dvh bg-transparent overflow-hidden text-slate-600">
       {/* Sidebar */}
       <motion.aside 
         initial={false}
@@ -185,7 +190,7 @@ export default function AdminLayout() {
       {/* Main Content */}
       <div className="grow flex flex-col overflow-hidden bg-transparent">
         {/* Header */}
-        <header className="h-20 bg-transparent border-b border-slate-200 px-8 flex items-center justify-between shrink-0">
+        <header className="h-20 bg-transparent border-b border-slate-200 px-4 lg:px-8 flex items-center justify-between shrink-0">
           <div className="flex items-center grow max-w-md">
             <div className="relative w-full group">
               <Search className={cn(
@@ -202,7 +207,7 @@ export default function AdminLayout() {
                 <button 
                   onClick={() => setSearchQuery('')}
                   aria-label="Clear search"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-slate-100 rounded-full transition-colors"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 inline-flex items-center justify-center hover:bg-slate-100 rounded-full transition-colors"
                 >
                   <X className="h-3 w-3 text-slate-400" />
                 </button>
@@ -211,33 +216,57 @@ export default function AdminLayout() {
           </div>
           
           <div className="flex items-center space-x-6">
-            <button aria-label="View notifications" className="relative p-2 text-slate-400 hover:text-purple-600 transition-colors">
+            <button aria-label="View notifications" className="relative h-11 w-11 inline-flex items-center justify-center text-slate-500 hover:text-purple-600 hover:bg-slate-100 rounded-xl transition-colors">
               <Bell className="h-6 w-6" />
               <span className="absolute top-2 right-2 w-2 h-2 bg-purple-600 rounded-full border-2 border-white" />
             </button>
-            <div className="flex items-center space-x-3 pl-6 border-l border-slate-200">
-              <div className="text-right hidden sm:block">
-                <p className="text-sm font-bold text-slate-900">{user?.name || "Admin"}</p>
-                <p className="text-xs text-slate-500 uppercase tracking-widest">{user?.isPrime ? "Prime Admin" : "Staff Admin"}</p>
-              </div>
-              <div className="h-10 w-10 rounded-full bg-purple-600 flex items-center justify-center text-white font-bold">
-                A
-              </div>
+            <div className="pl-6 border-l border-slate-200">
+              <UserMenuDropdown
+                name={user?.name || "Admin"}
+                subtitle={user?.isPrime ? "Prime Admin" : "Staff Admin"}
+                initial={user?.name?.charAt(0) || "A"}
+                onLogout={handleLogout}
+              />
             </div>
           </div>
         </header>
 
         {/* Page Content */}
-        <main className="grow overflow-y-auto p-8">
+        <main className="grow overflow-y-auto p-4 lg:p-8 pb-24 lg:pb-8">
           <motion.div
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.98 }}
             transition={{ duration: 0.3, ease: "easeOut" }}
+            className="w-full max-w-400 mx-auto"
           >
             <Outlet />
           </motion.div>
         </main>
+
+        <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-16 bg-white/85 backdrop-blur-lg border-t border-slate-200 flex items-center justify-around px-2 z-50 safe-bottom">
+          {[
+            { name: "Home", path: "/admin", icon: LayoutDashboard },
+            { name: "Students", path: "/admin/students", icon: Users },
+            { name: "Jobs", path: "/admin/jobs", icon: Briefcase },
+            { name: "Reports", path: "/admin/reports", icon: BarChart3 },
+            { name: "Settings", path: "/admin/settings", icon: Settings },
+          ].map((item) => (
+            <Link
+              key={item.path}
+              to={item.path}
+              className={cn(
+                "flex flex-col items-center justify-center space-y-1 px-2 py-1 rounded-xl transition-all",
+                (location.pathname === item.path || (item.path !== "/admin" && location.pathname.startsWith(item.path)))
+                  ? "text-purple-600"
+                  : "text-slate-400"
+              )}
+            >
+              <item.icon className="h-5 w-5" />
+              <span className="text-xs font-bold uppercase tracking-tight">{item.name}</span>
+            </Link>
+          ))}
+        </nav>
       </div>
     </div>
   );

@@ -17,8 +17,13 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedRoles 
     return <Navigate to={loginPath} state={{ from: location }} replace />;
   }
 
+  // Prime admin is allowed to access every protected section.
+  if (user?.role === 'admin') {
+    return <>{children}</>;
+  }
+
   if (allowedRoles && user && !allowedRoles.includes(user.role as any)) {
-    const redirectPath = user.role === 'admin' ? '/admin' : user.role === 'employer' ? '/employer' : '/dashboard';
+    const redirectPath = user.role === 'employer' ? '/employer' : '/dashboard';
     return <Navigate to={redirectPath} replace />;
   }
 

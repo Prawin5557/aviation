@@ -21,6 +21,7 @@ import {
 import { useAuthStore } from "@/src/store/authStore";
 import { cn } from "@/src/lib/utils";
 import { Button } from "@/src/components/ui/Button";
+import UserMenuDropdown from "@/src/components/common/UserMenuDropdown";
 
 export default function DashboardLayout() {
   const location = useLocation();
@@ -40,13 +41,13 @@ export default function DashboardLayout() {
     { name: "Settings", path: "/dashboard/settings", icon: Settings },
   ];
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     navigate("/");
   };
 
   return (
-    <div className="flex h-screen bg-transparent overflow-hidden flex-col lg:flex-row">
+    <div className="flex layout-min-h-dvh bg-transparent overflow-hidden flex-col lg:flex-row">
       {/* Sidebar - Desktop */}
       <aside className="hidden lg:flex flex-col w-72 bg-transparent border-r border-slate-200 print:hidden">
         <div className="p-6">
@@ -106,18 +107,17 @@ export default function DashboardLayout() {
           </h2>
           
           <div className="flex items-center space-x-4 lg:space-x-6">
-            <Link to="/dashboard/notifications" className="relative p-2 text-slate-400 hover:text-purple-600 transition-colors">
+            <Link to="/dashboard/notifications" aria-label="View notifications" className="relative h-11 w-11 inline-flex items-center justify-center text-slate-500 hover:text-purple-600 hover:bg-slate-100 rounded-xl transition-colors">
               <Bell className="h-5 w-5 lg:h-6 lg:w-6" />
               <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white" />
             </Link>
-            <div className="flex items-center space-x-3 pl-4 lg:pl-6 border-l border-slate-200">
-              <div className="text-right hidden sm:block">
-                <p className="text-sm font-bold text-slate-900">{user?.name || "Candidate"}</p>
-                <p className="text-xs text-slate-500 capitalize">{user?.role || "Student"}</p>
-              </div>
-              <div className="h-8 w-8 lg:h-10 lg:w-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-bold text-sm lg:text-base">
-                {user?.name?.[0] || "C"}
-              </div>
+            <div className="pl-4 lg:pl-6 border-l border-slate-200">
+              <UserMenuDropdown
+                name={user?.name || "Candidate"}
+                subtitle={user?.role || "Student"}
+                initial={user?.name?.[0] || "C"}
+                onLogout={handleLogout}
+              />
             </div>
           </div>
         </header>
@@ -129,13 +129,14 @@ export default function DashboardLayout() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.4, ease: "easeOut" }}
+            className="w-full layout-max-w-1600 mx-auto"
           >
             <Outlet />
           </motion.div>
         </main>
 
         {/* Bottom Navigation - Mobile (Instagram Style) */}
-        <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-16 bg-white/80 backdrop-blur-lg border-t border-slate-200 flex items-center justify-around px-2 z-50 print:hidden">
+        <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-16 bg-white/80 backdrop-blur-lg border-t border-slate-200 flex items-center justify-around px-2 z-50 print:hidden safe-bottom">
           {[
             { name: "Home", path: "/dashboard", icon: LayoutDashboard },
             { name: "Jobs", path: "/dashboard/jobs", icon: Briefcase },
@@ -152,7 +153,7 @@ export default function DashboardLayout() {
               )}
             >
               <item.icon className={cn("h-6 w-6", location.pathname === item.path && "fill-current")} />
-              <span className="text-[10px] font-bold uppercase tracking-tighter">{item.name}</span>
+              <span className="text-xs font-bold uppercase tracking-tight">{item.name}</span>
             </Link>
           ))}
         </nav>

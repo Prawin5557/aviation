@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "motion/react";
 import { 
   Briefcase, 
@@ -6,22 +6,16 @@ import {
   CheckCircle, 
   Clock, 
   TrendingUp,
-  ArrowRight,
   MapPin,
   Building2,
   Plane,
   Bell,
   FileText,
-  Calendar,
-  Search
 } from "lucide-react";
 import { Button } from "@/src/components/ui/Button";
 import { Skeleton } from "@/src/components/ui/Skeleton";
 import { cn } from "@/src/lib/utils";
-import { apiService } from "@/src/services/api";
 import { useAuthStore } from "@/src/store/authStore";
-import { DashboardStats } from "@/src/types";
-import { Application } from "@/src/types";
 import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { 
@@ -39,12 +33,14 @@ import CareerRoadmap from "@/src/components/dashboard/CareerRoadmap";
 import { useDashboardStats, useApplications, useJobs, useSavedJobs } from "@/src/hooks/useQueries";
 
 export default function DashboardHome() {
+  const APPS_PAGE_SIZE = 4;
   const { user } = useAuthStore();
   const { data: stats, isLoading: isStatsLoading } = useDashboardStats();
   const { data: recentApps = [], isLoading: isAppsLoading } = useApplications(user?.id);
   const { data: jobs = [], isLoading: isJobsLoading } = useJobs();
   const { data: savedJobs = [], isLoading: isSavedLoading } = useSavedJobs(user?.id);
   const navigate = useNavigate();
+  const [currentAppsPage, setCurrentAppsPage] = useState(1);
 
   const isLoading = isStatsLoading || isAppsLoading || isJobsLoading || isSavedLoading;
 
@@ -55,20 +51,33 @@ export default function DashboardHome() {
   };
 
   const handleGoPremium = () => {
-    toast.success("Redirecting to payment gateway... (Demo)");
+    navigate("/dashboard/subscriptions");
   };
 
   const handleViewAllApps = () => {
-    navigate("/dashboard/jobs");
+    navigate("/dashboard/applications");
   };
 
-  const handleViewJob = (id: string) => {
-    navigate(`/jobs/${id}`);
-  };
+  const internshipJobs = useMemo(
+    () => jobs.filter((job: any) => String(job.type || '').toLowerCase() === "internship"),
+    [jobs]
+  );
 
-  const internshipCount = jobs.filter((job) => job.type === "Internship").length;
+  const internshipCount = internshipJobs.length;
   const savedJobsCount = savedJobs.length;
-  const internshipRecommendations = jobs.filter((job) => job.type === "Internship").slice(0, 2);
+  const internshipRecommendations = internshipJobs.slice(0, 3);
+
+  const appsPageCount = Math.max(1, Math.ceil(recentApps.length / APPS_PAGE_SIZE));
+  const pagedRecentApps = useMemo(() => {
+    const start = (currentAppsPage - 1) * APPS_PAGE_SIZE;
+    return recentApps.slice(start, start + APPS_PAGE_SIZE);
+  }, [recentApps, currentAppsPage]);
+
+  useEffect(() => {
+    if (currentAppsPage > appsPageCount && appsPageCount > 0) {
+      setCurrentAppsPage(appsPageCount);
+    }
+  }, [appsPageCount]);
 
   const statCards = [
     { label: "Total Jobs", value: stats?.totalJobs || jobs.length || "0", icon: Briefcase, color: "text-purple-600", bg: "bg-purple-50" },
@@ -178,8 +187,8 @@ export default function DashboardHome() {
               </div>
             </div>
             
-            <div className="h-75 w-full">
-              <ResponsiveContainer width="100%" height="100%">
+            <div className="h-[300px] w-full">
+              <ResponsiveContainer width="100%" height={300} minWidth={0} minHeight={200}>
                 <AreaChart data={stats?.jobTrends || []}>
                   <defs>
                     <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
@@ -232,7 +241,7 @@ export default function DashboardHome() {
               className="text-purple-600"
               onClick={handleViewAllApps}
             >
-              View All
+              View All Applications
             </Button>
           </div>
           <div className="space-y-4">
@@ -249,8 +258,8 @@ export default function DashboardHome() {
                   <Skeleton className="h-6 w-24 rounded-full" />
                 </div>
               ))
-            ) : (
-              recentApps.map((app, i) => (
+            ) : pagedRecentApps.length > 0 ? (
+              pagedRecentApps.map((app: any, i: number) => (
                 <div key={i} className="glass-card p-5 flex items-center justify-between hover:shadow-md transition-shadow">
                   <div className="flex items-center space-x-4">
                     <div className="h-12 w-12 rounded-xl bg-white/40 flex items-center justify-center border border-white/20">
@@ -272,6 +281,32 @@ export default function DashboardHome() {
                   </div>
                 </div>
               ))
+            ) : (
+              <div className="glass-card p-6 text-center">
+                <p className="text-sm text-slate-500">No recent applications yet. Start applying to track progress here.</p>
+              </div>
+            )}
+
+            {!isLoading && recentApps.length > APPS_PAGE_SIZE && (
+              <div className="flex items-center justify-between">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentAppsPage((prev) => Math.max(1, prev - 1))}
+                  disabled={currentAppsPage === 1}
+                >
+                  Previous
+                </Button>
+                <span className="text-xs text-slate-500 font-medium">Page {currentAppsPage} of {appsPageCount}</span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentAppsPage((prev) => Math.min(appsPageCount, prev + 1))}
+                  disabled={currentAppsPage === appsPageCount}
+                >
+                  Next
+                </Button>
+              </div>
             )}
           </div>
         </div>
@@ -296,7 +331,7 @@ export default function DashboardHome() {
                 </div>
               ))
             ) : internshipRecommendations.length > 0 ? (
-              internshipRecommendations.map((job, idx) => (
+              internshipRecommendations.map((job: any, idx: number) => (
                 <div key={idx} className="glass-card p-4 sm:p-6 space-y-4 hover:shadow-md transition-shadow">
                   <div className="flex items-center space-x-3">
                     <div className="h-10 w-10 shrink-0 rounded-lg bg-purple-50 flex items-center justify-center text-purple-600">
@@ -334,8 +369,8 @@ export default function DashboardHome() {
                 <p className="text-sm text-slate-500 mt-2">Track jobs, internships, and saved positions from your dashboard.</p>
               </div>
               <div className="flex flex-wrap gap-3">
-                <Button size="sm" className="bg-purple-600 text-white" onClick={() => navigate('/dashboard/jobs')}>Browse Jobs</Button>
-                <Button variant="outline" size="sm" className="border-slate-200 text-slate-700" onClick={() => navigate('/dashboard/applications')}>My Applications</Button>
+                <Button size="sm" className="bg-purple-600 text-white" onClick={() => navigate('/dashboard/jobs')}>View Jobs</Button>
+                <Button variant="outline" size="sm" className="border-slate-200 text-slate-700" onClick={() => navigate('/dashboard/applications')}>View Applications</Button>
               </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
@@ -365,7 +400,7 @@ export default function DashboardHome() {
               className="w-full bg-purple-600 text-white"
               onClick={handleGoPremium}
             >
-              Go Premium
+              Upgrade Plan
             </Button>
           </div>
         </div>

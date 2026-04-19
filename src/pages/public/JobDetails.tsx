@@ -63,8 +63,8 @@ export default function JobDetails() {
       clearSavedJobs();
       return;
     }
-    setSavedJobs(savedJobs.map((job) => String(job.id)));
-  }, [savedJobs, user, setSavedJobs, clearSavedJobs]);
+    setSavedJobs(savedJobs.map((job: any) => String(job.id)));
+  }, [savedJobs, user]);
 
   useEffect(() => {
     if (!job) {
@@ -72,7 +72,7 @@ export default function JobDetails() {
       return;
     }
     setIsApplied(applications.some((app: any) => String(app.jobId) === String(job.id)));
-  }, [applications, job]);
+  }, [applications, job?.id]);
 
   const handleApplyClick = () => {
     if (!user) {
@@ -169,7 +169,7 @@ export default function JobDetails() {
                     <Skeleton className="h-5 w-1/3" />
                   </div>
                 </div>
-                <div className="grid grid-cols-4 gap-6 p-6 bg-slate-50 rounded-2xl">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 p-6 bg-slate-50 rounded-2xl">
                   <Skeleton className="h-10 w-full" />
                   <Skeleton className="h-10 w-full" />
                   <Skeleton className="h-10 w-full" />
@@ -195,7 +195,7 @@ export default function JobDetails() {
                       />
                     </div>
                     <div>
-                      <h1 className="text-4xl font-display font-bold text-purple-900">{job.title}</h1>
+                      <h1 className="text-2xl sm:text-3xl md:text-4xl font-display font-bold text-purple-900">{job.title}</h1>
                       <div className="flex items-center text-slate-400 mt-2 font-mono text-[10px] uppercase tracking-[0.2em]">
                         <Building2 className="h-3 w-3 mr-2 text-[#d4af37]" />
                         <span>{job.company}</span>

@@ -1,6 +1,34 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { ENV } from "@/src/config/env";
+import apiClient from "@/src/services/apiClient";
 
-const ai = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+const GEMINI_MODEL = "gemini-2.0-flash";
+const ai = ENV.FRONTEND_ONLY && ENV.PUBLIC_GEMINI_API_KEY
+  ? new GoogleGenerativeAI(ENV.PUBLIC_GEMINI_API_KEY)
+  : null;
+
+const runPrompt = async (prompt: string): Promise<string> => {
+  if (!ENV.FRONTEND_ONLY) {
+    const response = await apiClient.post(ENV.AI_BACKEND_PATH, {
+      prompt,
+      model: GEMINI_MODEL,
+    });
+
+    return (
+      response.data?.text ||
+      response.data?.data?.text ||
+      response.data?.response ||
+      ""
+    );
+  }
+
+  if (!ai) {
+    throw new Error("AI is not configured. Set VITE_GEMINI_API_KEY in frontend-only mode.");
+  }
+
+  const response = await ai.getGenerativeModel({ model: GEMINI_MODEL }).generateContent(prompt);
+  return response.response.text() || "";
+};
 
 export const geminiService = {
   async optimizeResumeSummary(summary: string) {
@@ -9,8 +37,8 @@ export const geminiService = {
       
       Original Summary: ${summary}`;
 
-      const response = await ai.getGenerativeModel({ model: "gemini-2.0-flash" }).generateContent(prompt);
-      return response.response.text() || summary;
+      const text = await runPrompt(prompt);
+      return text || summary;
     } catch (error) {
       console.error("Gemini Error:", error);
       throw new Error("Failed to optimize summary with AI");
@@ -23,8 +51,7 @@ export const geminiService = {
       
       Experience: ${experience}`;
 
-      const response = await ai.getGenerativeModel({ model: "gemini-2.0-flash" }).generateContent(prompt);
-      const text = response.response.text() || "";
+      const text = await runPrompt(prompt);
       return text.split(",").map(s => s.trim()).filter(s => s.length > 0);
     } catch (error) {
       console.error("Gemini Error:", error);
@@ -50,8 +77,7 @@ Return ONLY a JSON object with this structure:
   "skills": { "title": "Skills", "score": 0, "status": "", "suggestion": "" }
 }`;
 
-      const response = await ai.getGenerativeModel({ model: "gemini-2.0-flash" }).generateContent(prompt);
-      const text = response.response.text() || "{}";
+      const text = (await runPrompt(prompt)) || "{}";
       const cleanedText = text.replace(/```json|```/g, "").trim();
       return JSON.parse(cleanedText);
     } catch (error) {
@@ -78,8 +104,8 @@ Return ONLY a JSON object with this structure:
       Job Description: ${description}
       Resume Data: ${JSON.stringify(resumeData)}`;
 
-      const response = await ai.getGenerativeModel({ model: "gemini-2.0-flash" }).generateContent(prompt);
-      return response.response.text() || "Unable to analyze at this time.";
+      const text = await runPrompt(prompt);
+      return text || "Unable to analyze at this time.";
     } catch (error) {
       console.error("Gemini Error:", error);
       throw new Error("Failed to analyze job with AI");
@@ -120,8 +146,7 @@ Return a JSON object with the following structure:
 
 Ensure the output is ONLY the JSON object.`;
 
-      const response = await ai.getGenerativeModel({ model: "gemini-2.0-flash" }).generateContent(prompt);
-      const text = response.response.text() || "{}";
+      const text = (await runPrompt(prompt)) || "{}";
       const cleanedText = text.replace(/```json|```/g, "").trim();
       return JSON.parse(cleanedText);
     } catch (error) {
@@ -153,8 +178,8 @@ Keep responses friendly, professional, and under 150 words.
 
 User question: "${userMessage}"`;
 
-      const response = await ai.getGenerativeModel({ model: "gemini-2.0-flash" }).generateContent(prompt);
-      return response.response.text() || "I'm sorry, I can't help with that right now. Please contact support.";
+      const text = await runPrompt(prompt);
+      return text || "I'm sorry, I can't help with that right now. Please contact support.";
     } catch (error) {
       console.error("Gemini Error:", error);
       return "I'm sorry, I'm having trouble connecting right now. For immediate help, please contact us at:\n📞 Phone: +91 98765 43210\n📧 Email: support@armzaviation.com";

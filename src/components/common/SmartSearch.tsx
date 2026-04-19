@@ -82,9 +82,9 @@ export const SmartSearch: React.FC<SmartSearchProps> = ({
             animate={{ opacity: 1, y: 10, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
             transition={{ duration: 0.3, ease: "easeOut" }}
-            className="absolute top-full left-0 right-0 bg-white/90 backdrop-blur-2xl border border-white/50 shadow-premium-hover rounded-4xl p-8 mt-2 overflow-hidden"
+            className="absolute top-full left-0 right-0 bg-white/90 backdrop-blur-2xl border border-white/50 shadow-premium-hover rounded-3xl sm:rounded-4xl p-5 sm:p-8 mt-2 overflow-hidden"
           >
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-8">
               <div className="space-y-3">
                 <label className="text-xs font-bold uppercase tracking-widest text-slate-400">Job Type</label>
                 <div className="flex flex-wrap gap-2">
@@ -153,4 +153,3 @@ export const SmartSearch: React.FC<SmartSearchProps> = ({
     </div>
   );
 };
-

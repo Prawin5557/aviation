@@ -1,5 +1,6 @@
 import { QueryClient, QueryCache, MutationCache } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
+import { ENV } from '@/src/config/env';
 
 export const queryClient = new QueryClient({
   queryCache: new QueryCache({
@@ -9,12 +10,17 @@ export const queryClient = new QueryClient({
       if (query.state.data !== undefined) {
         toast.error(`Something went wrong: ${error.message}`);
       }
-      console.error('Query error:', error);
+
+      if (!ENV.FRONTEND_ONLY) {
+        console.error('Query error:', error);
+      }
     },
   }),
   mutationCache: new MutationCache({
     onError: (error) => {
-      console.error('Mutation error:', error);
+      if (!ENV.FRONTEND_ONLY) {
+        console.error('Mutation error:', error);
+      }
     },
   }),
   defaultOptions: {

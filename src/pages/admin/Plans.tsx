@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { CreditCard, Plus, Edit2, Trash2, Check, X, RefreshCw, Shield, Zap, Crown, Globe, Settings2, Lock, Unlock, Search, Filter, BarChart3, TrendingUp, Users, DollarSign, Activity, Copy } from "lucide-react";
 import { apiService } from "@/src/services/api";
@@ -61,9 +61,7 @@ export default function AdminPlans() {
   const [creatingPlan, setCreatingPlan] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  useEffect(() => { fetchPlans(); }, []);
-
-  const fetchPlans = async () => {
+  const fetchPlans = useCallback(async () => {
     try {
       setLoading(true);
       const res = await apiService.getAdminPlans();
@@ -76,7 +74,11 @@ export default function AdminPlans() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    void fetchPlans();
+  }, [fetchPlans]);
 
   const filteredPlans = useMemo(() => {
     return plans.filter(plan => {
@@ -266,7 +268,7 @@ export default function AdminPlans() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <GlassCard className="p-8" hoverEffect={false}>
               <div className="flex items-center justify-between mb-8"><div><h2 className="text-xl font-display font-bold text-slate-900">Revenue Trends</h2><p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">Monthly plan revenue</p></div></div>
-              <ResponsiveContainer width="100%" height={300}>
+              <ResponsiveContainer width="100%" height={300} minWidth={0}>
                 <AreaChart data={revenueData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" /><XAxis dataKey="month" stroke="#64748b" fontSize={12} /><YAxis stroke="#64748b" fontSize={12} /><Tooltip contentStyle={{ backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '8px' }} /><Area type="monotone" dataKey="revenue" stroke="#8b5cf6" fill="url(#revenueGradient)" strokeWidth={2} /><defs><linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3}/><stop offset="95%" stopColor="#8b5cf6" stopOpacity={0.1}/></linearGradient></defs>
                 </AreaChart>
@@ -276,7 +278,7 @@ export default function AdminPlans() {
             <GlassCard className="p-8" hoverEffect={false}>
               <div className="flex items-center justify-between mb-8"><div><h2 className="text-xl font-display font-bold text-slate-900">Plan Distribution</h2><p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">Subscriber breakdown</p></div></div>
               <div className="h-75">
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height={300} minWidth={0} minHeight={200}>
                   <RechartsPieChart>
                     <RechartsPie data={stats?.planDistribution || []} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={5} dataKey="value">
                       {(stats?.planDistribution || []).map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
@@ -393,7 +395,7 @@ export default function AdminPlans() {
         <div className="space-y-8">
           <GlassCard className="p-8" hoverEffect={false}>
             <div className="flex items-center justify-between mb-8"><div><h2 className="text-xl font-display font-bold text-slate-900">Subscriber Growth</h2><p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">Monthly trends</p></div></div>
-            <ResponsiveContainer width="100%" height={400}>
+            <ResponsiveContainer width="100%" height={400} minWidth={0}>
               <BarChart data={subscriberGrowthData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" /><XAxis dataKey="month" stroke="#64748b" fontSize={12} /><YAxis stroke="#64748b" fontSize={12} /><Tooltip contentStyle={{ backgroundColor: 'white', border: '1px solid #e2e8f0' }} /><Bar dataKey="subscribers" fill="#06b6d4" radius={[4, 4, 0, 0]} />
               </BarChart>

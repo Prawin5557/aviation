@@ -17,7 +17,7 @@ export default function Hero() {
     if (plans.length === 0) {
       fetchPlans();
     }
-  }, []);
+  }, [plans.length, fetchPlans]);
 
   const ref = useRef(null);
   const mouseX = useMotionValue(0);
@@ -39,7 +39,12 @@ export default function Hero() {
     navigate(`/jobs?${params.toString()}`);
   };
 
-  const filteredPlans = plans.filter(plan => plan.type === selectedPlanType);
+  const filteredPlans = plans.filter(
+    (plan) => (plan.type ?? 'student') === selectedPlanType && plan.isActive !== false
+  );
+
+  const studentPopularPlanIds = ['premium', 'pro-student'];
+  const employerPopularPlanIds = ['recruiter_growth'];
 
   const planTypeOptions = [
     {
@@ -195,7 +200,11 @@ export default function Hero() {
                   plan={plan}
                   Icon={getPlanIcon(plan.id)}
                   colors={getPlanColors(plan.id)}
-                  isPopular={selectedPlanType === 'student' ? plan.id === "premium" : plan.id === "recruiter_growth"}
+                  isPopular={
+                    selectedPlanType === 'student'
+                      ? studentPopularPlanIds.includes(plan.id)
+                      : employerPopularPlanIds.includes(plan.id)
+                  }
                   index={i}
                   selectedPlanType={selectedPlanType}
                 />
@@ -258,7 +267,7 @@ const InteractivePlanCard = ({ plan, isPopular, Icon, colors, index, selectedPla
     >
       <div
         className={cn(
-          "glass-card flex-1 flex flex-col p-8 relative group transition-all duration-500 rounded-[48px]",
+          "glass-card flex-1 flex flex-col p-6 sm:p-8 relative group transition-all duration-500 rounded-3xl sm:rounded-[48px]",
           isPopular
             ? 'border-purple-200 shadow-premium-hover ring-4 ring-purple-500/5 scale-105 z-10 bg-white/90'
             : 'border-white/60 hover:border-purple-100 bg-white/40'

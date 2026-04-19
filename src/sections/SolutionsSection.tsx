@@ -139,6 +139,7 @@ export default function SolutionsSection() {
   };
 
   const categories = userType === "Employer" ? employerCategories : candidateCategories;
+  const isEmployer = userType === "Employer";
 
   return (
     <section className="py-10">
@@ -151,27 +152,40 @@ export default function SolutionsSection() {
             <span className="text-purple-600">Achieve Today?</span>
           </h2>
           
-          <div className="flex sm:inline-flex flex-row p-1 bg-slate-200 rounded-xl w-full sm:w-auto max-w-[280px] sm:max-w-none mx-auto">
-            <button
-              onClick={() => handleUserTypeChange("Employer")}
-              className={`flex-1 sm:flex-none px-4 sm:px-8 py-3 sm:py-2 rounded-lg text-[10px] sm:text-xs font-bold uppercase tracking-[0.15em] transition-all duration-300 active:scale-95 ${
-                userType === "Employer"
-                  ? "bg-white text-purple-600 shadow-sm"
-                  : "text-slate-500 hover:text-slate-700"
-              }`}
-            >
-              Employer
-            </button>
-            <button
-              onClick={() => handleUserTypeChange("Candidate")}
-              className={`flex-1 sm:flex-none px-4 sm:px-8 py-3 sm:py-2 rounded-lg text-[10px] sm:text-xs font-bold uppercase tracking-[0.15em] transition-all duration-300 active:scale-95 ${
-                userType === "Candidate"
-                  ? "bg-white text-purple-600 shadow-sm"
-                  : "text-slate-500 hover:text-slate-700"
-              }`}
-            >
-              Candidate
-            </button>
+          <div className="mx-auto w-full sm:w-auto max-w-lg">
+            <div className="relative rounded-2xl border border-slate-200/80 bg-white/90 p-1.5 shadow-[0_18px_50px_-22px_rgba(15,23,42,0.35)] backdrop-blur-xl overflow-hidden">
+              <motion.div
+                layout
+                transition={{ type: "spring", stiffness: 420, damping: 32 }}
+                className="absolute inset-y-1.5 left-1.5 w-[calc(50%-0.375rem)] rounded-[1.1rem] bg-linear-to-r from-slate-900 to-purple-700 shadow-[0_10px_30px_-12px_rgba(88,28,135,0.65)]"
+                style={{ left: isEmployer ? "0.375rem" : "calc(50% + 0.1875rem)" }}
+                aria-hidden="true"
+              />
+
+              <div className="relative grid grid-cols-2 gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => handleUserTypeChange("Employer")}
+                  className={`group relative flex items-center justify-center gap-2 rounded-[0.95rem] px-4 sm:px-8 py-3.5 text-[10px] sm:text-xs font-black uppercase tracking-[0.22em] transition-all duration-300 active:scale-[0.98] ${
+                    isEmployer ? "text-white" : "text-slate-500 hover:text-slate-800"
+                  }`}
+                >
+                  <Building2 className={`h-4 w-4 transition-transform duration-300 ${isEmployer ? "scale-110" : "group-hover:scale-105"}`} />
+                  <span>Employer</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleUserTypeChange("Candidate")}
+                  className={`group relative flex items-center justify-center gap-2 rounded-[0.95rem] px-4 sm:px-8 py-3.5 text-[10px] sm:text-xs font-black uppercase tracking-[0.22em] transition-all duration-300 active:scale-[0.98] ${
+                    !isEmployer ? "text-white" : "text-slate-500 hover:text-slate-800"
+                  }`}
+                >
+                  <Users className={`h-4 w-4 transition-transform duration-300 ${!isEmployer ? "scale-110" : "group-hover:scale-105"}`} />
+                  <span>Candidate</span>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -215,7 +229,7 @@ export default function SolutionsSection() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.4, ease: "easeInOut" }}
-                className="bg-white rounded-3xl p-6 lg:p-10 border border-slate-200 shadow-lg shadow-slate-200/40 min-h-96 flex flex-col relative overflow-hidden"
+                className="bg-white rounded-3xl p-6 lg:p-10 border border-slate-200 shadow-lg shadow-slate-200/40 min-h-88 sm:min-h-96 flex flex-col relative overflow-hidden"
               >
                 <motion.div 
                   className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-48 h-48 bg-purple-50 rounded-full blur-3xl"
@@ -268,7 +282,7 @@ export default function SolutionsSection() {
                 </div>
 
                 <div className="mt-10 relative z-10">
-                  <Button size="md" className="px-10 group">
+                  <Button size="md" className="px-6 sm:px-10 group w-full sm:w-auto">
                     <span className="flex items-center space-x-2">
                       <span>Explore All Solutions</span>
                       <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />

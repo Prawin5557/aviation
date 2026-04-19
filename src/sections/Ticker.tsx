@@ -13,7 +13,7 @@ export default function Ticker() {
           setLatestJob(res.data[0]);
         }
       } catch (error) {
-        console.error("Failed to fetch latest job for ticker");
+        // Keep fallback ticker text without polluting the console in frontend-only mode.
       }
     };
     fetchLatest();
@@ -41,7 +41,7 @@ export default function Ticker() {
   ];
 
   return (
-    <div className="bg-purple-900 border-t-2 border-yellow-400 h-11 flex items-center overflow-hidden relative z-[60]">
+    <div className="bg-purple-900 border-t-2 border-yellow-400 h-11 flex items-center overflow-hidden relative z-60">
       <div className="flex whitespace-nowrap items-center animate-marquee">
         {/* Duplicate items for seamless loop */}
         {[...tickerItems, ...tickerItems, ...tickerItems, ...tickerItems].map((item, i) => (
