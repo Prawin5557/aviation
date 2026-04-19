@@ -47,7 +47,7 @@ export default function DashboardLayout() {
   };
 
   return (
-    <div className="flex layout-min-h-dvh bg-transparent overflow-hidden flex-col lg:flex-row">
+    <div className="flex layout-min-h-dvh bg-transparent overflow-x-hidden flex-col lg:flex-row">
       {/* Sidebar - Desktop */}
       <aside className="hidden lg:flex flex-col w-72 bg-transparent border-r border-slate-200 print:hidden">
         <div className="p-6">
@@ -92,7 +92,7 @@ export default function DashboardLayout() {
       </aside>
 
       {/* Main Content */}
-      <div className="grow flex flex-col overflow-hidden">
+      <div className="grow flex flex-col overflow-x-hidden">
         {/* Header */}
         <header className="h-20 bg-transparent border-b border-slate-200 px-6 lg:px-8 flex items-center justify-between shrink-0 print:hidden">
           <div className="flex items-center space-x-3 lg:hidden">
@@ -123,7 +123,7 @@ export default function DashboardLayout() {
         </header>
 
         {/* Page Content */}
-        <main className="grow overflow-y-auto p-4 lg:p-8 pb-24 lg:pb-8 print:p-0 print:overflow-visible">
+        <main className="grow p-4 lg:p-8 pb-32 lg:pb-8 print:p-0 print:overflow-visible">
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}

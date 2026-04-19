@@ -107,7 +107,7 @@ export default function DashboardHome() {
   ];
 
   return (
-    <div className="space-y-6 sm:space-y-10 pb-24 lg:pb-8 px-4 sm:px-0 pt-4 sm:pt-0 overflow-x-hidden">
+    <div className="space-y-6 sm:space-y-10 pb-32 lg:pb-8 px-4 sm:px-0 pt-4 sm:pt-0 overflow-x-hidden">
       {/* Header */}
       <div className="relative rounded-3xl p-4 sm:p-5 lg:p-0 lg:rounded-none bg-linear-to-br from-purple-100/70 via-white/80 to-indigo-100/70 lg:bg-transparent border border-purple-100/80 lg:border-none shadow-xl shadow-purple-100/50 lg:shadow-none backdrop-blur-md">
         <div className="absolute inset-0 rounded-3xl bg-white/25 lg:hidden" aria-hidden="true" />

@@ -65,7 +65,7 @@ export default function AdminLayout() {
   };
 
   return (
-    <div className="flex min-h-dvh bg-transparent overflow-hidden text-slate-600">
+    <div className="flex min-h-dvh bg-transparent overflow-x-hidden text-slate-600">
       {/* Sidebar */}
       <motion.aside 
         initial={false}
@@ -188,7 +188,7 @@ export default function AdminLayout() {
       </motion.aside>
 
       {/* Main Content */}
-      <div className="grow flex flex-col overflow-hidden bg-transparent">
+      <div className="grow flex flex-col overflow-x-hidden bg-transparent">
         {/* Header */}
         <header className="h-20 bg-transparent border-b border-slate-200 px-3 sm:px-4 lg:px-8 flex items-center justify-between shrink-0">
           <div className="flex items-center grow max-w-md">
@@ -236,7 +236,7 @@ export default function AdminLayout() {
         </header>
 
         {/* Page Content */}
-        <main className="grow overflow-y-auto p-4 lg:p-8 pb-24 lg:pb-8">
+        <main className="grow p-4 lg:p-8 pb-32 lg:pb-8">
           <motion.div
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}

@@ -207,7 +207,7 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="space-y-8 sm:space-y-12 pb-24 lg:pb-12 overflow-x-hidden lg:max-w-7xl lg:mx-auto">
+    <div className="space-y-8 sm:space-y-12 pb-32 lg:pb-12 overflow-x-hidden lg:max-w-7xl lg:mx-auto">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between rounded-3xl border border-purple-100 bg-linear-to-br from-purple-100/60 via-white/90 to-indigo-100/60 p-4 sm:p-6 lg:bg-transparent lg:border-none lg:p-0">
         <div className="space-y-3 max-w-2xl">
           <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-xs uppercase tracking-[0.24em] text-slate-500">
